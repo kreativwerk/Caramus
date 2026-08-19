@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #0a1a33;
+  --color-navy-900: #0c1f3f;
+  --color-navy-800: #132b54;
+  --color-navy-700: #1b3a6b;
+  --color-navy-600: #2a4d85;
+
+  --color-teal-600: #1e7f97;
+  --color-teal-500: #2fb5b3;
+  --color-teal-400: #4cc4c2;
+  --color-teal-100: #dff3f3;
+  --color-teal-50: #eef9f9;
+
+  --color-mist-50: #f2f7fa;
+  --color-mist-100: #e8f0f5;
+  --color-mist-200: #dbe7ee;
+
+  --font-sans: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --shadow-card: 0 10px 30px -12px rgb(12 31 63 / 0.14);
+}
+
+html {
+  /* Zielgruppe 70+: großzügige Grundschrift */
+  font-size: 17px;
+}
+
+body {
+  background: var(--color-mist-50);
+  color: var(--color-navy-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:scale-[0.98];
+  background: linear-gradient(90deg, #2fb5b3 0%, #1e7f97 100%);
+}
+.btn-primary:hover { filter: brightness(1.05); }
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-mist-200 bg-white px-5 py-3 font-semibold text-navy-800 transition hover:border-teal-500 hover:text-teal-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500;
+}
+
+.badge-pill {
+  @apply inline-flex items-center gap-2 rounded-full bg-teal-100 px-3.5 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-teal-600;
+}
+.badge-pill::before {
+  content: "";
+  @apply inline-block h-1.5 w-1.5 rounded-full bg-teal-500;
+}
+
+.card {
+  @apply rounded-2xl border border-mist-100 bg-white p-5 shadow-card sm:p-6;
+}
+
+.input-base {
+  @apply w-full rounded-lg border border-mist-200 bg-white px-4 py-3 text-navy-900 placeholder:text-navy-600/40 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25;
+}
+
+.label-base {
+  @apply mb-1.5 block text-sm font-semibold text-navy-800;
+}
