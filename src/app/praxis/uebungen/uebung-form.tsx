@@ -1,16 +1,40 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { MEDIA_BUCKET } from "@/lib/media";
 import { uebungLoeschen, uebungSpeichern } from "../actions";
 import type { Exercise } from "@/lib/types";
 
 export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?: () => void }) {
   const [meldung, setMeldung] = useState<string | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const dateiRef = useRef<HTMLInputElement>(null);
 
   function absenden(fd: FormData) {
     if (uebung) fd.set("id", uebung.id);
     startTransition(async () => {
+      // Falls eine Datei gewählt wurde: erst in den geschützten Speicher hochladen
+      const datei = dateiRef.current?.files?.[0];
+      if (datei) {
+        if (datei.size > 45 * 1024 * 1024) {
+          setMeldung("Die Datei ist größer als 45 MB. Bitte Video kürzen oder komprimieren (1080p reicht).");
+          return;
+        }
+        const supabase = createClient();
+        const endung = datei.name.split(".").pop()?.toLowerCase() ?? "bin";
+        const pfad = `${crypto.randomUUID()}.${endung}`;
+        const { error: uploadFehler } = await supabase.storage
+          .from(MEDIA_BUCKET)
+          .upload(pfad, datei, { contentType: datei.type || undefined });
+        if (uploadFehler) {
+          setMeldung("Der Upload ist fehlgeschlagen. Bitte erneut versuchen.");
+          return;
+        }
+        fd.set("media_url", pfad);
+        fd.set("media_type", datei.type.startsWith("video") ? "video" : "image");
+      }
+
       const ergebnis = await uebungSpeichern(fd);
       if (ergebnis?.fehler) setMeldung(ergebnis.fehler);
       else {
@@ -42,11 +66,29 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
         </select>
       </div>
       <div className="sm:col-span-2">
-        <label className="label-base">Bild-/Video-Adresse (URL, optional)</label>
-        <input name="media_url" type="url" defaultValue={uebung?.media_url ?? ""} className="input-base" placeholder="https://…" />
+        <label className="label-base">Bild oder Video hochladen (optional)</label>
+        <input
+          ref={dateiRef}
+          type="file"
+          accept="image/*,video/mp4,video/quicktime,video/webm"
+          className="input-base file:mr-3 file:rounded-md file:border-0 file:bg-teal-100 file:px-3 file:py-1.5 file:font-semibold file:text-teal-600"
+        />
         <p className="mt-1 text-xs text-navy-600/70">
-          Hier können Sie einen Link zu einem Bild oder Video einfügen (z. B. aus Ihrem
-          Übungsportal – Nutzungsrechte beachten).
+          Videos ideal in 1080p, 30–90 Sekunden, MP4 (max. 45 MB). Die Datei ist nur für
+          angemeldete Nutzer sichtbar.
+        </p>
+      </div>
+      <div className="sm:col-span-2">
+        <label className="label-base">… oder Link einfügen (URL, optional)</label>
+        <input
+          name="media_url"
+          defaultValue={uebung?.media_url ?? ""}
+          className="input-base"
+          placeholder="https://…"
+        />
+        <p className="mt-1 text-xs text-navy-600/70">
+          Link zu einem Bild oder Video, z. B. aus Ihrem Übungsportal (Nutzungsrechte beachten).
+          Eine hochgeladene Datei hat Vorrang.
         </p>
       </div>
       {meldung && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700 sm:col-span-2">{meldung}</p>}
@@ -62,7 +104,7 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
   );
 }
 
-export function UebungKarte({ uebung }: { uebung: Exercise }) {
+export function UebungKarte({ uebung, anzeigeUrl }: { uebung: Exercise; anzeigeUrl: string | null }) {
   const [bearbeiten, setBearbeiten] = useState(false);
   const [laeuft, startTransition] = useTransition();
 
@@ -88,12 +130,12 @@ export function UebungKarte({ uebung }: { uebung: Exercise }) {
   return (
     <div className="card flex flex-col">
       <div className="mb-3 flex h-28 items-center justify-center overflow-hidden rounded-xl bg-mist-100">
-        {uebung.media_url ? (
+        {anzeigeUrl ? (
           uebung.media_type === "video" ? (
-            <video src={uebung.media_url} preload="metadata" className="h-full w-full object-cover" />
+            <video src={anzeigeUrl} preload="metadata" controls className="h-full w-full object-cover" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={uebung.media_url} alt={uebung.title} className="h-full w-full object-cover" />
+            <img src={anzeigeUrl} alt={uebung.title} className="h-full w-full object-cover" />
           )
         ) : (
           <span className="text-3xl" aria-hidden>🏋️</span>

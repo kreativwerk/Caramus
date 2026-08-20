@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { resolveMediaUrl } from "@/lib/media";
 import type { PlanFeedback, PlanItem } from "@/lib/types";
 import { FeedbackForm } from "./feedback-form";
 
@@ -30,6 +31,15 @@ export default async function PlanPage() {
 
   const items = ((plan?.plan_items ?? []) as PlanItem[]).sort((a, b) => a.position - b.position);
   const erledigt = items.filter((i) => feedbackMap.get(i.id)?.completed).length;
+
+  const medienUrls = new Map<string, string | null>(
+    await Promise.all(
+      items.map(async (i): Promise<[string, string | null]> => [
+        i.id,
+        await resolveMediaUrl(supabase, i.exercises?.media_url ?? null),
+      ])
+    )
+  );
 
   return (
     <div className="space-y-6">
@@ -67,16 +77,17 @@ export default async function PlanPage() {
           <ol className="space-y-4">
             {items.map((item, index) => {
               const uebung = item.exercises;
+              const medienUrl = medienUrls.get(item.id) ?? null;
               return (
                 <li key={item.id} className="card">
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <div className="flex h-32 w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-mist-100 sm:h-36 sm:w-48">
-                      {uebung?.media_url ? (
-                        uebung.media_type === "video" ? (
-                          <video src={uebung.media_url} controls preload="metadata" className="h-full w-full object-cover" />
+                      {medienUrl ? (
+                        uebung?.media_type === "video" ? (
+                          <video src={medienUrl} controls preload="metadata" className="h-full w-full object-cover" />
                         ) : (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={uebung.media_url} alt={uebung.title} className="h-full w-full object-cover" />
+                          <img src={medienUrl} alt={uebung?.title ?? "Übung"} className="h-full w-full object-cover" />
                         )
                       ) : (
                         <span className="text-4xl" aria-hidden>🏋️</span>

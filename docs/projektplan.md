@@ -11,6 +11,13 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Patientenbereich: Übersicht, Terminanfrage mit Wunschzeiten, Termine, Trainingsplan mit Abhaken + Schmerzskala + Notiz, Chat (Echtzeit), Profil mit Adresse
 - [x] Praxisbereich: Tagesübersicht mit Tour, Anfragen bestätigen (Adresse wird übernommen, Fahrhinweis-Feld) / Alternative vorschlagen / ablehnen, Termine anlegen und abschließen, Patientenliste + Detail mit Plan-Editor und Rückmeldungen, Übungsbibliothek (6 Beispiel-Übungen angelegt), Chat mit Ungelesen-Zähler
 - [x] Produktions-Build grün
+- [x] Sicherheitscheck (Supabase Advisors) durchgeführt, Funktionsrechte eingeschränkt
+- [x] Foto-/Video-Upload in der Übungsbibliothek (privater Speicher, signierte URLs, max. 45 MB)
+- [x] Impressum + Datenschutzerklärung als Entwurf mit Platzhaltern, überall verlinkt
+- [x] PWA: App-Icons + Manifest – „Zum Startbildschirm hinzufügen" auf dem Handy
+- [x] Poppins-Schrift wird lokal eingebettet (kein Google-Fonts-Aufruf zur Laufzeit, DSGVO)
+- [x] Deutsche E-Mail-Vorlagen (`docs/email-vorlagen.md`) und Deployment-Checkliste (`docs/deployment.md`)
+- [x] Edge-Function-Gerüst für E-Mail-Benachrichtigung bei neuen Nachrichten (`supabase/functions/notify-message/`)
 
 ## Nächste Schritte (Reihenfolge empfohlen)
 

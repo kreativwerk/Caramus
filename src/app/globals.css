@@ -17,7 +17,7 @@
   --color-mist-100: #e8f0f5;
   --color-mist-200: #dbe7ee;
 
-  --font-sans: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --shadow-card: 0 10px 30px -12px rgb(12 31 63 / 0.14);
 }

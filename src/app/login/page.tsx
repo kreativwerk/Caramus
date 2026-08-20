@@ -141,6 +141,11 @@ function LoginForm() {
         <p className="mt-6 text-center text-xs text-white/50">
           Kein Notfallkanal – wählen Sie bei medizinischen Notfällen die 112.
         </p>
+        <p className="mt-2 text-center text-xs text-white/50">
+          <Link href="/impressum" className="hover:text-white">Impressum</Link>
+          {" · "}
+          <Link href="/datenschutz" className="hover:text-white">Datenschutz</Link>
+        </p>
       </div>
     </main>
   );

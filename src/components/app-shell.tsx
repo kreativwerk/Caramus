@@ -74,6 +74,11 @@ export function AppShell({
 
         <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12 lg:pt-10">
           {children}
+          <footer className="mt-12 border-t border-mist-100 pt-4 text-center text-xs text-navy-600/60">
+            <Link href="/impressum" className="hover:text-teal-600">Impressum</Link>
+            {" · "}
+            <Link href="/datenschutz" className="hover:text-teal-600">Datenschutz</Link>
+          </footer>
         </main>
       </div>
 

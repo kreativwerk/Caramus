@@ -1,10 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
+import { resolveMediaUrl } from "@/lib/media";
 import type { Exercise } from "@/lib/types";
 import { NeueUebung, UebungKarte } from "./uebung-form";
 
 export default async function UebungenPage() {
   const supabase = await createClient();
   const { data: uebungen } = await supabase.from("exercises").select("*").order("category").order("title");
+
+  const liste = await Promise.all(
+    ((uebungen ?? []) as Exercise[]).map(async (u) => ({
+      uebung: u,
+      anzeigeUrl: await resolveMediaUrl(supabase, u.media_url),
+    }))
+  );
 
   return (
     <div className="space-y-6">
@@ -20,8 +28,8 @@ export default async function UebungenPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <NeueUebung />
-        {((uebungen ?? []) as Exercise[]).map((u) => (
-          <UebungKarte key={u.id} uebung={u} />
+        {liste.map(({ uebung, anzeigeUrl }) => (
+          <UebungKarte key={uebung.id} uebung={uebung} anzeigeUrl={anzeigeUrl} />
         ))}
       </div>
     </div>

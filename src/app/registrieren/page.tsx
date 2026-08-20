@@ -90,6 +90,11 @@ export default function RegistrierenPage() {
             </Link>
           </p>
         </div>
+        <p className="mt-6 text-center text-xs text-white/50">
+          <Link href="/impressum" className="hover:text-white">Impressum</Link>
+          {" · "}
+          <Link href="/datenschutz" className="hover:text-white">Datenschutz</Link>
+        </p>
       </div>
     </main>
   );
