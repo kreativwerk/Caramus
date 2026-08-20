@@ -75,9 +75,14 @@ export function AnfrageForm() {
               placeholder="z. B. Anlass des Besuchs, Besonderheiten beim Zugang zur Wohnung …"
             />
           </div>
+          <p className="text-xs text-navy-600/70">
+            Mit dieser Anfrage kommt noch kein kostenpflichtiger Vertrag zustande. Ein Termin ist
+            erst verbindlich, wenn Ihr Therapeut ihn ausdrücklich bestätigt und Sie die
+            wesentlichen Kosteninformationen erhalten haben.
+          </p>
           <div className="flex gap-3">
             <button type="submit" disabled={laeuft} className="btn-primary disabled:opacity-60">
-              {laeuft ? "Wird gesendet …" : "Anfrage senden"}
+              {laeuft ? "Wird gesendet …" : "Termin anfragen"}
             </button>
             <button type="button" onClick={() => setOffen(false)} className="btn-secondary">
               Abbrechen

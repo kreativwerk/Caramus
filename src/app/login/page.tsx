@@ -145,6 +145,10 @@ function LoginForm() {
           <Link href="/impressum" className="hover:text-white">Impressum</Link>
           {" · "}
           <Link href="/datenschutz" className="hover:text-white">Datenschutz</Link>
+          {" · "}
+          <Link href="/agb" className="hover:text-white">AGB</Link>
+          {" · "}
+          <Link href="/widerruf" className="hover:text-white">Widerruf</Link>
         </p>
       </div>
     </main>

@@ -78,6 +78,10 @@ export function AppShell({
             <Link href="/impressum" className="hover:text-teal-600">Impressum</Link>
             {" · "}
             <Link href="/datenschutz" className="hover:text-teal-600">Datenschutz</Link>
+            {" · "}
+            <Link href="/agb" className="hover:text-teal-600">AGB</Link>
+            {" · "}
+            <Link href="/widerruf" className="hover:text-teal-600">Widerruf</Link>
           </footer>
         </main>
       </div>

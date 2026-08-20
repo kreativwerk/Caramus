@@ -76,6 +76,17 @@ export default function RegistrierenPage() {
                 <input id="passwort" type="password" required minLength={6} autoComplete="new-password" value={passwort} onChange={(e) => setPasswort(e.target.value)} className="input-base" />
                 <p className="mt-1 text-xs text-navy-600/70">Mindestens 6 Zeichen. Sie können sich später auch ohne Passwort per E-Mail-Link anmelden.</p>
               </div>
+              <label className="flex items-start gap-3 text-sm text-navy-700">
+                <input type="checkbox" required className="mt-1 h-4 w-4 accent-teal-500" />
+                <span>
+                  Ich habe die{" "}
+                  <Link href="/datenschutz" target="_blank" className="font-semibold text-teal-600 hover:underline">
+                    Datenschutzerklärung
+                  </Link>{" "}
+                  zur Kenntnis genommen und willige in die Verarbeitung meiner Gesundheitsdaten
+                  zur Betreuung durch Curamus Medical ein.
+                </span>
+              </label>
               {fehler && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{fehler}</p>}
               <button type="submit" disabled={status === "laden"} className="btn-primary w-full disabled:opacity-60">
                 {status === "laden" ? "Einen Moment …" : "Zugang einrichten"}
@@ -94,6 +105,10 @@ export default function RegistrierenPage() {
           <Link href="/impressum" className="hover:text-white">Impressum</Link>
           {" · "}
           <Link href="/datenschutz" className="hover:text-white">Datenschutz</Link>
+          {" · "}
+          <Link href="/agb" className="hover:text-white">AGB</Link>
+          {" · "}
+          <Link href="/widerruf" className="hover:text-white">Widerruf</Link>
         </p>
       </div>
     </main>

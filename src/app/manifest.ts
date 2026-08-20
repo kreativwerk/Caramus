@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Termine anfragen, Trainingsplan ansehen und Nachrichten an Ihren Therapeuten senden.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0c1f3f",
-    theme_color: "#0c1f3f",
+    background_color: "#1f315b",
+    theme_color: "#1f315b",
     lang: "de",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },

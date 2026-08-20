@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
+/* Offizielle Markenfarben aus der Logo-Vorlage:
+   Weiß #ffffff · Türkis #34b8be · Blau #10568e · Navy #1f315b */
 @theme {
-  --color-navy-950: #0a1a33;
-  --color-navy-900: #0c1f3f;
-  --color-navy-800: #132b54;
-  --color-navy-700: #1b3a6b;
-  --color-navy-600: #2a4d85;
+  --color-navy-950: #16223f;
+  --color-navy-900: #1f315b;
+  --color-navy-800: #1f315b;
+  --color-navy-700: #2a4076;
+  --color-navy-600: #3a5292;
 
-  --color-teal-600: #1e7f97;
-  --color-teal-500: #2fb5b3;
-  --color-teal-400: #4cc4c2;
-  --color-teal-100: #dff3f3;
-  --color-teal-50: #eef9f9;
+  --color-teal-600: #10568e;
+  --color-teal-500: #34b8be;
+  --color-teal-400: #5cc9cd;
+  --color-teal-100: #d9f2f3;
+  --color-teal-50: #ecf9f9;
 
   --color-mist-50: #f2f7fa;
   --color-mist-100: #e8f0f5;
@@ -36,7 +38,7 @@ body {
 
 .btn-primary {
   @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold text-white transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500 active:scale-[0.98];
-  background: linear-gradient(90deg, #2fb5b3 0%, #1e7f97 100%);
+  background: linear-gradient(90deg, #34b8be 0%, #10568e 100%);
 }
 .btn-primary:hover { filter: brightness(1.05); }
 

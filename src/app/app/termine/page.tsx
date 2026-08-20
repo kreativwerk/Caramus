@@ -72,6 +72,11 @@ export default async function TerminePage() {
         ) : (
           <p className="card text-navy-600/80">Aktuell sind keine Termine geplant.</p>
         )}
+        <p className="mt-3 text-xs text-navy-600/70">
+          Bitte beachten Sie: Termine können bis spätestens 24 Stunden vorher kostenfrei abgesagt
+          oder verschoben werden – telefonisch oder per E-Mail. Bei späterer Absage kann ein
+          Ausfallhonorar anfallen (siehe AGB).
+        </p>
       </section>
 
       {anfragen?.length ? (
