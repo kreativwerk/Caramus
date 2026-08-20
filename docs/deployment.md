@@ -66,3 +66,13 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
 - Google-Kalender-Abgleich (OAuth in Google Cloud Console, Termine schreiben/Belegtzeiten lesen)
 - Web-Push-Benachrichtigungen (PWA-Ausbau)
 - Physiotec/Wibbi-Inhalte, sobald Nutzungsrechte geklärt sind
+
+## QA-Testkonten (nach Abnahme löschen!)
+
+Für Tests wurden zwei Konten mit bestätigter E-Mail angelegt (Passwort jeweils `QaTest!2026`):
+
+- `qa-patient@curamus-test.de` (Patientenansicht)
+- `qa-therapeut@curamus-test.de` (Praxisansicht)
+
+Vor dem echten Patientenbetrieb im Supabase-Dashboard (Authentication → Users) löschen
+oder per SQL: `delete from auth.users where email like 'qa-%@curamus-test.de';`

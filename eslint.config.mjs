@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nicht-App-Code: Agent-Skills, Doku-Generatoren, Deno-Edge-Functions
+    ".agents/**",
+    ".claude/**",
+    "docs/**",
+    "supabase/**",
   ]),
 ]);
 

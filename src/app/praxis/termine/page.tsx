@@ -9,6 +9,7 @@ export default async function PraxisTerminePage() {
     supabase
       .from("appointments")
       .select("*, profiles!appointments_patient_id_fkey(full_name)")
+      // eslint-disable-next-line react-hooks/purity -- Server Component, läuft pro Request
       .gte("starts_at", new Date(Date.now() - 86400000).toISOString())
       .eq("status", "geplant")
       .order("starts_at")
