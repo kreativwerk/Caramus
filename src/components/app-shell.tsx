@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 
-export type NavItem = { href: string; label: string; icon: React.ReactNode };
+export type IconName = keyof typeof Icons;
+export type NavItem = { href: string; label: string; icon: IconName };
 
 function istAktiv(pathname: string, href: string, basis: string) {
   if (href === basis) return pathname === basis;
@@ -47,7 +48,7 @@ export function AppShell({
                   aktiv ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <span className={aktiv ? "text-teal-400" : ""}>{item.icon}</span>
+                <span className={aktiv ? "text-teal-400" : ""}>{Icons[item.icon]}</span>
                 {item.label}
               </Link>
             );
@@ -72,7 +73,7 @@ export function AppShell({
           </form>
         </header>
 
-        <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12 lg:pt-10">
+        <main className="mx-auto w-full max-w-5xl px-4 pb-32 pt-6 sm:px-6 lg:pb-12 lg:pt-10">
           {children}
           <footer className="mt-12 border-t border-mist-100 pt-4 text-center text-xs text-navy-600/60">
             <Link href="/impressum" className="hover:text-teal-600">Impressum</Link>
@@ -86,20 +87,26 @@ export function AppShell({
         </main>
       </div>
 
-      {/* Mobile-Tab-Leiste */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-mist-100 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <div className="mx-auto grid max-w-lg grid-flow-col auto-cols-fr">
+      {/* Schwebende Mobile-Navigation im Liquid-Glass-Stil */}
+      <nav
+        className="fixed inset-x-0 z-20 flex justify-center px-4 lg:hidden"
+        style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="glass-bar flex items-center gap-0.5 rounded-full px-1.5 py-1.5">
           {items.map((item) => {
             const aktiv = istAktiv(pathname, item.href, basis);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 px-1 py-2.5 text-[0.7rem] font-semibold ${
-                  aktiv ? "text-teal-600" : "text-navy-600/60"
+                aria-current={aktiv ? "page" : undefined}
+                className={`flex min-w-[3.1rem] flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[0.6rem] font-semibold transition-all ${
+                  aktiv
+                    ? "bg-gradient-to-b from-teal-500 to-teal-600 text-white shadow-md shadow-teal-600/30"
+                    : "text-navy-700/75 active:scale-95"
                 }`}
               >
-                {item.icon}
+                {Icons[item.icon]}
                 {item.label}
               </Link>
             );

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Icons } from "@/components/app-shell";
+import { AppShell } from "@/components/app-shell";
 
 export default async function PraxisLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,16 +13,16 @@ export default async function PraxisLayout({ children }: { children: React.React
   if (profile?.role !== "therapist") redirect("/app");
 
   const items = [
-    { href: "/praxis", label: "Übersicht", icon: Icons.home },
-    { href: "/praxis/anfragen", label: "Anfragen", icon: Icons.anfrage },
-    { href: "/praxis/termine", label: "Termine", icon: Icons.kalender },
-    { href: "/praxis/patienten", label: "Patienten", icon: Icons.personen },
-    { href: "/praxis/uebungen", label: "Übungen", icon: Icons.plan },
-    { href: "/praxis/chat", label: "Chat", icon: Icons.chat },
-  ];
+    { href: "/praxis", label: "Übersicht", icon: "home" },
+    { href: "/praxis/anfragen", label: "Anfragen", icon: "anfrage" },
+    { href: "/praxis/termine", label: "Termine", icon: "kalender" },
+    { href: "/praxis/patienten", label: "Patienten", icon: "personen" },
+    { href: "/praxis/uebungen", label: "Übungen", icon: "plan" },
+    { href: "/praxis/chat", label: "Chat", icon: "chat" },
+  ] as const;
 
   return (
-    <AppShell items={items} basis="/praxis" nutzerName={profile.full_name} bereich="Praxisbereich">
+    <AppShell items={[...items]} basis="/praxis" nutzerName={profile.full_name} bereich="Praxisbereich">
       {children}
     </AppShell>
   );

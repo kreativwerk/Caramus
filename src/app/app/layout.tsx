@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, Icons } from "@/components/app-shell";
+import { AppShell } from "@/components/app-shell";
 
 export default async function PatientLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,15 +13,15 @@ export default async function PatientLayout({ children }: { children: React.Reac
   if (profile?.role === "therapist") redirect("/praxis");
 
   const items = [
-    { href: "/app", label: "Übersicht", icon: Icons.home },
-    { href: "/app/termine", label: "Termine", icon: Icons.kalender },
-    { href: "/app/plan", label: "Training", icon: Icons.plan },
-    { href: "/app/chat", label: "Nachrichten", icon: Icons.chat },
-    { href: "/app/profil", label: "Profil", icon: Icons.person },
-  ];
+    { href: "/app", label: "Übersicht", icon: "home" },
+    { href: "/app/termine", label: "Termine", icon: "kalender" },
+    { href: "/app/plan", label: "Training", icon: "plan" },
+    { href: "/app/chat", label: "Nachrichten", icon: "chat" },
+    { href: "/app/profil", label: "Profil", icon: "person" },
+  ] as const;
 
   return (
-    <AppShell items={items} basis="/app" nutzerName={profile?.full_name ?? ""} bereich="Patientenbereich">
+    <AppShell items={[...items]} basis="/app" nutzerName={profile?.full_name ?? ""} bereich="Patientenbereich">
       {children}
     </AppShell>
   );
