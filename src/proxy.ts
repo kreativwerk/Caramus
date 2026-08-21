@@ -28,7 +28,9 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isProtected = pathname.startsWith("/app") || pathname.startsWith("/praxis");
+  // Exakte Segmentprüfung: /praxis-login ist öffentlich und darf nicht
+  // von der /praxis-Regel erfasst werden.
+  const isProtected = /^\/(app|praxis)(\/|$)/.test(pathname);
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
