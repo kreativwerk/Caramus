@@ -101,13 +101,17 @@ export function AppShell({
                 href={item.href}
                 aria-current={aktiv ? "page" : undefined}
                 className={`flex min-w-[3.1rem] flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[0.6rem] font-semibold transition-all ${
-                  aktiv
-                    ? "bg-gradient-to-b from-teal-500 to-teal-600 text-white shadow-md shadow-teal-600/30"
-                    : "text-navy-700/75 active:scale-95"
+                  aktiv ? "text-teal-600" : "text-navy-700/75 active:scale-95"
                 }`}
               >
                 {Icons[item.icon]}
                 {item.label}
+                <span
+                  className={`h-1 w-6 rounded-full transition-all ${
+                    aktiv ? "bg-teal-600" : "bg-transparent"
+                  }`}
+                  aria-hidden
+                />
               </Link>
             );
           })}
