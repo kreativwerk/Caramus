@@ -1,22 +1,80 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { DOCS_BUCKET } from "@/lib/media";
 import { terminAnfragen } from "../actions";
+
+const MAX_DATEIEN = 3;
+const MAX_GROESSE = 10 * 1024 * 1024;
+const ERLAUBTE_TYPEN = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+  "image/webp",
+];
 
 export function AnfrageForm() {
   const [offen, setOffen] = useState(false);
   const [meldung, setMeldung] = useState<{ typ: "ok" | "fehler"; text: string } | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const dateiRef = useRef<HTMLInputElement>(null);
 
   function absenden(formData: FormData) {
     startTransition(async () => {
+      // Dokumente (Rezept/Überweisung) zuerst in den geschützten Speicher laden
+      const dateien = [...(dateiRef.current?.files ?? [])];
+      if (dateien.length > MAX_DATEIEN) {
+        setMeldung({ typ: "fehler", text: `Bitte höchstens ${MAX_DATEIEN} Dateien anhängen.` });
+        return;
+      }
+      for (const d of dateien) {
+        if (d.size > MAX_GROESSE) {
+          setMeldung({ typ: "fehler", text: `„${d.name}“ ist größer als 10 MB. Bitte verkleinern oder als PDF speichern.` });
+          return;
+        }
+        if (d.type && !ERLAUBTE_TYPEN.includes(d.type)) {
+          setMeldung({ typ: "fehler", text: `„${d.name}“ hat ein nicht unterstütztes Format. Erlaubt: PDF oder Foto (JPG, PNG, HEIC).` });
+          return;
+        }
+      }
+
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setMeldung({ typ: "fehler", text: "Bitte melden Sie sich erneut an." });
+        return;
+      }
+
+      const hochgeladen: { file_path: string; file_name: string; content_type: string; size_bytes: number }[] = [];
+      for (const d of dateien) {
+        const endung = d.name.split(".").pop()?.toLowerCase() ?? "bin";
+        const pfad = `${user.id}/${crypto.randomUUID()}.${endung}`;
+        const { error } = await supabase.storage
+          .from(DOCS_BUCKET)
+          .upload(pfad, d, { contentType: d.type || undefined });
+        if (error) {
+          setMeldung({ typ: "fehler", text: `„${d.name}“ konnte nicht hochgeladen werden. Bitte erneut versuchen.` });
+          return;
+        }
+        hochgeladen.push({ file_path: pfad, file_name: d.name, content_type: d.type, size_bytes: d.size });
+      }
+      formData.set("dokumente", JSON.stringify(hochgeladen));
+
       const ergebnis = await terminAnfragen(formData);
       if (ergebnis?.fehler) {
         setMeldung({ typ: "fehler", text: ergebnis.fehler });
       } else {
         setMeldung({
           typ: "ok",
-          text: "Ihre Anfrage wurde gesendet. Sie erhalten eine Rückmeldung, sobald der Termin bestätigt ist.",
+          text:
+            hochgeladen.length > 0
+              ? `Ihre Anfrage wurde gesendet – inklusive ${hochgeladen.length} ${hochgeladen.length === 1 ? "Dokument" : "Dokumenten"}. Sie erhalten eine Rückmeldung, sobald der Termin bestätigt ist.`
+              : "Ihre Anfrage wurde gesendet. Sie erhalten eine Rückmeldung, sobald der Termin bestätigt ist.",
         });
         setOffen(false);
       }
@@ -74,6 +132,23 @@ export function AnfrageForm() {
               className="input-base"
               placeholder="z. B. Anlass des Besuchs, Besonderheiten beim Zugang zur Wohnung …"
             />
+          </div>
+          <div>
+            <label htmlFor="dokumente-upload" className="label-base">
+              Rezept oder Überweisung anhängen (optional)
+            </label>
+            <input
+              id="dokumente-upload"
+              ref={dateiRef}
+              type="file"
+              multiple
+              accept="application/pdf,image/jpeg,image/png,image/heic,image/heif,image/webp"
+              className="input-base file:mr-3 file:rounded-md file:border-0 file:bg-teal-100 file:px-3 file:py-1.5 file:font-semibold file:text-teal-600"
+            />
+            <p className="mt-1 text-xs text-navy-600/70">
+              PDF oder Foto (auch direkt mit der Handykamera), bis zu {MAX_DATEIEN} Dateien à max.
+              10 MB. Die Übertragung ist verschlüsselt – nur Ihr Therapeut kann die Dokumente sehen.
+            </p>
           </div>
           <p className="text-xs text-navy-600/70">
             Mit dieser Anfrage kommt noch kein kostenpflichtiger Vertrag zustande. Ein Termin ist

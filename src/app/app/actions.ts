@@ -14,11 +14,39 @@ export async function terminAnfragen(formData: FormData) {
   const message = String(formData.get("nachricht") ?? "").trim() || null;
   if (!preferred_times) return { fehler: "Bitte geben Sie mindestens einen Wunschtermin an." };
 
-  const { error } = await supabase
+  const { data: anfrage, error } = await supabase
     .from("appointment_requests")
-    .insert({ patient_id: user.id, preferred_times, message });
+    .insert({ patient_id: user.id, preferred_times, message })
+    .select("id")
+    .single();
 
-  if (error) return { fehler: "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut." };
+  if (error || !anfrage)
+    return { fehler: "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut." };
+
+  // Zuvor vom Client in den geschützten Speicher geladene Dokumente verknüpfen
+  try {
+    const dokumente = JSON.parse(String(formData.get("dokumente") ?? "[]")) as {
+      file_path: string;
+      file_name: string;
+      content_type?: string;
+      size_bytes?: number;
+    }[];
+    if (Array.isArray(dokumente) && dokumente.length > 0) {
+      await supabase.from("documents").insert(
+        dokumente.slice(0, 3).map((d) => ({
+          patient_id: user.id,
+          request_id: anfrage.id,
+          file_path: String(d.file_path),
+          file_name: String(d.file_name).slice(0, 200),
+          content_type: d.content_type ? String(d.content_type) : null,
+          size_bytes: typeof d.size_bytes === "number" ? d.size_bytes : null,
+        }))
+      );
+    }
+  } catch {
+    // Anfrage bleibt gültig, auch wenn die Dokument-Verknüpfung scheitert
+  }
+
   revalidatePath("/app/termine");
   return { ok: true };
 }

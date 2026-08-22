@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import type { AppointmentRequest, Profile } from "@/lib/types";
+import { resolveDocumentUrl } from "@/lib/media";
+import type { AppointmentRequest, PatientDocument, Profile } from "@/lib/types";
 import { AnfrageKarte } from "./anfrage-karte";
 
 export default async function AnfragenPage() {
@@ -12,6 +13,17 @@ export default async function AnfragenPage() {
     .order("created_at");
 
   const liste = (anfragen ?? []) as (AppointmentRequest & { profiles: Profile })[];
+
+  const { data: dokumente } = liste.length
+    ? await supabase.from("documents").select("*").in("request_id", liste.map((a) => a.id))
+    : { data: [] as PatientDocument[] };
+  const dokumenteProAnfrage = new Map<string, { name: string; url: string | null }[]>();
+  for (const d of (dokumente ?? []) as PatientDocument[]) {
+    if (!d.request_id) continue;
+    const docListe = dokumenteProAnfrage.get(d.request_id) ?? [];
+    docListe.push({ name: d.file_name, url: await resolveDocumentUrl(supabase, d.file_path) });
+    dokumenteProAnfrage.set(d.request_id, docListe);
+  }
 
   return (
     <div className="space-y-6">
@@ -28,7 +40,7 @@ export default async function AnfragenPage() {
       {liste.length ? (
         <div className="space-y-4">
           {liste.map((a) => (
-            <AnfrageKarte key={a.id} anfrage={a} />
+            <AnfrageKarte key={a.id} anfrage={a} dokumente={dokumenteProAnfrage.get(a.id) ?? []} />
           ))}
         </div>
       ) : (

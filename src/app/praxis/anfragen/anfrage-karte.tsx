@@ -5,7 +5,13 @@ import { anfrageAblehnen, anfrageBestaetigen, anfrageVorschlagen } from "../acti
 import type { AppointmentRequest, Profile } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 
-export function AnfrageKarte({ anfrage }: { anfrage: AppointmentRequest & { profiles: Profile } }) {
+export function AnfrageKarte({
+  anfrage,
+  dokumente = [],
+}: {
+  anfrage: AppointmentRequest & { profiles: Profile };
+  dokumente?: { name: string; url: string | null }[];
+}) {
   const [modus, setModus] = useState<"zu" | "bestaetigen" | "vorschlag">("zu");
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, startTransition] = useTransition();
@@ -48,6 +54,22 @@ export function AnfrageKarte({ anfrage }: { anfrage: AppointmentRequest & { prof
         {anfrage.message && <p className="mt-2 text-sm text-navy-600/80">„{anfrage.message}“</p>}
         {anfrage.status === "proposed" && anfrage.proposal && (
           <p className="mt-2 text-sm text-teal-600">Ihr Vorschlag: {anfrage.proposal}</p>
+        )}
+        {dokumente.length > 0 && (
+          <div className="mt-3 border-t border-mist-200 pt-3">
+            <p className="text-sm font-semibold text-navy-700">Mitgesendete Dokumente</p>
+            <p className="mt-1 flex flex-wrap gap-2 text-sm">
+              {dokumente.map((d, i) =>
+                d.url ? (
+                  <a key={i} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium text-navy-700 shadow-sm hover:text-teal-600">
+                    📄 {d.name}
+                  </a>
+                ) : (
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium text-navy-700 shadow-sm">📄 {d.name}</span>
+                )
+              )}
+            </p>
+          </div>
         )}
       </div>
 

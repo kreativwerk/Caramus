@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { resolveDocumentUrl } from "@/lib/media";
+import type { PatientDocument } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
 
@@ -38,6 +40,18 @@ export default async function TerminePage() {
       .order("created_at", { ascending: false })
       .limit(6),
   ]);
+
+  const anfrageIds = (anfragen ?? []).map((a) => a.id);
+  const { data: dokumente } = anfrageIds.length
+    ? await supabase.from("documents").select("*").in("request_id", anfrageIds)
+    : { data: [] as PatientDocument[] };
+  const dokumenteProAnfrage = new Map<string, { name: string; url: string | null }[]>();
+  for (const d of (dokumente ?? []) as PatientDocument[]) {
+    if (!d.request_id) continue;
+    const liste = dokumenteProAnfrage.get(d.request_id) ?? [];
+    liste.push({ name: d.file_name, url: await resolveDocumentUrl(supabase, d.file_path) });
+    dokumenteProAnfrage.set(d.request_id, liste);
+  }
 
   return (
     <div className="space-y-6">
@@ -94,6 +108,19 @@ export default async function TerminePage() {
                     </div>
                     <span className={`rounded-full px-3 py-1 text-sm font-semibold ${s.klasse}`}>{s.label}</span>
                   </div>
+                  {dokumenteProAnfrage.get(a.id)?.length ? (
+                    <p className="mt-2 flex flex-wrap gap-2 text-sm">
+                      {dokumenteProAnfrage.get(a.id)!.map((d, i) =>
+                        d.url ? (
+                          <a key={i} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-mist-100 px-3 py-1 font-medium text-navy-700 hover:text-teal-600">
+                            📄 {d.name}
+                          </a>
+                        ) : (
+                          <span key={i} className="inline-flex items-center gap-1 rounded-full bg-mist-100 px-3 py-1 font-medium text-navy-700">📄 {d.name}</span>
+                        )
+                      )}
+                    </p>
+                  ) : null}
                   {a.status === "proposed" && a.proposal && (
                     <p className="mt-3 rounded-lg bg-teal-50 px-4 py-3 text-sm text-navy-800">
                       💬 Vorschlag Ihres Therapeuten: <strong>{a.proposal}</strong> – bitte antworten

@@ -77,6 +77,17 @@ export type PlanFeedback = {
   note: string | null;
 };
 
+export type PatientDocument = {
+  id: string;
+  patient_id: string;
+  request_id: string | null;
+  file_path: string;
+  file_name: string;
+  content_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+};
+
 export type Message = {
   id: string;
   patient_id: string;

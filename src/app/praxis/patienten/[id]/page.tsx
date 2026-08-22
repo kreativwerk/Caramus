@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Exercise, PlanItem } from "@/lib/types";
+import { resolveDocumentUrl } from "@/lib/media";
+import type { Exercise, PatientDocument, PlanItem } from "@/lib/types";
 import { formatDate, formatDateTime } from "@/lib/types";
 import { PlanEditor } from "./plan-editor";
 
@@ -12,7 +13,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
   const { data: patient } = await supabase.from("profiles").select("*").eq("id", id).single();
   if (!patient) notFound();
 
-  const [{ data: plan }, { data: uebungen }, { data: termine }, { data: feedback }] =
+  const [{ data: plan }, { data: uebungen }, { data: termine }, { data: feedback }, { data: dokumente }] =
     await Promise.all([
       supabase
         .from("training_plans")
@@ -34,7 +35,20 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         .eq("patient_id", id)
         .order("created_at", { ascending: false })
         .limit(10),
+      supabase
+        .from("documents")
+        .select("*")
+        .eq("patient_id", id)
+        .order("created_at", { ascending: false })
+        .limit(30),
     ]);
+
+  const dokumentLinks = await Promise.all(
+    ((dokumente ?? []) as PatientDocument[]).map(async (d) => ({
+      dokument: d,
+      url: await resolveDocumentUrl(supabase, d.file_path),
+    }))
+  );
 
   const items = ((plan?.plan_items ?? []) as PlanItem[]).sort((a, b) => a.position - b.position);
   const adresse = [patient.street, [patient.zip, patient.city].filter(Boolean).join(" ")]
@@ -99,6 +113,32 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
           )}
         </section>
       </div>
+
+      <section className="card">
+        <p className="text-lg font-bold text-navy-800">Dokumente</p>
+        <p className="text-sm text-navy-600/80">
+          Vom Patienten hochgeladene Rezepte, Überweisungen und Berichte.
+        </p>
+        {dokumentLinks.length ? (
+          <ul className="mt-3 space-y-2">
+            {dokumentLinks.map(({ dokument, url }) => (
+              <li key={dokument.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-mist-50 px-4 py-3 text-sm">
+                <span className="font-medium text-navy-800">📄 {dokument.file_name}</span>
+                <span className="flex items-center gap-3">
+                  <span className="text-navy-600/70">{formatDate(dokument.created_at)}</span>
+                  {url && (
+                    <a href={url} target="_blank" rel="noreferrer" className="font-semibold text-teal-600 hover:underline">
+                      Öffnen
+                    </a>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-navy-600/80">Noch keine Dokumente hochgeladen.</p>
+        )}
+      </section>
 
       {patient.notes && (
         <section className="card">
