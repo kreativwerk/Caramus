@@ -53,7 +53,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 | C. Direkte Kommunikation | ✅ Chat je Patient, mit Rückfalllösung bei fehlender Echtzeitverbindung |
 | D. Termine & Fortschritt | ✅ Terminanfrage/Bestätigung, Tagestour, Trainingsplan mit Rückmeldung |
 | E. Video-/Therapieinhalte | ⏳ Charles klärt Rechte (Wibbi/Physiotec). App unterstützt heute eigene Uploads und externe Links; Einbettung des Anbieterportals ist der empfohlene Weg |
-| Anfahrtsstatus ohne Live-Ortung (Kapitel 05) | ✅ Therapeut startet die Fahrt selbst und wählt die Fahrzeit; Patient sieht Countdown, Prognose-Hinweis, Phase „Ankunft in Kürze" und einen animierten Curamus-Van. Keine GPS-Position, keine Karte |
+| Anfahrtsstatus ohne Live-Ortung (Kapitel 05) | ✅ Therapeut startet die Fahrt selbst und wählt die Fahrzeit; Patient sieht Countdown, Prognose-Hinweis, Phase „Ankunft in Kürze" und einen animierten Curamus-Van. Keine GPS-Position, keine Karte. Optional einmaliger Fahrzeit-Vorschlag mit Verkehrslage beim Losfahren (`FAHRZEIT_ANBIETER`), plus „Verspätung melden" in der Praxis-App |
 | Login, Rollen, Zugriffsschutz (Kapitel 06) | ✅ getrennte Anmeldung Patient/Praxis, Rollenweiche, Zugriffsregeln auf Datenbankebene geprüft |
 | Prototyp/Testzugang (Kapitel 07) | ✅ Zugang für Charles eingerichtet (`kontakt@curamus-medical.de`), QA-Konten für Testläufe |
 

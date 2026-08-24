@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { adresseZuKoordinate, fahrzeitMinuten, fahrzeitVerfuegbar } from "@/lib/fahrzeit";
 
 export type ActionResult = { ok?: boolean; fehler?: string | null; planId?: string };
 
@@ -133,6 +134,113 @@ export async function terminStatusSetzen(formData: FormData) {
   return { ok: true };
 }
 
+/**
+ * Fahrzeit-Vorschlag mit aktueller Verkehrslage. Wird einmalig beim Öffnen der
+ * Auswahl geholt und ist rein optional: Ohne konfigurierten Anbieter oder bei
+ * einem Fehler kommt `null` zurück und der Therapeut wählt wie bisher manuell.
+ */
+export async function fahrzeitVorschlag(
+  terminId: string,
+  start?: { lat: number; lng: number }
+): Promise<{ minuten: number | null; verfuegbar: boolean }> {
+  const { supabase } = await therapeutClient();
+  if (!supabase || !fahrzeitVerfuegbar()) return { minuten: null, verfuegbar: false };
+
+  const { data: termin } = await supabase
+    .from("appointments")
+    .select("patient_id")
+    .eq("id", terminId)
+    .maybeSingle();
+  if (!termin) return { minuten: null, verfuegbar: true };
+
+  const { data: patient } = await supabase
+    .from("profiles")
+    .select("street, zip, city, lat, lng")
+    .eq("id", termin.patient_id)
+    .maybeSingle();
+  if (!patient) return { minuten: null, verfuegbar: true };
+
+  // Ziel: gespeicherte Koordinaten nutzen, sonst einmalig ermitteln und merken
+  let ziel = patient.lat != null && patient.lng != null
+    ? { lat: patient.lat as number, lng: patient.lng as number }
+    : null;
+  if (!ziel) {
+    const adresse = [patient.street, [patient.zip, patient.city].filter(Boolean).join(" ")]
+      .filter(Boolean)
+      .join(", ");
+    ziel = await adresseZuKoordinate(adresse);
+    if (ziel) {
+      await supabase
+        .from("profiles")
+        .update({ lat: ziel.lat, lng: ziel.lng, geo_updated_at: new Date().toISOString() })
+        .eq("id", termin.patient_id);
+    }
+  }
+  if (!ziel) return { minuten: null, verfuegbar: true };
+
+  // Start: Position des Geräts, sonst Adresse der Praxis aus dem eigenen Profil
+  let von = start ?? null;
+  if (!von) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: ich } = await supabase
+      .from("profiles")
+      .select("street, zip, city, lat, lng")
+      .eq("id", user!.id)
+      .maybeSingle();
+    if (ich?.lat != null && ich?.lng != null) {
+      von = { lat: ich.lat as number, lng: ich.lng as number };
+    } else if (ich?.street) {
+      const eigene = [ich.street, [ich.zip, ich.city].filter(Boolean).join(" ")]
+        .filter(Boolean)
+        .join(", ");
+      von = await adresseZuKoordinate(eigene);
+      if (von) {
+        await supabase
+          .from("profiles")
+          .update({ lat: von.lat, lng: von.lng, geo_updated_at: new Date().toISOString() })
+          .eq("id", user!.id);
+      }
+    }
+  }
+  if (!von) return { minuten: null, verfuegbar: true };
+
+  const minuten = await fahrzeitMinuten(von, ziel);
+  return { minuten, verfuegbar: true };
+}
+
+/** Verspätung melden: verlängert die laufende Anfahrt um die gewählten Minuten. */
+export async function verspaetungMelden(formData: FormData): Promise<ActionResult> {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const zusatz = Number(formData.get("zusatz_minuten") || 0);
+  if (!zusatz || zusatz < 1 || zusatz > 120) return { fehler: "Bitte 1 bis 120 Minuten wählen." };
+
+  const terminId = String(formData.get("termin_id"));
+  const { data: termin } = await supabase
+    .from("appointments")
+    .select("eta_minutes, enroute_at")
+    .eq("id", terminId)
+    .maybeSingle();
+  if (!termin?.enroute_at || !termin.eta_minutes) return { fehler: "Für diesen Termin läuft keine Anfahrt." };
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({
+      eta_minutes: Math.min(240, termin.eta_minutes + zusatz),
+      eta_updated_at: new Date().toISOString(),
+      delay_note: String(formData.get("grund") ?? "").trim() || null,
+    })
+    .eq("id", terminId);
+  if (error) return { fehler: "Die Verspätung konnte nicht gemeldet werden." };
+
+  revalidatePath("/praxis");
+  revalidatePath("/praxis/termine");
+  return { ok: true };
+}
+
 /** „Ich mache mich auf den Weg" – startet die Live-Anfahrt für den Patienten. */
 export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
   const { supabase, fehler } = await therapeutClient();
@@ -143,7 +251,14 @@ export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
 
   const { error } = await supabase
     .from("appointments")
-    .update({ enroute_at: new Date().toISOString(), eta_minutes: eta, arrived_at: null })
+    .update({
+      enroute_at: new Date().toISOString(),
+      eta_minutes: eta,
+      arrived_at: null,
+      eta_updated_at: null,
+      delay_note: null,
+      eta_quelle: String(formData.get("quelle") ?? "manuell") === "verkehr" ? "verkehr" : "manuell",
+    })
     .eq("id", String(formData.get("termin_id")));
   if (error) return { fehler: "Die Anfahrt konnte nicht gestartet werden." };
 
@@ -175,7 +290,13 @@ export async function fahrtAbbrechen(formData: FormData): Promise<ActionResult> 
 
   const { error } = await supabase
     .from("appointments")
-    .update({ enroute_at: null, eta_minutes: null, arrived_at: null })
+    .update({
+      enroute_at: null,
+      eta_minutes: null,
+      arrived_at: null,
+      eta_updated_at: null,
+      delay_note: null,
+    })
     .eq("id", String(formData.get("termin_id")));
   if (error) return { fehler: "Die Anfahrt konnte nicht zurückgenommen werden." };
 

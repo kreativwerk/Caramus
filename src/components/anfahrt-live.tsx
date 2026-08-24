@@ -167,6 +167,15 @@ export function AnfahrtLive({
         </div>
       </div>
 
+      {!angekommen && aktuell.eta_updated_at && (
+        <p className="mt-4 rounded-lg bg-amber-400/15 px-4 py-3 text-sm text-amber-100">
+          <strong>Es dauert etwas länger.</strong>{" "}
+          {aktuell.delay_note
+            ? `${aktuell.delay_note} – die Ankunftszeit oben ist bereits aktualisiert.`
+            : "Die Ankunftszeit oben ist bereits aktualisiert."}
+        </p>
+      )}
+
       {!angekommen && (
         <p className="mt-4 rounded-lg bg-white/10 px-4 py-3 text-sm text-white/80">
           {kurzVorAnkunft

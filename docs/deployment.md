@@ -10,7 +10,11 @@ Reihenfolge einhalten; Punkte mit 👤 brauchen Zugänge/Entscheidungen des Kund
 3. Environment Variables (aus `.env.example`):
    - `NEXT_PUBLIC_SUPABASE_URL` = `https://jiixpoyxctohzagldcel.supabase.co`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `sb_publishable_13ckYlrXxzhgICMDH-Rkrg_WG7m2Sv6`
-4. Deploy ausführen → Vorschau-URL testen (Login-Seite muss erscheinen).
+4. Optional (Fahrzeit mit Verkehrslage, siehe Abschnitt „Fahrzeit-Berechnung"):
+   - `FAHRZEIT_ANBIETER` = `here` (oder `google` / `openrouteservice`)
+   - `FAHRZEIT_SCHLUESSEL` = API-Schlüssel des Anbieters
+   Ohne diese beiden Variablen läuft die App vollständig – Charles wählt die Fahrzeit dann selbst.
+5. Deploy ausführen → Vorschau-URL testen (Login-Seite muss erscheinen).
 
 ## 2. Domain verbinden
 
@@ -60,6 +64,32 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
       und Vercel Pro (~20 $/Monat, kommerzielle Nutzung)
 - [ ] Benachrichtigungs-Funktion aktivieren: `supabase/functions/notify-message/` deployen,
       Secrets setzen (Resend-API-Key), Database-Webhook auf `messages` INSERT anlegen
+
+## Fahrzeit-Berechnung (optional, jederzeit nachrüstbar)
+
+Standard ohne Konfiguration: Charles tippt beim Losfahren auf „Bin unterwegs" und wählt
+15/20/30/45 Minuten oder gibt eine eigene Zahl ein. Das funktioniert immer und kostet nichts.
+
+Mit hinterlegtem Anbieter kommt zusätzlich ein Vorschlag „Mit aktueller Verkehrslage berechnet".
+Wichtig: Es wird **einmalig beim Losfahren** gerechnet, keine laufende Überwachung, kein
+Standort-Tracking während der Fahrt. Verzögert sich etwas, meldet Charles das über
+„Verspätung melden" (+5/+10/+15 Min. oder freie Eingabe mit optionalem Grund).
+
+Einrichtung:
+
+1. 👤 Konto beim Anbieter anlegen und API-Schlüssel erzeugen
+   (empfohlen: HERE Routing v8 – EU-Anbieter, Echtzeitverkehr, im erwarteten Volumen kostenfrei).
+2. In Vercel `FAHRZEIT_ANBIETER` und `FAHRZEIT_SCHLUESSEL` setzen, neu deployen.
+3. 👤 Auftragsverarbeitungsvertrag (AVV) des Anbieters abschließen und in der
+   Datenschutzerklärung als Empfänger ergänzen – übertragen wird nur die Zieladresse.
+
+Sicherheitsnetz im Code (`src/lib/fahrzeit.ts`):
+
+- 4 Sekunden Zeitlimit pro Abfrage, danach wird ohne Vorschlag weitergearbeitet
+- unplausible Werte (< 1 oder > 240 Minuten) werden verworfen
+- jeder Fehler (Kontingent aufgebraucht, Schlüssel falsch, Anbieter offline) endet still –
+  angezeigt wird dann einfach die manuelle Auswahl
+- Adresse wird nur einmal in Koordinaten übersetzt und im Profil zwischengespeichert
 
 ## Phase 2 (nach Go-Live, eigenes Arbeitspaket)
 

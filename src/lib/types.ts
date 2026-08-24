@@ -40,6 +40,12 @@ export type Appointment = {
   eta_minutes: number | null;
   /** Zeitpunkt der Ankunft beim Patienten */
   arrived_at: string | null;
+  /** Zeitpunkt einer gemeldeten Verspätung */
+  eta_updated_at: string | null;
+  /** Optionaler Grund der Verspätung (sieht der Patient) */
+  delay_note: string | null;
+  /** Woher die Fahrzeit stammt: manuell gewählt oder mit Verkehr berechnet */
+  eta_quelle: "manuell" | "verkehr";
   profiles?: Profile;
 };
 

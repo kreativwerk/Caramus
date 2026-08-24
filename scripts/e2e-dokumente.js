@@ -48,7 +48,7 @@ async function login(page, email) {
     await patient.getByRole("button", { name: "Unterlage senden" }).click();
     await patient.waitForSelector("text=/ist bei uns eingegangen/", { timeout: 25000 });
     // Auf die Karte in der Liste pruefen (nicht auf die Auswahlliste im Formular)
-    const karte = patient.locator("li.card").filter({ hasText: __dirname + "/test-rezept.pdf" }).first();
+    const karte = patient.locator("li.card").filter({ hasText: "test-rezept.pdf" }).first();
     await karte.waitFor({ timeout: 15000 });
     const text = (await karte.textContent()) ?? "";
     if (!text.includes("Rezept / Verordnung")) throw new Error("Dokumentart fehlt: " + text.slice(0, 80));
@@ -94,7 +94,12 @@ async function login(page, email) {
     await praxis.waitForSelector("h2:has-text('Weitergeleitet')", { timeout: 20000 });
     await patient.reload({ waitUntil: "networkidle" });
     await patient.waitForSelector("text=/An die Abrechnung weitergeleitet/", { timeout: 15000 });
-    const loeschbar = await patient.getByRole("button", { name: "Entfernen" }).count();
+    // Nur die weitergeleitete Karte pruefen – aeltere Testdaten duerfen loeschbar bleiben
+    const karte = patient
+      .locator("li.card")
+      .filter({ hasText: "An die Abrechnung weitergeleitet" })
+      .first();
+    const loeschbar = await karte.getByRole("button", { name: "Entfernen" }).count();
     if (loeschbar > 0) throw new Error("Weitergeleitetes Dokument ist noch loeschbar");
     ok("Weitergeleitet: Patient sieht Abschlussstatus, Löschen gesperrt");
   } catch (e) { fail("Weiterleitung", e); }

@@ -67,6 +67,11 @@ async function login(page, email) {
     await praxis.waitForSelector("text=Erika Beispiel", { timeout: 15000 });
     await praxis.getByRole("button", { name: /Bin unterwegs/ }).click();
     await praxis.waitForSelector("text=Wie lange brauchen Sie", { timeout: 5000 });
+    // Fallback: Ohne eingerichteten Verkehrsdienst bleibt die manuelle Auswahl
+    await praxis.waitForSelector("text=Fahrzeit wird berechnet", { state: "detached", timeout: 20000 });
+    if (await praxis.getByRole("button", { name: /Vorschlag:/ }).count()) {
+      throw new Error("Vorschlag ohne eingerichteten Anbieter angezeigt");
+    }
     await praxis.getByRole("button", { name: "20 Min.", exact: true }).click();
     await praxis.waitForSelector("text=/Unterwegs · noch ca\\./", { timeout: 20000 });
     ok("Therapeut startet Anfahrt mit 20 Minuten, Status wechselt auf 'Unterwegs'");
@@ -90,6 +95,22 @@ async function login(page, email) {
     if (vorher === nachher) throw new Error("Fortschritt hat sich nicht verändert: " + vorher);
     ok(`Animation läuft: Fortschritt wandert (${vorher?.slice(0, 24)} → ${nachher?.slice(0, 24)})`);
   } catch (e) { fail("Fortschrittsanimation", e); }
+
+  // Verspätung über die Praxis-App melden
+  try {
+    await praxis.getByRole("button", { name: "Verspätung melden" }).click();
+    await praxis.waitForSelector("text=Wie viel später wird es?", { timeout: 5000 });
+    await praxis.getByRole("button", { name: "+10 Min.", exact: true }).click();
+    await praxis.waitForSelector("text=/Verspätung gemeldet um/", { timeout: 20000 });
+    await praxis.waitForSelector("text=/noch ca\\. (29|30) Min\\./", { timeout: 10000 });
+    ok("Praxis meldet +10 Min. Verspätung, neue Restzeit wird übernommen");
+  } catch (e) { fail("Verspätung melden", e); }
+
+  try {
+    await patient.waitForSelector("text=Es dauert etwas länger", { timeout: 20000 });
+    await patient.waitForSelector("text=/noch ca\\. (29|30) Min\\./", { timeout: 10000 });
+    ok("Patient sieht Verspätungshinweis und aktualisierte Ankunftszeit in Echtzeit");
+  } catch (e) { fail("Verspätung beim Patienten", e); }
 
   await patient.screenshot({ path: "anfahrt-patient.png" });
   await praxis.screenshot({ path: "anfahrt-praxis.png", clip: { x: 0, y: 130, width: 1000, height: 460 } });
