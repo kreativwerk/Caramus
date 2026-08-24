@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
+import type { Benachrichtigung } from "@/lib/benachrichtigungen";
 
 export type IconName = keyof typeof Icons;
 export type NavItem = { href: string; label: string; icon: IconName };
@@ -17,12 +19,16 @@ export function AppShell({
   basis,
   nutzerName,
   bereich,
+  profilHref,
+  benachrichtigungen,
   children,
 }: {
   items: NavItem[];
   basis: string;
   nutzerName: string;
   bereich: string;
+  profilHref: string;
+  benachrichtigungen: Benachrichtigung[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -55,25 +61,32 @@ export function AppShell({
           })}
         </nav>
         <div className="border-t border-white/10 pt-4">
-          <p className="truncate px-3 text-sm font-medium text-white/80">{nutzerName}</p>
-          <form action="/auth/signout" method="post">
-            <button className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm text-white/50 transition hover:bg-white/5 hover:text-white">
-              Abmelden
-            </button>
-          </form>
+          <Link
+            href={profilHref}
+            className="block truncate rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/5 hover:text-white"
+          >
+            {nutzerName}
+          </Link>
         </div>
       </aside>
 
       {/* Mobile-Kopfzeile */}
       <div className="flex-1">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-mist-100 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
-          <Logo />
-          <form action="/auth/signout" method="post">
-            <button className="text-sm font-semibold text-navy-600/80">Abmelden</button>
-          </form>
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-mist-100 bg-white/90 px-4 py-2.5 backdrop-blur">
+          <span className="lg:hidden">
+            <Logo />
+          </span>
+          <span className="hidden text-sm font-semibold uppercase tracking-[0.16em] text-navy-600/60 lg:block">
+            {bereich}
+          </span>
+          <HeaderActions
+            profilHref={profilHref}
+            nutzerName={nutzerName}
+            benachrichtigungen={benachrichtigungen}
+          />
         </header>
 
-        <main className="mx-auto w-full max-w-5xl px-4 pb-32 pt-6 sm:px-6 lg:pb-12 lg:pt-10">
+        <main className="mx-auto w-full max-w-5xl px-4 pb-32 pt-6 sm:px-6 lg:pb-12 lg:pt-8">
           {children}
           <footer className="mt-12 border-t border-mist-100 pt-4 text-center text-xs text-navy-600/60">
             <Link href="/impressum" className="hover:text-teal-600">Impressum</Link>

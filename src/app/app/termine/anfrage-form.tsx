@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DateiFeld } from "@/components/datei-feld";
 import { DOCS_BUCKET } from "@/lib/media";
 import { DOKUMENT_ARTEN } from "@/lib/types";
 import { terminAnfragen } from "../actions";
@@ -147,13 +148,12 @@ export function AnfrageForm() {
             <label htmlFor="dokumente-upload" className="label-base">
               Rezept oder Überweisung anhängen (optional)
             </label>
-            <input
+            <DateiFeld
               id="dokumente-upload"
-              ref={dateiRef}
-              type="file"
+              feldRef={dateiRef}
               multiple
               accept="application/pdf,image/jpeg,image/png,image/heic,image/heif,image/webp"
-              className="input-base file:mr-3 file:rounded-md file:border-0 file:bg-teal-100 file:px-3 file:py-1.5 file:font-semibold file:text-teal-600"
+              knopfText="Dateien wählen"
             />
             <p className="mt-1 text-xs text-navy-600/70">
               PDF oder Foto (auch direkt mit der Handykamera), bis zu {MAX_DATEIEN} Dateien à max.

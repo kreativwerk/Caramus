@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app-shell";
+import { praxisBenachrichtigungen } from "@/lib/benachrichtigungen";
 
 export default async function PraxisLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -22,8 +23,17 @@ export default async function PraxisLayout({ children }: { children: React.React
     { href: "/praxis/chat", label: "Chat", icon: "chat" },
   ] as const;
 
+  const benachrichtigungen = await praxisBenachrichtigungen(supabase);
+
   return (
-    <AppShell items={[...items]} basis="/praxis" nutzerName={profile.full_name} bereich="Praxisbereich">
+    <AppShell
+      items={[...items]}
+      basis="/praxis"
+      nutzerName={profile.full_name}
+      bereich="Praxisbereich"
+      profilHref="/praxis/profil"
+      benachrichtigungen={benachrichtigungen}
+    >
       {children}
     </AppShell>
   );

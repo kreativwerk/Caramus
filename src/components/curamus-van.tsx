@@ -26,17 +26,17 @@ export function CuramusVan({ className }: { className?: string }) {
         opacity="0.85"
       />
 
-      {/* Logo auf der Seitenwand */}
-      <path d="M13.5 27.2c3.4-3.6 8.2-5.2 12.8-5.4" stroke="#34b8be" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M13.5 29.6c3.7-4.2 9-6 14-6.2" stroke="#10568e" strokeWidth="1.7" strokeLinecap="round" />
+      {/* Logo auf der Seitenwand – bleibt frei vom Seitenfenster */}
+      <path d="M11.6 28.4c2.6-2.8 6.2-4 9.6-4.2" stroke="#34b8be" strokeWidth="1.45" strokeLinecap="round" />
+      <path d="M11.6 30.6c2.9-3.3 6.9-4.7 10.6-4.9" stroke="#10568e" strokeWidth="1.45" strokeLinecap="round" />
       <text
-        x="29.5"
-        y="29.4"
+        x="24.4"
+        y="30.7"
         fill="#1f315b"
         fontFamily="var(--font-poppins), sans-serif"
-        fontSize="7.4"
+        fontSize="5.4"
         fontWeight="700"
-        letterSpacing="0.1"
+        letterSpacing="0.08"
       >
         CURAMUS
       </text>

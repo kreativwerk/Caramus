@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DateiFeld } from "@/components/datei-feld";
 import { DOCS_BUCKET } from "@/lib/media";
 import { DOKUMENT_ARTEN } from "@/lib/types";
 import { dokumentSpeichern } from "../actions";
@@ -94,13 +95,12 @@ export function UploadForm() {
 
       <div>
         <label htmlFor="datei" className="label-base">Datei oder Foto</label>
-        <input
+        <DateiFeld
           id="datei"
-          ref={dateiRef}
-          type="file"
+          feldRef={dateiRef}
           required
           accept="application/pdf,image/jpeg,image/png,image/heic,image/heif,image/webp"
-          className="input-base file:mr-3 file:rounded-md file:border-0 file:bg-teal-100 file:px-3 file:py-1.5 file:font-semibold file:text-teal-600"
+          knopfText="Datei wählen"
         />
         <p className="mt-1 text-xs text-navy-600/70">
           PDF oder Foto, bis 10 MB. Verschlüsselt übertragen – nur Ihr Therapeut kann es sehen.

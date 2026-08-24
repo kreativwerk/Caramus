@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/app-shell";
+import { patientenBenachrichtigungen } from "@/lib/benachrichtigungen";
 
 export default async function PatientLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -18,11 +19,19 @@ export default async function PatientLayout({ children }: { children: React.Reac
     { href: "/app/dokumente", label: "Unterlagen", icon: "dokument" },
     { href: "/app/plan", label: "Training", icon: "plan" },
     { href: "/app/chat", label: "Nachrichten", icon: "chat" },
-    { href: "/app/profil", label: "Profil", icon: "person" },
   ] as const;
 
+  const benachrichtigungen = await patientenBenachrichtigungen(supabase, user.id);
+
   return (
-    <AppShell items={[...items]} basis="/app" nutzerName={profile?.full_name ?? ""} bereich="Patientenbereich">
+    <AppShell
+      items={[...items]}
+      basis="/app"
+      nutzerName={profile?.full_name ?? ""}
+      bereich="Patientenbereich"
+      profilHref="/app/profil"
+      benachrichtigungen={benachrichtigungen}
+    >
       {children}
     </AppShell>
   );

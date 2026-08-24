@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DateiFeld } from "@/components/datei-feld";
 import { MEDIA_BUCKET } from "@/lib/media";
 import { uebungLoeschen, uebungSpeichern } from "../actions";
 import type { Exercise } from "@/lib/types";
@@ -70,11 +71,11 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
       </div>
       <div className="sm:col-span-2">
         <label className="label-base">Bild oder Video hochladen (optional)</label>
-        <input
-          ref={dateiRef}
-          type="file"
+        <DateiFeld
+          id="uebung-medien"
+          feldRef={dateiRef}
           accept="image/*,video/mp4,video/quicktime,video/webm"
-          className="input-base file:mr-3 file:rounded-md file:border-0 file:bg-teal-100 file:px-3 file:py-1.5 file:font-semibold file:text-teal-600"
+          knopfText="Datei wählen"
         />
         <p className="mt-1 text-xs text-navy-600/70">
           Videos ideal in 1080p, 30–90 Sekunden, MP4 (max. 45 MB). Die Datei ist nur für

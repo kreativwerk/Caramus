@@ -56,7 +56,7 @@ async function login(page, email) {
   // Patient bleibt auf dem Dashboard – ohne Neuladen soll die Live-Karte erscheinen
   try {
     await patient.goto(BASE + "/app", { waitUntil: "networkidle" });
-    const sichtbar = await patient.getByText("Live – Anfahrt").count();
+    const sichtbar = await patient.locator("section[aria-label='Anfahrt Ihres Therapeuten']").count();
     if (sichtbar > 0) throw new Error("Live-Karte war schon vor dem Start sichtbar");
     ok("Vor dem Start: keine Live-Karte beim Patienten");
   } catch (e) { fail("Ausgangszustand", e); }
@@ -74,7 +74,8 @@ async function login(page, email) {
 
   // Echtzeit: Patient sieht die Karte OHNE Neuladen
   try {
-    await patient.waitForSelector("text=Live – Anfahrt", { timeout: 20000 });
+    await patient.waitForSelector("section[aria-label='Anfahrt Ihres Therapeuten']", { timeout: 20000 });
+    await patient.waitForSelector("text=Auf dem Weg zu Ihnen", { timeout: 5000 });
     await patient.waitForSelector("text=/^Charles ist unterwegs zu Ihnen\\.$/", { timeout: 5000 });
     await patient.waitForSelector("text=/noch ca\\. (19|20) Minuten/", { timeout: 5000 });
     ok("Patient sieht Live-Karte in Echtzeit (ohne Neuladen) mit Countdown");

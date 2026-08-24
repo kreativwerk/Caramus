@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
+import { AbmeldenKnopf } from "@/components/abmelden-knopf";
 import { ProfilForm } from "./profil-form";
 
 export default async function ProfilPage() {
@@ -22,6 +23,14 @@ export default async function ProfilPage() {
         </p>
       </div>
       <ProfilForm profil={profil as Profile} />
+
+      <div className="card">
+        <p className="text-lg font-bold text-navy-800">Abmelden</p>
+        <p className="mt-1 mb-4 text-sm text-navy-600/80">
+          Sie werden abgemeldet und kommen zur Anmeldeseite zurück.
+        </p>
+        <AbmeldenKnopf />
+      </div>
     </div>
   );
 }
