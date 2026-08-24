@@ -77,7 +77,7 @@ async function login(page, email) {
     await patient.waitForSelector("section[aria-label='Anfahrt Ihres Therapeuten']", { timeout: 20000 });
     await patient.waitForSelector("text=Auf dem Weg zu Ihnen", { timeout: 5000 });
     await patient.waitForSelector("text=/^Charles ist unterwegs zu Ihnen\\.$/", { timeout: 5000 });
-    await patient.waitForSelector("text=/noch ca\\. (19|20) Minuten/", { timeout: 5000 });
+    await patient.waitForSelector("text=/noch ca\\. (19|20) Min\\./", { timeout: 5000 });
     ok("Patient sieht Live-Karte in Echtzeit (ohne Neuladen) mit Countdown");
   } catch (e) { fail("Echtzeit-Anzeige beim Patienten", e); }
 

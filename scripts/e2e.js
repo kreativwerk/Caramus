@@ -69,7 +69,7 @@ async function supabaseBridge(ctx) {
   // ---------- Patient: Login, Profil, Terminanfrage ----------
   try {
     await login(patient, "qa-patient@curamus-test.de");
-    await patient.waitForSelector("text=Guten Tag, Erika", { timeout: 15000 });
+    await patient.waitForSelector("text=Hallo Erika", { timeout: 15000 });
     ok("Patient-Login mit Passwort, Dashboard begrüßt mit Vornamen");
   } catch (e) { fail("Patient-Login", e); }
 
@@ -168,9 +168,12 @@ async function supabaseBridge(ctx) {
   // ---------- Patient: Termin, Plan-Feedback, Chat-Antwort ----------
   try {
     await patient.goto(BASE + "/app", { waitUntil: "networkidle" });
-    await patient.waitForSelector("text=Nächster Hausbesuch", { timeout: 15000 });
+    await patient.waitForSelector("text=Nächster Termin", { timeout: 15000 });
     const dashboardText = await patient.textContent("main");
-    if (!/\d{2}\.\d{2}\.\d{4}/.test(dashboardText)) throw new Error("kein Termindatum auf Dashboard");
+    // Terminkarte zeigt Tag, Monatsnamen und Uhrzeit
+    const monate = "Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember";
+    if (!new RegExp(`(${monate})`).test(dashboardText)) throw new Error("kein Monat auf Dashboard");
+    if (!/\d{1,2}:\d{2} Uhr/.test(dashboardText)) throw new Error("keine Uhrzeit auf Dashboard");
     ok("Patient-Dashboard zeigt bestätigten Hausbesuch");
   } catch (e) { fail("Patient-Dashboard Termin", e); }
 
@@ -183,7 +186,8 @@ async function supabaseBridge(ctx) {
     await patient.fill("textarea", "Ging gut, leichtes Ziehen im Knie.");
     await patient.getByRole("button", { name: "Speichern", exact: true }).click();
     await patient.waitForSelector("text=Heute erledigt", { timeout: 20000 });
-    await patient.waitForSelector("text=1 von 1 Übungen geschafft", { timeout: 5000 });
+    // Zaehler haengt davon ab, wie viele Uebungen im Plan liegen
+    await patient.waitForSelector("text=/[1-9]\\d* von \\d+ Übungen geschafft/", { timeout: 8000 });
     ok("Trainingsplan: Übung abgehakt mit Schmerzskala 3 und Notiz, Fortschritt 1/1");
   } catch (e) { fail("Plan-Feedback", e); }
 

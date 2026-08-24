@@ -97,10 +97,10 @@ export function AnfahrtLive({
       ) : (
         <>
           <p className="mt-3 text-2xl font-bold">{vorname} ist unterwegs zu Ihnen.</p>
-          <p className="mt-1 text-4xl font-bold text-teal-400 tabular-nums">
+          <p className="mt-1 whitespace-nowrap text-3xl font-bold text-teal-400 tabular-nums sm:text-4xl">
             {rest > 0 ? (
               <>
-                noch ca. {rest} <span className="text-2xl">{rest === 1 ? "Minute" : "Minuten"}</span>
+                noch ca. {rest} <span className="text-2xl sm:text-3xl">Min.</span>
               </>
             ) : (
               "Jeden Moment da"
