@@ -12,8 +12,13 @@ export default async function PraxisStart() {
   const heuteEnde = new Date();
   heuteEnde.setHours(23, 59, 59, 999);
 
-  const [{ count: offeneAnfragen }, { data: heutigeTermine }, { count: patienten }, { data: ungelesene }] =
-    await Promise.all([
+  const [
+    { count: offeneAnfragen },
+    { data: heutigeTermine },
+    { count: patienten },
+    { count: offeneDokumente },
+    { data: ungelesene },
+  ] = await Promise.all([
       supabase
         .from("appointment_requests")
         .select("id", { count: "exact", head: true })
@@ -29,6 +34,10 @@ export default async function PraxisStart() {
         .from("profiles")
         .select("id", { count: "exact", head: true })
         .eq("role", "patient"),
+      supabase
+        .from("documents")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["eingegangen", "in_pruefung"]),
       supabase.from("messages").select("id, patient_id, sender_id, read_at").is("read_at", null),
     ]);
 
@@ -43,10 +52,14 @@ export default async function PraxisStart() {
         </h1>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/praxis/anfragen" className="card transition hover:border-teal-500">
           <p className="text-4xl font-bold text-teal-500">{offeneAnfragen ?? 0}</p>
           <p className="mt-1 font-semibold text-navy-800">Offene Terminanfragen</p>
+        </Link>
+        <Link href="/praxis/dokumente" className="card transition hover:border-teal-500">
+          <p className="text-4xl font-bold text-teal-500">{offeneDokumente ?? 0}</p>
+          <p className="mt-1 font-semibold text-navy-800">Offene Unterlagen</p>
         </Link>
         <Link href="/praxis/chat" className="card transition hover:border-teal-500">
           <p className="text-4xl font-bold text-teal-500">{ungeleseneFremde}</p>

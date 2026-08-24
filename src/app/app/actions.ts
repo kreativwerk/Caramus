@@ -31,11 +31,13 @@ export async function terminAnfragen(formData: FormData) {
       content_type?: string;
       size_bytes?: number;
     }[];
+    const art = String(formData.get("dok_art") ?? "rezept");
     if (Array.isArray(dokumente) && dokumente.length > 0) {
       await supabase.from("documents").insert(
         dokumente.slice(0, 3).map((d) => ({
           patient_id: user.id,
           request_id: anfrage.id,
+          kind: art,
           file_path: String(d.file_path),
           file_name: String(d.file_name).slice(0, 200),
           content_type: d.content_type ? String(d.content_type) : null,
@@ -101,5 +103,55 @@ export async function profilSpeichern(formData: FormData) {
 
   if (error) return { fehler: "Das Profil konnte nicht gespeichert werden." };
   revalidatePath("/app/profil");
+  return { ok: true };
+}
+
+/** Dokument (Rezept, Überweisung, Bericht) im Dokumentenbereich ablegen. */
+export async function dokumentSpeichern(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { fehler: "Nicht angemeldet." };
+
+  const file_path = String(formData.get("file_path") ?? "");
+  const file_name = String(formData.get("file_name") ?? "").slice(0, 200);
+  if (!file_path || !file_name) return { fehler: "Bitte eine Datei auswählen." };
+
+  const { error } = await supabase.from("documents").insert({
+    patient_id: user.id,
+    file_path,
+    file_name,
+    content_type: String(formData.get("content_type") ?? "") || null,
+    size_bytes: Number(formData.get("size_bytes") ?? 0) || null,
+    kind: String(formData.get("kind") ?? "sonstiges"),
+  });
+  if (error) return { fehler: "Das Dokument konnte nicht gespeichert werden." };
+
+  revalidatePath("/app/dokumente");
+  return { ok: true };
+}
+
+/** Vom Patienten hochgeladenes Dokument wieder entfernen. */
+export async function dokumentLoeschen(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { fehler: "Nicht angemeldet." };
+
+  const id = String(formData.get("id"));
+  const { data: dok } = await supabase
+    .from("documents")
+    .select("file_path, patient_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (!dok || dok.patient_id !== user.id) return { fehler: "Dokument nicht gefunden." };
+
+  await supabase.storage.from("patient-docs").remove([dok.file_path]);
+  const { error } = await supabase.from("documents").delete().eq("id", id);
+  if (error) return { fehler: "Das Dokument konnte nicht entfernt werden." };
+
+  revalidatePath("/app/dokumente");
   return { ok: true };
 }

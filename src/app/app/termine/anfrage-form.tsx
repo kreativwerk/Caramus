@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { DOCS_BUCKET } from "@/lib/media";
+import { DOKUMENT_ARTEN } from "@/lib/types";
 import { terminAnfragen } from "../actions";
 
 const MAX_DATEIEN = 3;
@@ -20,6 +22,7 @@ export function AnfrageForm() {
   const [offen, setOffen] = useState(false);
   const [meldung, setMeldung] = useState<{ typ: "ok" | "fehler"; text: string } | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
   const dateiRef = useRef<HTMLInputElement>(null);
 
   function absenden(formData: FormData) {
@@ -77,6 +80,7 @@ export function AnfrageForm() {
               : "Ihre Anfrage wurde gesendet. Sie erhalten eine Rückmeldung, sobald der Termin bestätigt ist.",
         });
         setOffen(false);
+        router.refresh();
       }
     });
   }
@@ -134,6 +138,12 @@ export function AnfrageForm() {
             />
           </div>
           <div>
+            <label htmlFor="dok-art" className="label-base">Art der Unterlage</label>
+            <select id="dok-art" name="dok_art" defaultValue="rezept" className="input-base mb-3">
+              {DOKUMENT_ARTEN.map((a) => (
+                <option key={a.wert} value={a.wert}>{a.label}</option>
+              ))}
+            </select>
             <label htmlFor="dokumente-upload" className="label-base">
               Rezept oder Überweisung anhängen (optional)
             </label>

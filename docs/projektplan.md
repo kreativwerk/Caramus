@@ -42,3 +42,26 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - Supabase-Projekt: `jiixpoyxctohzagldcel` (Org „Kreativwerk Agentur", Region eu-central-1)
 - Client-Konfiguration: `.env.example` (öffentliche Schlüssel, kein Geheimnis)
 - Schema-Referenz: `supabase/migrations/0001_curamus_core_schema.sql`
+
+## Umsetzung Meeting-Protokoll vom 24.08.2026
+
+| Protokollpunkt | Stand |
+|---|---|
+| Web-App statt Store-App (Kapitel 01/06) | ✅ von Anfang an webbasiert, responsiv; PWA-Installation optional möglich |
+| A. Rezept/Verordnung übermitteln (Kapitel 03) | ✅ Upload im Dokumentenbereich **und** direkt an der Terminanfrage, mit Auswahl der Unterlagenart |
+| B. Dokumentenbereich mit Status (Kapitel 03/04) | ✅ `/app/dokumente` (Patient) und `/praxis/dokumente` (strukturierter Eingang) mit Ablauf Eingegangen → In Prüfung → Weitergeleitet, dazu „Unvollständig" mit Hinweistext an den Patienten |
+| C. Direkte Kommunikation | ✅ Chat je Patient, mit Rückfalllösung bei fehlender Echtzeitverbindung |
+| D. Termine & Fortschritt | ✅ Terminanfrage/Bestätigung, Tagestour, Trainingsplan mit Rückmeldung |
+| E. Video-/Therapieinhalte | ⏳ Charles klärt Rechte (Wibbi/Physiotec). App unterstützt heute eigene Uploads und externe Links; Einbettung des Anbieterportals ist der empfohlene Weg |
+| Anfahrtsstatus ohne Live-Ortung (Kapitel 05) | ✅ Therapeut startet die Fahrt selbst und wählt die Fahrzeit; Patient sieht Countdown, Prognose-Hinweis, Phase „Ankunft in Kürze" und einen animierten Curamus-Van. Keine GPS-Position, keine Karte |
+| Login, Rollen, Zugriffsschutz (Kapitel 06) | ✅ getrennte Anmeldung Patient/Praxis, Rollenweiche, Zugriffsregeln auf Datenbankebene geprüft |
+| Prototyp/Testzugang (Kapitel 07) | ✅ Zugang für Charles eingerichtet (`kontakt@curamus-medical.de`), QA-Konten für Testläufe |
+
+### Offen aus dem Protokoll (nicht Aufgabe der App-Entwicklung)
+
+- Abrechnungsstellen kontaktieren und Schnittstellen klären (Charles). Bis dahin bleibt der
+  Ablauf „Weitergeleitet" ein manueller Übergabepunkt – die Vorarbeit (Zuordnung, Prüfstatus)
+  ist in der App bereits erledigt.
+- App-Store-/Google-Play-Badges im Webflow-Entwurf entfernen (Kapitel 01).
+- Datenschutz-/Security-Konzept fachlich prüfen lassen; Datenschutzerklärung ist als Entwurf
+  vorhanden.

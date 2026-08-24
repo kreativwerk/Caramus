@@ -97,6 +97,9 @@ export type PlanFeedback = {
   note: string | null;
 };
 
+export type DocumentKind = "rezept" | "ueberweisung" | "bericht" | "sonstiges";
+export type DocumentStatus = "eingegangen" | "in_pruefung" | "weitergeleitet" | "unvollstaendig";
+
 export type PatientDocument = {
   id: string;
   patient_id: string;
@@ -105,8 +108,50 @@ export type PatientDocument = {
   file_name: string;
   content_type: string | null;
   size_bytes: number | null;
+  kind: DocumentKind;
+  status: DocumentStatus;
+  status_note: string | null;
+  status_changed_at: string | null;
   created_at: string;
+  profiles?: Profile;
 };
+
+export const DOKUMENT_ARTEN: { wert: DocumentKind; label: string; hinweis: string }[] = [
+  { wert: "rezept", label: "Rezept / Verordnung", hinweis: "Ärztliche Verordnung mit dem Vermerk „Hausbesuch“" },
+  { wert: "ueberweisung", label: "Überweisung", hinweis: "Überweisung Ihrer Ärztin oder Ihres Arztes" },
+  { wert: "bericht", label: "Arztbericht / Befund", hinweis: "z. B. OP-Bericht oder Befund" },
+  { wert: "sonstiges", label: "Sonstiges", hinweis: "Alle weiteren Unterlagen" },
+];
+
+export const DOKUMENT_STATUS: Record<
+  DocumentStatus,
+  { label: string; patientText: string; klasse: string }
+> = {
+  eingegangen: {
+    label: "Eingegangen",
+    patientText: "Eingegangen – wir schauen es uns an.",
+    klasse: "bg-mist-100 text-navy-700",
+  },
+  in_pruefung: {
+    label: "In Prüfung",
+    patientText: "Wird gerade geprüft.",
+    klasse: "bg-amber-50 text-amber-700",
+  },
+  weitergeleitet: {
+    label: "Weitergeleitet",
+    patientText: "An die Abrechnung weitergeleitet – für Sie ist nichts weiter zu tun.",
+    klasse: "bg-teal-50 text-teal-600",
+  },
+  unvollstaendig: {
+    label: "Unvollständig",
+    patientText: "Es fehlt noch etwas – bitte lesen Sie den Hinweis.",
+    klasse: "bg-red-50 text-red-700",
+  },
+};
+
+export function dokumentArtLabel(kind: DocumentKind) {
+  return DOKUMENT_ARTEN.find((a) => a.wert === kind)?.label ?? "Dokument";
+}
 
 export type Message = {
   id: string;

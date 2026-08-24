@@ -92,7 +92,7 @@ export function AppShell({
         className="fixed inset-x-0 z-20 flex justify-center px-4 lg:hidden"
         style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
       >
-        <div className="glass-bar flex items-center gap-0.5 rounded-full px-1.5 py-1.5">
+        <div className="glass-bar flex items-center rounded-full px-1.5 py-1.5">
           {items.map((item) => {
             const aktiv = istAktiv(pathname, item.href, basis);
             return (
@@ -100,7 +100,7 @@ export function AppShell({
                 key={item.href}
                 href={item.href}
                 aria-current={aktiv ? "page" : undefined}
-                className={`flex min-w-[3.1rem] flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[0.6rem] font-semibold transition-all ${
+                className={`flex min-w-[2.6rem] flex-col items-center gap-0.5 whitespace-nowrap rounded-full px-1.5 py-1.5 text-[0.58rem] font-semibold transition-all ${
                   aktiv ? "text-teal-600" : "text-navy-700/75 active:scale-95"
                 }`}
               >
@@ -150,6 +150,11 @@ export const Icons = {
   person: (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
       <circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+    </svg>
+  ),
+  dokument: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" />
     </svg>
   ),
   anfrage: (

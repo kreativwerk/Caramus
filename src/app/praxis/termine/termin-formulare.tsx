@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { terminAnlegen, terminStatusSetzen } from "../actions";
 
 export function NeuerTerminForm({ patienten }: { patienten: { id: string; full_name: string }[] }) {
   const [offen, setOffen] = useState(false);
   const [meldung, setMeldung] = useState<string | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
 
   function absenden(fd: FormData) {
     startTransition(async () => {
@@ -15,6 +17,7 @@ export function NeuerTerminForm({ patienten }: { patienten: { id: string; full_n
       else {
         setMeldung(null);
         setOffen(false);
+        router.refresh();
       }
     });
   }

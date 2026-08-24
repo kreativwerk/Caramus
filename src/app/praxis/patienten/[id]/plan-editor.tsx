@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { planItemEntfernen, planItemHinzufuegen } from "../../actions";
 import type { Exercise, PlanItem } from "@/lib/types";
 
@@ -16,6 +17,7 @@ export function PlanEditor({
   const [offen, setOffen] = useState(false);
   const [meldung, setMeldung] = useState<string | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
 
   function hinzufuegen(fd: FormData) {
     fd.set("patient_id", patientId);
@@ -25,6 +27,7 @@ export function PlanEditor({
       else {
         setMeldung(null);
         setOffen(false);
+        router.refresh();
       }
     });
   }
@@ -35,6 +38,7 @@ export function PlanEditor({
     fd.set("patient_id", patientId);
     startTransition(async () => {
       await planItemEntfernen(fd);
+      router.refresh();
     });
   }
 

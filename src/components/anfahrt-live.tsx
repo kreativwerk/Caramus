@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { CuramusVan } from "@/components/curamus-van";
 import type { Appointment } from "@/lib/types";
 import { fahrtFortschritt, formatTime, restMinuten } from "@/lib/types";
 
+/** Ab dieser Restzeit wird auf „Ankunft in Kürze" gewechselt. */
+const KURZ_VOR_ANKUNFT_MIN = 5;
+
 /**
- * Live-Anzeige der Anfahrt („wie bei DHL"): Der Therapeut startet die Fahrt,
- * der Patient sieht Countdown und animierten Fortschritt in Echtzeit.
+ * Live-Anzeige der Anfahrt: Der Therapeut startet die Fahrt selbst, der Patient
+ * sieht Countdown und animierten Fortschritt. Bewusst ohne Standortfreigabe –
+ * angezeigt wird nur eine Prognose (Projektprotokoll 24.08.2026, Kapitel 05).
  */
 export function AnfahrtLive({
   termin,
@@ -68,6 +73,7 @@ export function AnfahrtLive({
   // Nur bei einem echten Namen den Vornamen abtrennen – sonst bliebe vom
   // Platzhalter „Ihr Therapeut" nur „Ihr" übrig.
   const vorname = therapeutName.trim() ? therapeutName.trim().split(" ")[0] : "Ihr Therapeut";
+  const kurzVorAnkunft = !angekommen && rest <= KURZ_VOR_ANKUNFT_MIN;
 
   return (
     <section
@@ -78,16 +84,14 @@ export function AnfahrtLive({
       <div className="flex items-center gap-2">
         <span className="live-dot" aria-hidden />
         <span className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-teal-400">
-          {angekommen ? "Angekommen" : "Live – Anfahrt"}
+          {angekommen ? "Angekommen" : kurzVorAnkunft ? "Ankunft in Kürze" : "Auf dem Weg zu Ihnen"}
         </span>
       </div>
 
       {angekommen ? (
         <>
           <p className="mt-3 text-2xl font-bold">{vorname} ist da. 🎉</p>
-          <p className="mt-1 text-white/70">
-            Angekommen um {formatTime(aktuell.arrived_at!)} Uhr.
-          </p>
+          <p className="mt-1 text-white/70">Angekommen um {formatTime(aktuell.arrived_at!)} Uhr.</p>
         </>
       ) : (
         <>
@@ -107,43 +111,33 @@ export function AnfahrtLive({
         </>
       )}
 
-      {/* Fortschrittsstrecke mit fahrendem Auto */}
-      <div className="mt-6 pb-1">
-        <div className="relative h-12">
+      {/* Fortschrittsstrecke mit fahrendem Curamus-Van */}
+      <div className="mt-6">
+        <div className="relative h-16">
           {/* Strecke */}
-          <div className="absolute inset-x-0 top-8 h-1.5 rounded-full bg-white/15" />
+          <div className="absolute inset-x-0 bottom-3 h-1.5 rounded-full bg-white/15" />
           <div
-            className="absolute left-0 top-8 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
+            className="absolute left-0 bottom-3 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
             style={{ width: `${fortschritt * 100}%` }}
           />
-          {/* Auto */}
-          <div
-            className="absolute top-0 transition-[left] duration-1000 ease-linear"
-            style={{ left: `calc(${fortschritt * 100}% - 1.25rem)` }}
-          >
-            <span className={angekommen ? "block" : "block animate-fahrt-bob"} aria-hidden>
-              <svg width="40" height="30" viewBox="0 0 40 30" fill="none">
-                <path
-                  d="M4 20h32M8 20v-4l3-5h14l4 5h3v4"
-                  stroke="#ffffff"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="rgba(255,255,255,0.12)"
-                />
-                <circle cx="13" cy="21" r="3" fill="#34b8be" />
-                <circle cx="29" cy="21" r="3" fill="#34b8be" />
-              </svg>
-            </span>
-          </div>
           {/* Start- und Zielpunkt */}
-          <span className="absolute left-0 top-[1.6rem] h-4 w-4 rounded-full border-2 border-teal-400 bg-navy-900" aria-hidden />
           <span
-            className={`absolute right-0 top-[1.6rem] flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+            className="absolute left-0 bottom-[0.42rem] h-4 w-4 rounded-full border-2 border-teal-400 bg-navy-900"
+            aria-hidden
+          />
+          <span
+            className={`absolute right-0 bottom-[0.42rem] h-4 w-4 rounded-full border-2 ${
               angekommen ? "border-teal-400 bg-teal-400" : "border-white/40 bg-navy-900"
             }`}
             aria-hidden
           />
+          {/* Fahrzeug */}
+          <div
+            className="absolute bottom-2 transition-[left] duration-1000 ease-linear"
+            style={{ left: `calc(${fortschritt * 100}% - 2.25rem)` }}
+          >
+            <CuramusVan className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`} />
+          </div>
         </div>
         <div className="mt-1 flex justify-between text-xs text-white/60">
           <span>Losgefahren {formatTime(aktuell.enroute_at)} Uhr</span>
@@ -153,8 +147,9 @@ export function AnfahrtLive({
 
       {!angekommen && (
         <p className="mt-4 rounded-lg bg-white/10 px-4 py-3 text-sm text-white/80">
-          Bitte halten Sie den Zugang frei – {vorname} klingelt gleich. Die Zeit ist eine Schätzung
-          und kann sich durch Verkehr verschieben.
+          {kurzVorAnkunft
+            ? `Ankunft in Kürze – bitte halten Sie den Zugang bereit. ${vorname} klingelt gleich.`
+            : "Die Zeitangabe ist eine Prognose und kann sich durch Verkehr verschieben – sie aktualisiert sich automatisch."}
         </p>
       )}
     </section>

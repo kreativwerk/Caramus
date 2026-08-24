@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MEDIA_BUCKET } from "@/lib/media";
 import { uebungLoeschen, uebungSpeichern } from "../actions";
@@ -9,6 +10,7 @@ import type { Exercise } from "@/lib/types";
 export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?: () => void }) {
   const [meldung, setMeldung] = useState<string | null>(null);
   const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
   const dateiRef = useRef<HTMLInputElement>(null);
 
   function absenden(fd: FormData) {
@@ -39,6 +41,7 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
       if (ergebnis?.fehler) setMeldung(ergebnis.fehler);
       else {
         setMeldung(null);
+        router.refresh();
         onFertig?.();
       }
     });
@@ -107,6 +110,7 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
 export function UebungKarte({ uebung, anzeigeUrl }: { uebung: Exercise; anzeigeUrl: string | null }) {
   const [bearbeiten, setBearbeiten] = useState(false);
   const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
 
   function loeschen() {
     if (!confirm(`Übung „${uebung.title}“ wirklich löschen?`)) return;
@@ -115,6 +119,7 @@ export function UebungKarte({ uebung, anzeigeUrl }: { uebung: Exercise; anzeigeU
     startTransition(async () => {
       const ergebnis = await uebungLoeschen(fd);
       if (ergebnis?.fehler) alert(ergebnis.fehler);
+      else router.refresh();
     });
   }
 

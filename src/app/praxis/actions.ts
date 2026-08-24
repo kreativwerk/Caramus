@@ -282,3 +282,27 @@ export async function planItemEntfernen(formData: FormData) {
   revalidatePath(`/praxis/patienten/${String(formData.get("patient_id"))}`);
   return { ok: true };
 }
+
+/** Bearbeitungsstand eines Patientendokuments setzen (Kapitel 04 des Protokolls). */
+export async function dokumentStatusSetzen(formData: FormData): Promise<ActionResult> {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const status = String(formData.get("status"));
+  const erlaubt = ["eingegangen", "in_pruefung", "weitergeleitet", "unvollstaendig"];
+  if (!erlaubt.includes(status)) return { fehler: "Unbekannter Status." };
+
+  const { error } = await supabase
+    .from("documents")
+    .update({
+      status,
+      status_note: String(formData.get("status_note") ?? "").trim() || null,
+      status_changed_at: new Date().toISOString(),
+    })
+    .eq("id", String(formData.get("id")));
+  if (error) return { fehler: "Der Status konnte nicht gesetzt werden." };
+
+  revalidatePath("/praxis/dokumente");
+  revalidatePath("/praxis");
+  return { ok: true };
+}

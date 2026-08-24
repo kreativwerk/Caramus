@@ -15,6 +15,7 @@ export default async function PatientLayout({ children }: { children: React.Reac
   const items = [
     { href: "/app", label: "Übersicht", icon: "home" },
     { href: "/app/termine", label: "Termine", icon: "kalender" },
+    { href: "/app/dokumente", label: "Unterlagen", icon: "dokument" },
     { href: "/app/plan", label: "Training", icon: "plan" },
     { href: "/app/chat", label: "Nachrichten", icon: "chat" },
     { href: "/app/profil", label: "Profil", icon: "person" },

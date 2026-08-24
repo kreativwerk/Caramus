@@ -15,6 +15,7 @@ export default async function PraxisLayout({ children }: { children: React.React
   const items = [
     { href: "/praxis", label: "Übersicht", icon: "home" },
     { href: "/praxis/anfragen", label: "Anfragen", icon: "anfrage" },
+    { href: "/praxis/dokumente", label: "Dokumente", icon: "dokument" },
     { href: "/praxis/termine", label: "Termine", icon: "kalender" },
     { href: "/praxis/patienten", label: "Patienten", icon: "personen" },
     { href: "/praxis/uebungen", label: "Übungen", icon: "plan" },
