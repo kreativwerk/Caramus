@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { BaumReihe } from "@/components/baum-reihe";
 import { CuramusVan } from "@/components/curamus-van";
 import type { Appointment } from "@/lib/types";
 import { fahrtFortschritt, formatTime, restMinuten } from "@/lib/types";
@@ -111,32 +112,53 @@ export function AnfahrtLive({
         </>
       )}
 
-      {/* Fortschrittsstrecke mit fahrendem Curamus-Van */}
+      {/* Fahrszene: vorbeiziehende Kulisse, Strecke und fahrender Curamus-Van */}
       <div className="mt-6">
-        <div className="relative h-16">
+        <div className="relative h-28 overflow-hidden rounded-xl bg-navy-950/45">
+          {/* Hintere Baumreihe (langsamer) */}
+          <div className="absolute inset-x-0 bottom-[2.05rem] h-10 overflow-hidden">
+            <div className={`flex h-full w-[200%] ${angekommen ? "" : "animate-baeume-fern"}`}>
+              <BaumReihe tiefe="fern" className="h-full w-1/2 shrink-0" />
+              <BaumReihe tiefe="fern" className="h-full w-1/2 shrink-0" />
+            </div>
+          </div>
+          {/* Vordere Baumreihe (schneller) */}
+          <div className="absolute inset-x-0 bottom-[1.9rem] h-14 overflow-hidden">
+            <div className={`flex h-full w-[200%] ${angekommen ? "" : "animate-baeume-nah"}`}>
+              <BaumReihe className="h-full w-1/2 shrink-0" />
+              <BaumReihe className="h-full w-1/2 shrink-0" />
+            </div>
+          </div>
+
+          {/* Straßenband */}
+          <div className="absolute inset-x-0 bottom-0 h-8 bg-navy-950/70" />
+
           {/* Strecke */}
-          <div className="absolute inset-x-0 bottom-3 h-1.5 rounded-full bg-white/15" />
+          <div className="absolute inset-x-4 bottom-5 h-1.5 rounded-full bg-white/15" />
           <div
-            className="absolute left-0 bottom-3 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
-            style={{ width: `${fortschritt * 100}%` }}
+            className="absolute left-4 bottom-5 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
+            style={{ width: `calc((100% - 2rem) * ${fortschritt})` }}
           />
           {/* Start- und Zielpunkt */}
           <span
-            className="absolute left-0 bottom-[0.42rem] h-4 w-4 rounded-full border-2 border-teal-400 bg-navy-900"
+            className="absolute left-4 bottom-[0.95rem] h-4 w-4 -translate-x-1/2 rounded-full border-2 border-teal-400 bg-navy-950"
             aria-hidden
           />
           <span
-            className={`absolute right-0 bottom-[0.42rem] h-4 w-4 rounded-full border-2 ${
-              angekommen ? "border-teal-400 bg-teal-400" : "border-white/40 bg-navy-900"
+            className={`absolute right-4 bottom-[0.95rem] h-4 w-4 translate-x-1/2 rounded-full border-2 ${
+              angekommen ? "border-teal-400 bg-teal-400" : "border-white/40 bg-navy-950"
             }`}
             aria-hidden
           />
           {/* Fahrzeug */}
           <div
-            className="absolute bottom-2 transition-[left] duration-1000 ease-linear"
-            style={{ left: `calc(${fortschritt * 100}% - 2.25rem)` }}
+            className="absolute bottom-4 transition-[left] duration-1000 ease-linear"
+            style={{ left: `calc(1rem + (100% - 2rem) * ${fortschritt} - 2.25rem)` }}
           >
-            <CuramusVan className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`} />
+            <CuramusVan
+              className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`}
+              raederDrehen={!angekommen}
+            />
           </div>
         </div>
         <div className="mt-1 flex justify-between text-xs text-white/60">

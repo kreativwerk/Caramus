@@ -1,9 +1,48 @@
 /**
  * Moderner Curamus-Van in Seitenansicht mit Logo auf der Seitenwand.
- * Fahrtrichtung rechts (Front rechts), passend zur Bewegung entlang der
- * Fortschrittslinie in der Live-Anfahrt.
+ * Fahrtrichtung rechts (Front rechts). Bei `raederDrehen` drehen sich die
+ * Felgen, damit die Fahrt sichtbar wird.
  */
-export function CuramusVan({ className }: { className?: string }) {
+const SPEICHEN = [0, 72, 144, 216, 288];
+
+function Rad({ cx, dreht }: { cx: number; dreht: boolean }) {
+  const cy = 39.4;
+  return (
+    <g>
+      {/* Reifen */}
+      <circle cx={cx} cy={cy} r="7.4" fill="#16223f" />
+      <circle cx={cx} cy={cy} r="6.2" fill="none" stroke="#2a4076" strokeWidth="0.7" />
+      {/* Felge mit Speichen */}
+      <circle cx={cx} cy={cy} r="4.5" fill="#e8f0f5" />
+      <g
+        className={dreht ? "animate-rad" : undefined}
+        style={{ transformBox: "view-box", transformOrigin: `${cx}px ${cy}px` }}
+      >
+        {SPEICHEN.map((winkel, i) => (
+          <rect
+            key={winkel}
+            x={cx - 0.65}
+            y={cy - 4.1}
+            width="1.3"
+            height="3.3"
+            rx="0.65"
+            fill={i === 0 ? "#34b8be" : "#1f315b"}
+            transform={`rotate(${winkel} ${cx} ${cy})`}
+          />
+        ))}
+      </g>
+      <circle cx={cx} cy={cy} r="1.4" fill="#1f315b" />
+    </g>
+  );
+}
+
+export function CuramusVan({
+  className,
+  raederDrehen = false,
+}: {
+  className?: string;
+  raederDrehen?: boolean;
+}) {
   return (
     <svg viewBox="0 0 96 54" width="96" height="54" fill="none" className={className} aria-hidden>
       {/* Schatten auf der Straße */}
@@ -14,7 +53,6 @@ export function CuramusVan({ className }: { className?: string }) {
         d="M10 12h63.2c2.6 0 5 1.2 6.6 3.3l6.4 8.4c1.5 2 2.3 4.4 2.3 6.9v4.6c0 2.1-1.7 3.8-3.8 3.8H9.8C7.7 39 6 37.3 6 35.2V16c0-2.2 1.8-4 4-4Z"
         fill="#ffffff"
       />
-      {/* Dachkante in Markenfarbe */}
       <path d="M10 12h63.2c1.5 0 2.9.4 4.2 1.1H10c-1.1 0-2 .9-2 2v-1.1c0-1.1.9-2 2-2Z" fill="#1f315b" opacity="0.25" />
       <rect x="6" y="12" width="72" height="2.6" rx="1.3" fill="#10568e" />
 
@@ -49,16 +87,8 @@ export function CuramusVan({ className }: { className?: string }) {
       {/* Radkästen und Räder */}
       <path d="M17 39a9 9 0 0 1 18 0Z" fill="#1f315b" opacity="0.12" />
       <path d="M63 39a9 9 0 0 1 18 0Z" fill="#1f315b" opacity="0.12" />
-      <g>
-        <circle cx="26" cy="39.4" r="7.4" fill="#16223f" />
-        <circle cx="26" cy="39.4" r="3.2" fill="#e8f0f5" />
-        <circle cx="26" cy="39.4" r="1.5" fill="#34b8be" />
-      </g>
-      <g>
-        <circle cx="72" cy="39.4" r="7.4" fill="#16223f" />
-        <circle cx="72" cy="39.4" r="3.2" fill="#e8f0f5" />
-        <circle cx="72" cy="39.4" r="1.5" fill="#34b8be" />
-      </g>
+      <Rad cx={26} dreht={raederDrehen} />
+      <Rad cx={72} dreht={raederDrehen} />
     </svg>
   );
 }

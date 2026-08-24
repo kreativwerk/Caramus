@@ -90,6 +90,28 @@ body {
   100% { transform: scale(3); opacity: 0; }
 }
 
+@keyframes rad-dreh {
+  to { transform: rotate(360deg); }
+}
+
+.animate-rad {
+  animation: rad-dreh 0.55s linear infinite;
+}
+
+/* Kulisse: Streifen wird doppelt gerendert und um die halbe Breite verschoben */
+@keyframes baeume-fahrt {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-baeume-nah {
+  animation: baeume-fahrt 7s linear infinite;
+}
+
+.animate-baeume-fern {
+  animation: baeume-fahrt 17s linear infinite;
+}
+
 @keyframes fahrt-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
@@ -101,6 +123,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fahrt-bob,
+  .animate-rad,
+  .animate-baeume-nah,
+  .animate-baeume-fern,
   .live-dot::after {
     animation: none;
   }
