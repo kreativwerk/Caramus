@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { AnfahrtLive } from "@/components/anfahrt-live";
 import { resolveDocumentUrl } from "@/lib/media";
-import type { PatientDocument } from "@/lib/types";
+import type { Appointment, PatientDocument } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
 
@@ -22,8 +23,9 @@ export default async function TerminePage() {
     supabase
       .from("appointments")
       .select("*")
+      // Auch gerade laufende Termine zeigen, damit die Live-Anfahrt sichtbar bleibt
+      .gte("starts_at", new Date(Date.now() - 4 * 3600_000).toISOString())
       .eq("patient_id", user!.id)
-      .gte("starts_at", jetzt)
       .neq("status", "abgesagt")
       .order("starts_at"),
     supabase
@@ -53,6 +55,10 @@ export default async function TerminePage() {
     dokumenteProAnfrage.set(d.request_id, liste);
   }
 
+  // Nächster Termin: Live-Karte immer einbinden, sie zeigt sich erst bei Fahrtbeginn.
+  const anfahrt = ((kommende ?? []) as Appointment[]).find((t) => t.status === "geplant");
+  const { data: therapeutName } = anfahrt ? await supabase.rpc("therapeut_name") : { data: null };
+
   return (
     <div className="space-y-6">
       <div>
@@ -61,6 +67,8 @@ export default async function TerminePage() {
           Ihre <span className="text-teal-500">Hausbesuche</span>.
         </h1>
       </div>
+
+      {anfahrt && <AnfahrtLive termin={anfahrt} therapeutName={therapeutName ?? "Ihr Therapeut"} />}
 
       <AnfrageForm />
 

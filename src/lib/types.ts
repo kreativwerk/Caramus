@@ -34,8 +34,28 @@ export type Appointment = {
   travel_note: string | null;
   status: "geplant" | "abgeschlossen" | "abgesagt";
   notes: string | null;
+  /** Zeitpunkt, an dem der Therapeut die Fahrt gestartet hat */
+  enroute_at: string | null;
+  /** Beim Start geschätzte Fahrzeit in Minuten */
+  eta_minutes: number | null;
+  /** Zeitpunkt der Ankunft beim Patienten */
+  arrived_at: string | null;
   profiles?: Profile;
 };
+
+/** Verbleibende Minuten bis zur Ankunft (0, wenn abgelaufen). */
+export function restMinuten(enrouteAt: string, etaMinutes: number, jetzt = Date.now()) {
+  const ziel = new Date(enrouteAt).getTime() + etaMinutes * 60_000;
+  return Math.max(0, Math.ceil((ziel - jetzt) / 60_000));
+}
+
+/** Fortschritt der Anfahrt zwischen 0 und 1. */
+export function fahrtFortschritt(enrouteAt: string, etaMinutes: number, jetzt = Date.now()) {
+  const start = new Date(enrouteAt).getTime();
+  const gesamt = etaMinutes * 60_000;
+  if (gesamt <= 0) return 1;
+  return Math.min(1, Math.max(0, (jetzt - start) / gesamt));
+}
 
 export type Exercise = {
   id: string;

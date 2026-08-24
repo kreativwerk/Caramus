@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import type { Appointment } from "@/lib/types";
 import { formatTime } from "@/lib/types";
+import { AnfahrtSteuerung } from "./anfahrt-steuerung";
 
 export default async function PraxisStart() {
   const supabase = await createClient();
@@ -56,7 +58,7 @@ export default async function PraxisStart() {
         </Link>
       </div>
 
-      <section className="card bg-navy-900 text-white">
+      <section className="card-dark">
         <p className="text-sm font-semibold uppercase tracking-wide text-teal-400">
           Ihre Tour heute
         </p>
@@ -67,7 +69,7 @@ export default async function PraxisStart() {
                 <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-500 font-bold">
                   {i + 1}
                 </span>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold">
                     {formatTime(t.starts_at)} Uhr · {(t.profiles as { full_name?: string })?.full_name}
                   </p>
@@ -75,6 +77,9 @@ export default async function PraxisStart() {
                     {t.address ?? "Adresse fehlt – bitte im Patientenprofil ergänzen"} · {t.duration_min} Min.
                   </p>
                   {t.travel_note && <p className="text-sm text-teal-400">🚗 {t.travel_note}</p>}
+                  <div className="mt-3">
+                    <AnfahrtSteuerung termin={t as Appointment} />
+                  </div>
                 </div>
               </li>
             ))}

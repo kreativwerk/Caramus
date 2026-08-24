@@ -8,8 +8,8 @@ export default async function PatientChatPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: therapeut }, { data: nachrichten }] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("role", "therapist").limit(1).maybeSingle(),
+  const [{ data: therapeutName }, { data: nachrichten }] = await Promise.all([
+    supabase.rpc("therapeut_name"),
     supabase
       .from("messages")
       .select("*")
@@ -30,7 +30,7 @@ export default async function PatientChatPage() {
         patientId={user!.id}
         meId={user!.id}
         initialMessages={(nachrichten ?? []) as Message[]}
-        empfaengerName={therapeut?.full_name ?? "Ihr Therapeut"}
+        empfaengerName={therapeutName ?? "Ihr Therapeut"}
       />
     </div>
   );

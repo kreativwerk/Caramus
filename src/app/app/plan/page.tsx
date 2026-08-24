@@ -61,7 +61,7 @@ export default async function PlanPage() {
         </div>
       ) : (
         <>
-          <div className="card bg-navy-900 text-white">
+          <div className="card-dark">
             <p className="text-sm font-semibold uppercase tracking-wide text-teal-400">Heute</p>
             <p className="mt-1 text-2xl font-bold">
               {erledigt} von {items.length} Übungen geschafft

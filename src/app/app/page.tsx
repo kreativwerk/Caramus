@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { AnfahrtLive } from "@/components/anfahrt-live";
+import type { Appointment } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 
 export default async function PatientStart() {
@@ -11,12 +13,14 @@ export default async function PatientStart() {
   const [{ data: profile }, { data: termin }, { data: plan }, { count: ungelesen }] =
     await Promise.all([
       supabase.from("profiles").select("full_name, street").eq("id", user!.id).single(),
+      // Auch bereits begonnene Termine berücksichtigen, damit die Live-Anfahrt
+      // sichtbar bleibt, wenn sich der Start leicht verschoben hat.
       supabase
         .from("appointments")
         .select("*")
         .eq("patient_id", user!.id)
         .eq("status", "geplant")
-        .gte("starts_at", new Date().toISOString())
+        .gte("starts_at", new Date(Date.now() - 4 * 3600_000).toISOString())
         .order("starts_at")
         .limit(1)
         .maybeSingle(),
@@ -37,6 +41,13 @@ export default async function PatientStart() {
 
   const vorname = (profile?.full_name ?? "").split(" ")[0];
 
+  const aktuellerTermin = termin as Appointment | null;
+  // Die Live-Karte wird immer eingebunden, sobald ein Termin ansteht: Sie bleibt
+  // unsichtbar, bis der Therapeut losfährt, und meldet sich per Realtime von selbst.
+  const { data: therapeutName } = aktuellerTermin
+    ? await supabase.rpc("therapeut_name")
+    : { data: null };
+
   return (
     <div className="space-y-6">
       <div>
@@ -46,6 +57,10 @@ export default async function PatientStart() {
         </h1>
         <p className="mt-1 text-navy-600/80">Schön, dass Sie da sind. Das steht als Nächstes an:</p>
       </div>
+
+      {aktuellerTermin && (
+        <AnfahrtLive termin={aktuellerTermin} therapeutName={therapeutName ?? "Ihr Therapeut"} />
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="card sm:col-span-2">

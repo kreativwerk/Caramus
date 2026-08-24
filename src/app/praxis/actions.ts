@@ -133,6 +133,57 @@ export async function terminStatusSetzen(formData: FormData) {
   return { ok: true };
 }
 
+/** „Ich mache mich auf den Weg" – startet die Live-Anfahrt für den Patienten. */
+export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const eta = Number(formData.get("eta_minutes") || 0);
+  if (!eta || eta < 1 || eta > 240) return { fehler: "Bitte eine Fahrzeit zwischen 1 und 240 Minuten wählen." };
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({ enroute_at: new Date().toISOString(), eta_minutes: eta, arrived_at: null })
+    .eq("id", String(formData.get("termin_id")));
+  if (error) return { fehler: "Die Anfahrt konnte nicht gestartet werden." };
+
+  revalidatePath("/praxis");
+  revalidatePath("/praxis/termine");
+  return { ok: true };
+}
+
+/** Ankunft melden – beendet die Live-Anzeige beim Patienten. */
+export async function fahrtBeenden(formData: FormData): Promise<ActionResult> {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({ arrived_at: new Date().toISOString() })
+    .eq("id", String(formData.get("termin_id")));
+  if (error) return { fehler: "Die Ankunft konnte nicht gemeldet werden." };
+
+  revalidatePath("/praxis");
+  revalidatePath("/praxis/termine");
+  return { ok: true };
+}
+
+/** Anfahrt zurücknehmen (versehentlich gestartet). */
+export async function fahrtAbbrechen(formData: FormData): Promise<ActionResult> {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({ enroute_at: null, eta_minutes: null, arrived_at: null })
+    .eq("id", String(formData.get("termin_id")));
+  if (error) return { fehler: "Die Anfahrt konnte nicht zurückgenommen werden." };
+
+  revalidatePath("/praxis");
+  revalidatePath("/praxis/termine");
+  return { ok: true };
+}
+
 export async function uebungSpeichern(formData: FormData) {
   const { supabase, fehler } = await therapeutClient();
   if (!supabase) return { fehler };

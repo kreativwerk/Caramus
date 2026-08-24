@@ -35,8 +35,27 @@ export function Chat({
         }
       )
       .subscribe();
+
+    // Rückfalllösung, falls keine Echtzeitverbindung zustande kommt
+    async function abrufen() {
+      if (document.visibilityState === "hidden") return;
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("patient_id", patientId)
+        .order("created_at")
+        .limit(200);
+      if (data) {
+        setNachrichten((alt) => (data.length === alt.length ? alt : (data as Message[])));
+      }
+    }
+    const abrufTimer = setInterval(abrufen, 15_000);
+    document.addEventListener("visibilitychange", abrufen);
+
     return () => {
       supabase.removeChannel(kanal);
+      clearInterval(abrufTimer);
+      document.removeEventListener("visibilitychange", abrufen);
     };
   }, [patientId]);
 
