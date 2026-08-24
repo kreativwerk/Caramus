@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     ".claude/**",
     "docs/**",
     "supabase/**",
+    // Node-Testskripte (CommonJS, laufen ausserhalb des Next-Builds)
+    "scripts/**",
   ]),
 ]);
 

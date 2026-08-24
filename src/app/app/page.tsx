@@ -20,6 +20,7 @@ export default async function PatientStart() {
         .select("*")
         .eq("patient_id", user!.id)
         .eq("status", "geplant")
+        // eslint-disable-next-line react-hooks/purity -- Server Component, laeuft pro Request
         .gte("starts_at", new Date(Date.now() - 4 * 3600_000).toISOString())
         .order("starts_at")
         .limit(1)

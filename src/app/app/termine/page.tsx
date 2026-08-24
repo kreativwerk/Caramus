@@ -24,6 +24,7 @@ export default async function TerminePage() {
       .from("appointments")
       .select("*")
       // Auch gerade laufende Termine zeigen, damit die Live-Anfahrt sichtbar bleibt
+      // eslint-disable-next-line react-hooks/purity -- Server Component, laeuft pro Request
       .gte("starts_at", new Date(Date.now() - 4 * 3600_000).toISOString())
       .eq("patient_id", user!.id)
       .neq("status", "abgesagt")
