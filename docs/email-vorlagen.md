@@ -58,5 +58,5 @@ Anmeldeseite einfach „Ohne Passwort“.</p>
 
 Standardmäßig versendet Supabase über eine allgemeine Absenderadresse mit
 niedrigem Stundenlimit. Unter **Authentication → Emails → SMTP Settings** eigenen
-SMTP-Server hinterlegen (z. B. Resend, Postmark oder der Mailserver der Domain), Absender
+SMTP-Server hinterlegen (das eigene Postfach bei All-Inkl, siehe `docs/deployment.md`), Absender
 `mail@curamus-medical.de`. Dafür beim Domain-Anbieter SPF/DKIM-Einträge setzen.

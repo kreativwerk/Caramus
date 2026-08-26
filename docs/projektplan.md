@@ -26,7 +26,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 3. **E-Mail-Absender**: Eigene SMTP-Domain in Supabase hinterlegen (z. B. mail@curamus-medical.de), damit Anmelde-Links nicht als Spam landen. E-Mail-Vorlagen auf Deutsch anpassen.
 4. **Design-Feinschliff** anhand der finalen Figma-Screens (Screenshots liegen vor; Logo-Datei vom Kunden anfordern und `src/components/logo.tsx` ersetzen).
 5. **Übungsinhalte**: Klären, ob Physiotec/Wibbi-Material verlinkt werden darf (Lizenz!). Alternativ eigene Fotos/Videos in den Storage-Bucket `exercise-media` laden (Upload-Maske in der Übungsbibliothek ergänzen, signierte URLs).
-6. **Benachrichtigungen** (Fragebogen: E-Mail + Push): E-Mail bei neuer Nachricht/Anfrage über Supabase Edge Function + Resend; Web-Push als PWA-Ausbau.
+6. **Benachrichtigungen** (Fragebogen: E-Mail + Push): E-Mail bei neuer Nachricht/Anfrage über Supabase Edge Function, Versand per SMTP über das eigene Postfach – kein Drittanbieter; Web-Push als PWA-Ausbau.
 7. **Google-Kalender-Abgleich** (fest zugesagt): Google Cloud OAuth einrichten, bestätigte Termine in den Kalender schreiben, Belegtzeiten beim Bestätigen anzeigen. Aufwandstreiber – als eigenes Arbeitspaket planen.
 8. **DSGVO-Unterlagen**: AV-Verträge (Supabase, Vercel), Datenschutzerklärung + Impressum in die App, Verzeichnis der Verarbeitungstätigkeiten.
 

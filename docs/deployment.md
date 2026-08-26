@@ -30,8 +30,9 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
 1. **Authentication → URL Configuration**: Site URL `https://mein.curamus-medical.de`,
    Redirect URL `https://mein.curamus-medical.de/auth/callback` hinzufügen.
 2. **Authentication → Emails**: deutsche Vorlagen aus `docs/email-vorlagen.md` einfügen.
-3. 👤 Eigenen SMTP-Absender hinterlegen (siehe `docs/email-vorlagen.md`, sonst greift das
-   niedrige Standard-Versandlimit von Supabase).
+3. 👤 Eigenes Postfach als Absender hinterlegen – siehe Abschnitt
+   „E-Mail-Versand über das eigene Postfach". Ohne diesen Schritt stellt Supabase
+   nur an Adressen der eigenen Organisation zu, Patienten bekommen also nichts.
 
 ## 4. Therapeuten-Konto
 
@@ -63,7 +64,52 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
 - [ ] Upgrade auf Supabase Pro (~25 $/Monat: tägliche Backups, kein Auto-Pausieren)
       und Vercel Pro (~20 $/Monat, kommerzielle Nutzung)
 - [ ] Benachrichtigungs-Funktion aktivieren: `supabase/functions/notify-message/` deployen,
-      Secrets setzen (Resend-API-Key), Database-Webhook auf `messages` INSERT anlegen
+      SMTP-Secrets setzen, Database-Webhook auf `messages` INSERT anlegen (siehe „E-Mail-Versand")
+
+## E-Mail-Versand über das eigene Postfach
+
+Kein Drittanbieter nötig: Supabase versendet über jeden SMTP-Server. Die Domain
+curamus-medical.de liegt bei All-Inkl (Mailserver `w021b7b7.kasserver.com`), das
+eigene Postfach genügt also.
+
+**1. Postfach vorbereiten (👤 in der KAS-Verwaltung von All-Inkl)**
+
+- Eigenes Postfach für die App anlegen, z. B. `app@curamus-medical.de` – nicht das
+  Postfach verwenden, das Charles täglich liest. Grund: Das Passwort wird bei
+  Supabase hinterlegt, und ein eigenes Postfach lässt sich jederzeit tauschen,
+  ohne dass der Posteingang der Praxis betroffen ist.
+- DKIM für die Domain einschalten. Aktuell zeigt der Eintrag
+  `default._domainkey.curamus-medical.de` auf einen Namen ohne Schlüssel –
+  die Signatur greift also nicht. SPF (`include:spf.kasserver.com`) und DMARC
+  (`p=none`) sind bereits gesetzt.
+- Sendelimit des Tarifs erfragen (Mails pro Stunde/Tag) und im Blick behalten.
+
+**2. In Supabase eintragen** (Dashboard → Authentication → Emails → SMTP Settings):
+
+| Feld | Wert |
+|---|---|
+| Host | `w021b7b7.kasserver.com` |
+| Port | `465` (SSL) oder `587` (STARTTLS) |
+| Username | die vollständige Adresse, z. B. `app@curamus-medical.de` |
+| Password | Passwort dieses Postfachs |
+| Sender email | dieselbe Adresse (All-Inkl versendet nur unter dem angemeldeten Postfach) |
+| Sender name | Curamus Medical |
+
+Danach unter Authentication → Rate Limits das Kontingent anheben: Mit eigenem
+SMTP liegt die Voreinstellung bei 30 neuen Nutzern pro Stunde.
+
+**3. Vorlagen hinterlegen** – die deutschen Texte stehen in `docs/email-vorlagen.md`
+(Authentication → Emails → Templates).
+
+**4. Chat-Benachrichtigung** – `supabase/functions/notify-message/` versendet
+ebenfalls per SMTP (denomailer). Secrets setzen: `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASS`, `NOTIFY_FROM`, `APP_URL`. Dann deployen und den
+Database-Webhook auf `messages` INSERT anlegen. Schlägt der Versand fehl, bleibt
+die Nachricht selbst davon unberührt – sie steht ohnehin sofort in der App.
+
+**5. Probelauf** – Registrierung mit einer echten Adresse, Anmelde-Link,
+Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
+Mails im Posteingang und nicht im Spam landen.
 
 ## Fahrzeit-Berechnung (optional, jederzeit nachrüstbar)
 

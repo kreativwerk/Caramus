@@ -1,15 +1,22 @@
 // Edge Function: E-Mail-Benachrichtigung bei neuer Chat-Nachricht.
 //
+// Versand über das eigene Postfach per SMTP – kein Drittanbieter, kein API-Schlüssel.
+//
 // Auslösung über einen Database Webhook (Dashboard → Database → Webhooks):
 //   Tabelle: public.messages, Ereignis: INSERT, Ziel: diese Funktion.
 // Benötigte Secrets (Dashboard → Edge Functions → Secrets):
-//   RESEND_API_KEY  – API-Schlüssel von resend.com (oder anderen Anbieter einbauen)
-//   NOTIFY_FROM     – Absender, z. B. "Curamus Medical <mail@curamus-medical.de>"
-//   APP_URL         – z. B. https://mein.curamus-medical.de
+//   SMTP_HOST  – z. B. w021b7b7.kasserver.com
+//   SMTP_PORT  – 465 (SSL) oder 587 (STARTTLS)
+//   SMTP_USER  – vollständige E-Mail-Adresse des Postfachs
+//   SMTP_PASS  – Passwort dieses Postfachs
+//   NOTIFY_FROM – Absender, muss zum Postfach passen,
+//                 z. B. "Curamus Medical <kontakt@curamus-medical.de>"
+//   APP_URL    – z. B. https://mein.curamus-medical.de
 //
 // Deployment: supabase functions deploy notify-message --project-ref jiixpoyxctohzagldcel
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 Deno.serve(async (req) => {
   try {
@@ -47,26 +54,50 @@ Deno.serve(async (req) => {
     const appUrl = Deno.env.get("APP_URL") ?? "https://mein.curamus-medical.de";
     const ziel = patientSchreibt ? `${appUrl}/praxis/chat/${record.patient_id}` : `${appUrl}/app/chat`;
 
-    const antwort = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
-        "Content-Type": "application/json",
+    const port = Number(Deno.env.get("SMTP_PORT") ?? 465);
+    const client = new SMTPClient({
+      connection: {
+        hostname: Deno.env.get("SMTP_HOST")!,
+        port,
+        // Port 465 spricht von Anfang an verschlüsselt, 587 schaltet per STARTTLS um.
+        tls: port === 465,
+        auth: {
+          username: Deno.env.get("SMTP_USER")!,
+          password: Deno.env.get("SMTP_PASS")!,
+        },
       },
-      body: JSON.stringify({
-        from: Deno.env.get("NOTIFY_FROM") ?? "Curamus Medical <onboarding@resend.dev>",
-        to: [email],
-        subject: "Neue Nachricht bei Curamus Medical",
-        html: `<p>Guten Tag,</p>
-<p>Sie haben eine neue Nachricht in Ihrem Curamus-Bereich erhalten.</p>
-<p><a href="${ziel}" style="display:inline-block;background:#2fb5b3;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Nachricht lesen</a></p>
-<p>Aus Datenschutzgründen enthält diese E-Mail nicht den Inhalt der Nachricht.</p>
-<p>Herzliche Grüße<br>Ihr Team von Curamus Medical</p>`,
-      }),
     });
 
-    return new Response(antwort.ok ? "sent" : "mail error", { status: 200 });
+    try {
+      await client.send({
+        from: Deno.env.get("NOTIFY_FROM") ?? "Curamus Medical <kontakt@curamus-medical.de>",
+        to: email,
+        subject: "Neue Nachricht bei Curamus Medical",
+        content: [
+          "Guten Tag,",
+          "",
+          "Sie haben eine neue Nachricht in Ihrem Curamus-Bereich erhalten.",
+          "",
+          ziel,
+          "",
+          "Aus Datenschutzgründen enthält diese E-Mail nicht den Inhalt der Nachricht.",
+          "",
+          "Herzliche Grüße",
+          "Ihr Team von Curamus Medical",
+        ].join("\n"),
+        html: `<p>Guten Tag,</p>
+<p>Sie haben eine neue Nachricht in Ihrem Curamus-Bereich erhalten.</p>
+<p><a href="${ziel}" style="display:inline-block;background:#34b8be;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Nachricht lesen</a></p>
+<p>Aus Datenschutzgründen enthält diese E-Mail nicht den Inhalt der Nachricht.</p>
+<p>Herzliche Grüße<br>Ihr Team von Curamus Medical</p>`,
+      });
+    } finally {
+      await client.close();
+    }
+
+    return new Response("sent", { status: 200 });
   } catch {
+    // Eine nicht zugestellte Hinweis-Mail darf den Chat niemals blockieren.
     return new Response("error", { status: 200 });
   }
 });
