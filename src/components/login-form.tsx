@@ -36,7 +36,7 @@ function Formular({ variante }: { variante: Variante }) {
     if (modus === "passwort") {
       const { error } = await supabase.auth.signInWithPassword({ email, password: passwort });
       if (error) {
-        setFehler("Anmeldung fehlgeschlagen. Bitte prüfen Sie E-Mail-Adresse und Passwort.");
+        setFehler("Das hat nicht gepasst. Bitte prüfen Sie E-Mail-Adresse und Passwort – oder melden Sie sich ohne Passwort per E-Mail an.");
         setStatus("idle");
         return;
       }
@@ -50,7 +50,7 @@ function Formular({ variante }: { variante: Variante }) {
         },
       });
       if (error) {
-        setFehler("Der Anmelde-Link konnte nicht gesendet werden. Bitte prüfen Sie die E-Mail-Adresse.");
+        setFehler("Wir konnten Ihnen gerade keine E-Mail schicken. Bitte prüfen Sie Ihre E-Mail-Adresse und versuchen Sie es noch einmal.");
         setStatus("idle");
         return;
       }
@@ -125,7 +125,7 @@ function Formular({ variante }: { variante: Variante }) {
               )}
               {(fehler || linkFehler) && (
                 <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  {fehler ?? "Der Anmelde-Link ist abgelaufen oder ungültig. Bitte fordern Sie einen neuen an."}
+                  {fehler ?? "Dieser Anmelde-Link ist nicht mehr gültig – er gilt nur eine Stunde. Bitte fordern Sie sich einen neuen an."}
                 </p>
               )}
               <button type="submit" disabled={status === "laden"} className="btn-primary w-full disabled:opacity-60">

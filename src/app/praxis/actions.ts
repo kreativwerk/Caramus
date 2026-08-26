@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
 import { adresseZuKoordinate, fahrzeitMinuten, fahrzeitVerfuegbar } from "@/lib/fahrzeit";
 
 export type ActionResult = { ok?: boolean; fehler?: string | null; planId?: string };
@@ -11,9 +12,9 @@ async function therapeutClient() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { supabase: null, fehler: "Nicht angemeldet." };
+  if (!user) return { supabase: null, fehler: MELDUNG.abgemeldet };
   const { data: profil } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (profil?.role !== "therapist") return { supabase: null, fehler: "Keine Berechtigung." };
+  if (profil?.role !== "therapist") return { supabase: null, fehler: MELDUNG.nurPraxis };
   return { supabase, fehler: null };
 }
 
@@ -27,7 +28,7 @@ export async function anfrageBestaetigen(formData: FormData) {
   const dauer = Number(formData.get("duration_min") || 60);
   const notiz = String(formData.get("notes") ?? "").trim() || null;
   const travel = String(formData.get("travel_note") ?? "").trim() || null;
-  if (!startsAt) return { fehler: "Bitte Datum und Uhrzeit wählen." };
+  if (!startsAt) return { fehler: "Bitte wählen Sie Datum und Uhrzeit." };
 
   const { data: patient } = await supabase
     .from("profiles")
@@ -46,13 +47,13 @@ export async function anfrageBestaetigen(formData: FormData) {
     travel_note: travel,
     notes: notiz,
   });
-  if (e1) return { fehler: "Der Termin konnte nicht angelegt werden." };
+  if (e1) return { fehler: nichtGeklappt("Das Anlegen des Termins") };
 
   const { error: e2 } = await supabase
     .from("appointment_requests")
     .update({ status: "confirmed", handled_at: new Date().toISOString() })
     .eq("id", anfrageId);
-  if (e2) return { fehler: "Der Termin wurde angelegt, aber die Anfrage konnte nicht aktualisiert werden." };
+  if (e2) return { fehler: "Der Termin steht, nur die Anfrage zeigt noch den alten Stand. Bitte laden Sie die Seite neu." };
 
   revalidatePath("/praxis/anfragen");
   revalidatePath("/praxis/termine");
@@ -66,13 +67,13 @@ export async function anfrageVorschlagen(formData: FormData) {
 
   const anfrageId = String(formData.get("anfrage_id"));
   const proposal = String(formData.get("proposal") ?? "").trim();
-  if (!proposal) return { fehler: "Bitte einen Alternativvorschlag eintragen." };
+  if (!proposal) return { fehler: "Bitte tragen Sie einen Alternativvorschlag ein." };
 
   const { error } = await supabase
     .from("appointment_requests")
     .update({ status: "proposed", proposal, handled_at: new Date().toISOString() })
     .eq("id", anfrageId);
-  if (error) return { fehler: "Der Vorschlag konnte nicht gespeichert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Speichern des Vorschlags") };
   revalidatePath("/praxis/anfragen");
   return { ok: true };
 }
@@ -85,7 +86,7 @@ export async function anfrageAblehnen(formData: FormData) {
     .from("appointment_requests")
     .update({ status: "declined", handled_at: new Date().toISOString() })
     .eq("id", String(formData.get("anfrage_id")));
-  if (error) return { fehler: "Die Anfrage konnte nicht aktualisiert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Aktualisieren der Anfrage") };
   revalidatePath("/praxis/anfragen");
   return { ok: true };
 }
@@ -96,7 +97,7 @@ export async function terminAnlegen(formData: FormData) {
 
   const patientId = String(formData.get("patient_id"));
   const startsAt = String(formData.get("starts_at"));
-  if (!patientId || !startsAt) return { fehler: "Bitte Patient sowie Datum und Uhrzeit wählen." };
+  if (!patientId || !startsAt) return { fehler: "Bitte wählen Sie den Patienten sowie Datum und Uhrzeit." };
 
   const { data: patient } = await supabase
     .from("profiles")
@@ -114,7 +115,7 @@ export async function terminAnlegen(formData: FormData) {
     address: adresse || null,
     notes: String(formData.get("notes") ?? "").trim() || null,
   });
-  if (error) return { fehler: "Der Termin konnte nicht angelegt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Anlegen des Termins") };
   revalidatePath("/praxis/termine");
   revalidatePath("/praxis");
   return { ok: true };
@@ -128,7 +129,7 @@ export async function terminStatusSetzen(formData: FormData) {
     .from("appointments")
     .update({ status: String(formData.get("status")) })
     .eq("id", String(formData.get("termin_id")));
-  if (error) return { fehler: "Der Status konnte nicht geändert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Ändern des Status") };
   revalidatePath("/praxis/termine");
   revalidatePath("/praxis");
   return { ok: true };
@@ -216,7 +217,7 @@ export async function verspaetungMelden(formData: FormData): Promise<ActionResul
   if (!supabase) return { fehler };
 
   const zusatz = Number(formData.get("zusatz_minuten") || 0);
-  if (!zusatz || zusatz < 1 || zusatz > 120) return { fehler: "Bitte 1 bis 120 Minuten wählen." };
+  if (!zusatz || zusatz < 1 || zusatz > 120) return { fehler: "Bitte wählen Sie zwischen 1 und 120 Minuten." };
 
   const terminId = String(formData.get("termin_id"));
   const { data: termin } = await supabase
@@ -224,7 +225,7 @@ export async function verspaetungMelden(formData: FormData): Promise<ActionResul
     .select("eta_minutes, enroute_at")
     .eq("id", terminId)
     .maybeSingle();
-  if (!termin?.enroute_at || !termin.eta_minutes) return { fehler: "Für diesen Termin läuft keine Anfahrt." };
+  if (!termin?.enroute_at || !termin.eta_minutes) return { fehler: "Für diesen Termin ist gerade keine Anfahrt gestartet." };
 
   const { error } = await supabase
     .from("appointments")
@@ -234,7 +235,7 @@ export async function verspaetungMelden(formData: FormData): Promise<ActionResul
       delay_note: String(formData.get("grund") ?? "").trim() || null,
     })
     .eq("id", terminId);
-  if (error) return { fehler: "Die Verspätung konnte nicht gemeldet werden." };
+  if (error) return { fehler: nichtGeklappt("Das Melden der Verspätung") };
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");
@@ -247,7 +248,7 @@ export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
   if (!supabase) return { fehler };
 
   const eta = Number(formData.get("eta_minutes") || 0);
-  if (!eta || eta < 1 || eta > 240) return { fehler: "Bitte eine Fahrzeit zwischen 1 und 240 Minuten wählen." };
+  if (!eta || eta < 1 || eta > 240) return { fehler: "Bitte wählen Sie eine Fahrzeit zwischen 1 und 240 Minuten." };
 
   const { error } = await supabase
     .from("appointments")
@@ -260,7 +261,7 @@ export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
       eta_quelle: String(formData.get("quelle") ?? "manuell") === "verkehr" ? "verkehr" : "manuell",
     })
     .eq("id", String(formData.get("termin_id")));
-  if (error) return { fehler: "Die Anfahrt konnte nicht gestartet werden." };
+  if (error) return { fehler: nichtGeklappt("Das Starten der Anfahrt") };
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");
@@ -276,7 +277,7 @@ export async function fahrtBeenden(formData: FormData): Promise<ActionResult> {
     .from("appointments")
     .update({ arrived_at: new Date().toISOString() })
     .eq("id", String(formData.get("termin_id")));
-  if (error) return { fehler: "Die Ankunft konnte nicht gemeldet werden." };
+  if (error) return { fehler: nichtGeklappt("Das Melden der Ankunft") };
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");
@@ -298,7 +299,7 @@ export async function fahrtAbbrechen(formData: FormData): Promise<ActionResult> 
       delay_note: null,
     })
     .eq("id", String(formData.get("termin_id")));
-  if (error) return { fehler: "Die Anfahrt konnte nicht zurückgenommen werden." };
+  if (error) return { fehler: nichtGeklappt("Das Zurücknehmen der Anfahrt") };
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");
@@ -317,12 +318,12 @@ export async function uebungSpeichern(formData: FormData) {
     media_url: String(formData.get("media_url") ?? "").trim() || null,
     media_type: (String(formData.get("media_type") ?? "image") || "image") as "image" | "video",
   };
-  if (!werte.title) return { fehler: "Bitte einen Übungstitel eingeben." };
+  if (!werte.title) return { fehler: "Bitte geben Sie der Übung einen Namen." };
 
   const { error } = id
     ? await supabase.from("exercises").update(werte).eq("id", id)
     : await supabase.from("exercises").insert(werte);
-  if (error) return { fehler: "Die Übung konnte nicht gespeichert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Speichern der Übung") };
   revalidatePath("/praxis/uebungen");
   return { ok: true };
 }
@@ -333,7 +334,7 @@ export async function uebungLoeschen(formData: FormData) {
 
   const { error } = await supabase.from("exercises").delete().eq("id", String(formData.get("id")));
   if (error)
-    return { fehler: "Die Übung konnte nicht gelöscht werden (wird sie noch in einem Plan verwendet?)." };
+    return { fehler: "Diese Übung steht noch in mindestens einem Trainingsplan. Bitte nehmen Sie sie dort zuerst heraus." };
   revalidatePath("/praxis/uebungen");
   return { ok: true };
 }
@@ -356,7 +357,7 @@ export async function planSicherstellen(patientId: string): Promise<ActionResult
     .insert({ patient_id: patientId })
     .select("id")
     .single();
-  if (error) return { fehler: "Der Plan konnte nicht angelegt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Anlegen des Plans") };
   revalidatePath(`/praxis/patienten/${patientId}`);
   return { ok: true, planId: data.id };
 }
@@ -367,7 +368,7 @@ export async function planItemHinzufuegen(formData: FormData): Promise<ActionRes
 
   const patientId = String(formData.get("patient_id"));
   const exerciseId = String(formData.get("exercise_id"));
-  if (!exerciseId) return { fehler: "Bitte eine Übung auswählen." };
+  if (!exerciseId) return { fehler: "Bitte wählen Sie eine Übung aus." };
 
   const ergebnis = await planSicherstellen(patientId);
   if (!ergebnis.planId) return ergebnis;
@@ -386,7 +387,7 @@ export async function planItemHinzufuegen(formData: FormData): Promise<ActionRes
     instructions: String(formData.get("instructions") ?? "").trim() || null,
     position: (count ?? 0) + 1,
   });
-  if (error) return { fehler: "Die Übung konnte nicht zum Plan hinzugefügt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Hinzufügen der Übung") };
   revalidatePath(`/praxis/patienten/${patientId}`);
   return { ok: true };
 }
@@ -399,7 +400,7 @@ export async function planItemEntfernen(formData: FormData) {
     .from("plan_items")
     .delete()
     .eq("id", String(formData.get("plan_item_id")));
-  if (error) return { fehler: "Die Übung konnte nicht entfernt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Entfernen der Übung") };
   revalidatePath(`/praxis/patienten/${String(formData.get("patient_id"))}`);
   return { ok: true };
 }
@@ -411,7 +412,7 @@ export async function dokumentStatusSetzen(formData: FormData): Promise<ActionRe
 
   const status = String(formData.get("status"));
   const erlaubt = ["eingegangen", "in_pruefung", "weitergeleitet", "unvollstaendig"];
-  if (!erlaubt.includes(status)) return { fehler: "Unbekannter Status." };
+  if (!erlaubt.includes(status)) return { fehler: "Diesen Status gibt es nicht. Bitte laden Sie die Seite neu." };
 
   const { error } = await supabase
     .from("documents")
@@ -421,7 +422,7 @@ export async function dokumentStatusSetzen(formData: FormData): Promise<ActionRe
       status_changed_at: new Date().toISOString(),
     })
     .eq("id", String(formData.get("id")));
-  if (error) return { fehler: "Der Status konnte nicht gesetzt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Setzen des Status") };
 
   revalidatePath("/praxis/dokumente");
   revalidatePath("/praxis");

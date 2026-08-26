@@ -19,6 +19,7 @@ export function Chat({
   const [nachrichten, setNachrichten] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
   const [sendet, setSendet] = useState(false);
+  const [fehler, setFehler] = useState<string | null>(null);
   const endeRef = useRef<HTMLDivElement>(null);
   const supabaseRef = useRef(createClient());
 
@@ -79,6 +80,7 @@ export function Chat({
     const body = text.trim();
     if (!body || sendet) return;
     setSendet(true);
+    setFehler(null);
     const { data, error } = await supabaseRef.current
       .from("messages")
       .insert({ patient_id: patientId, sender_id: meId, body })
@@ -87,6 +89,9 @@ export function Chat({
     if (!error && data) {
       setNachrichten((alt) => (alt.some((m) => m.id === data.id) ? alt : [...alt, data as Message]));
       setText("");
+    } else {
+      // Der Text bleibt im Feld stehen, damit nichts verlorengeht
+      setFehler("Ihre Nachricht ist nicht angekommen. Bitte tippen Sie noch einmal auf „Senden“.");
     }
     setSendet(false);
   }
@@ -126,6 +131,14 @@ export function Chat({
         })}
         <div ref={endeRef} />
       </div>
+      {fehler && (
+        <p
+          role="status"
+          className="border-t border-mist-100 bg-red-50 px-5 py-3 text-sm font-medium text-red-700"
+        >
+          {fehler}
+        </p>
+      )}
       <form onSubmit={senden} className="flex items-end gap-2 border-t border-mist-100 p-3">
         <textarea
           value={text}

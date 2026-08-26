@@ -5,6 +5,23 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
 
+/**
+ * Übersetzt die Rückmeldung der Anmeldung in einen Satz, den jede und jeder
+ * versteht – ohne Fehlercode und ohne Fachbegriffe.
+ */
+function erklaerung(error: { message?: string; code?: string }) {
+  const text = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+  if (text.includes("already registered") || text.includes("user_already_exists"))
+    return "Für diese E-Mail-Adresse gibt es schon einen Zugang. Bitte melden Sie sich einfach an.";
+  if (text.includes("weak_password") || text.includes("at least"))
+    return "Bitte wählen Sie ein längeres Passwort – mindestens sechs Zeichen.";
+  if (text.includes("email_address_invalid") || text.includes("invalid email"))
+    return "Diese E-Mail-Adresse scheint nicht zu stimmen. Bitte schauen Sie noch einmal drüber.";
+  if (text.includes("rate limit") || text.includes("over_email_send_rate_limit"))
+    return "Sie haben es gerade schon mehrmals versucht. Bitte warten Sie einen Moment und probieren Sie es dann noch einmal.";
+  return "Das hat gerade nicht geklappt. Bitte versuchen Sie es in einem Moment noch einmal.";
+}
+
 export default function RegistrierenPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,11 +43,7 @@ export default function RegistrierenPage() {
       },
     });
     if (error) {
-      setFehler(
-        error.message.includes("already registered")
-          ? "Für diese E-Mail-Adresse gibt es bereits einen Zugang. Bitte melden Sie sich an."
-          : "Der Zugang konnte nicht eingerichtet werden. Bitte prüfen Sie Ihre Angaben (Passwort: mindestens 6 Zeichen)."
-      );
+      setFehler(erklaerung(error));
       setStatus("idle");
       return;
     }

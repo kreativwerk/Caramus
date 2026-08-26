@@ -31,16 +31,16 @@ export function AnfrageForm() {
       // Dokumente (Rezept/Überweisung) zuerst in den geschützten Speicher laden
       const dateien = [...(dateiRef.current?.files ?? [])];
       if (dateien.length > MAX_DATEIEN) {
-        setMeldung({ typ: "fehler", text: `Bitte höchstens ${MAX_DATEIEN} Dateien anhängen.` });
+        setMeldung({ typ: "fehler", text: `Bitte hängen Sie höchstens ${MAX_DATEIEN} Dateien an.` });
         return;
       }
       for (const d of dateien) {
         if (d.size > MAX_GROESSE) {
-          setMeldung({ typ: "fehler", text: `„${d.name}“ ist größer als 10 MB. Bitte verkleinern oder als PDF speichern.` });
+          setMeldung({ typ: "fehler", text: `„${d.name}“ ist zu groß. Bitte schicken Sie ein Foto in normaler Qualität oder speichern Sie die Unterlage als PDF.` });
           return;
         }
         if (d.type && !ERLAUBTE_TYPEN.includes(d.type)) {
-          setMeldung({ typ: "fehler", text: `„${d.name}“ hat ein nicht unterstütztes Format. Erlaubt: PDF oder Foto (JPG, PNG, HEIC).` });
+          setMeldung({ typ: "fehler", text: `„${d.name}“ können wir leider nicht öffnen. Bitte schicken Sie ein Foto oder ein PDF.` });
           return;
         }
       }
@@ -50,7 +50,7 @@ export function AnfrageForm() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setMeldung({ typ: "fehler", text: "Bitte melden Sie sich erneut an." });
+        setMeldung({ typ: "fehler", text: "Sie sind nicht mehr angemeldet. Bitte melden Sie sich noch einmal an." });
         return;
       }
 
@@ -62,7 +62,7 @@ export function AnfrageForm() {
           .from(DOCS_BUCKET)
           .upload(pfad, d, { contentType: d.type || undefined });
         if (error) {
-          setMeldung({ typ: "fehler", text: `„${d.name}“ konnte nicht hochgeladen werden. Bitte erneut versuchen.` });
+          setMeldung({ typ: "fehler", text: `„${d.name}“ ist nicht angekommen. Bitte versuchen Sie es in einem Moment noch einmal.` });
           return;
         }
         hochgeladen.push({ file_path: pfad, file_name: d.name, content_type: d.type, size_bytes: d.size });

@@ -2,17 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
 
 export async function terminAnfragen(formData: FormData) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fehler: "Nicht angemeldet." };
+  if (!user) return { fehler: MELDUNG.abgemeldet };
 
   const preferred_times = String(formData.get("wunschzeiten") ?? "").trim();
   const message = String(formData.get("nachricht") ?? "").trim() || null;
-  if (!preferred_times) return { fehler: "Bitte geben Sie mindestens einen Wunschtermin an." };
+  if (!preferred_times) return { fehler: "Bitte nennen Sie uns mindestens einen Wunschtermin." };
 
   const { data: anfrage, error } = await supabase
     .from("appointment_requests")
@@ -21,7 +22,7 @@ export async function terminAnfragen(formData: FormData) {
     .single();
 
   if (error || !anfrage)
-    return { fehler: "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut." };
+    return { fehler: nichtGeklappt("Das Senden Ihrer Anfrage") };
 
   // Zuvor vom Client in den geschützten Speicher geladene Dokumente verknüpfen
   try {
@@ -58,7 +59,7 @@ export async function feedbackSpeichern(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fehler: "Nicht angemeldet." };
+  if (!user) return { fehler: MELDUNG.abgemeldet };
 
   const plan_item_id = String(formData.get("plan_item_id"));
   const completed = formData.get("completed") === "true";
@@ -78,7 +79,7 @@ export async function feedbackSpeichern(formData: FormData) {
     { onConflict: "plan_item_id,patient_id,on_date" }
   );
 
-  if (error) return { fehler: "Die Rückmeldung konnte nicht gespeichert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Speichern Ihrer Rückmeldung") };
   revalidatePath("/app/plan");
   return { ok: true };
 }
@@ -88,7 +89,7 @@ export async function profilSpeichern(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fehler: "Nicht angemeldet." };
+  if (!user) return { fehler: MELDUNG.abgemeldet };
 
   const { error } = await supabase
     .from("profiles")
@@ -101,7 +102,7 @@ export async function profilSpeichern(formData: FormData) {
     })
     .eq("id", user.id);
 
-  if (error) return { fehler: "Das Profil konnte nicht gespeichert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Speichern Ihrer Angaben") };
   revalidatePath("/app/profil");
   return { ok: true };
 }
@@ -112,11 +113,11 @@ export async function dokumentSpeichern(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fehler: "Nicht angemeldet." };
+  if (!user) return { fehler: MELDUNG.abgemeldet };
 
   const file_path = String(formData.get("file_path") ?? "");
   const file_name = String(formData.get("file_name") ?? "").slice(0, 200);
-  if (!file_path || !file_name) return { fehler: "Bitte eine Datei auswählen." };
+  if (!file_path || !file_name) return { fehler: "Bitte wählen Sie zuerst eine Unterlage aus oder machen Sie ein Foto." };
 
   const { error } = await supabase.from("documents").insert({
     patient_id: user.id,
@@ -126,7 +127,7 @@ export async function dokumentSpeichern(formData: FormData) {
     size_bytes: Number(formData.get("size_bytes") ?? 0) || null,
     kind: String(formData.get("kind") ?? "sonstiges"),
   });
-  if (error) return { fehler: "Das Dokument konnte nicht gespeichert werden." };
+  if (error) return { fehler: nichtGeklappt("Das Ablegen Ihrer Unterlage") };
 
   revalidatePath("/app/dokumente");
   return { ok: true };
@@ -138,7 +139,7 @@ export async function dokumentLoeschen(formData: FormData) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { fehler: "Nicht angemeldet." };
+  if (!user) return { fehler: MELDUNG.abgemeldet };
 
   const id = String(formData.get("id"));
   const { data: dok } = await supabase
@@ -146,11 +147,11 @@ export async function dokumentLoeschen(formData: FormData) {
     .select("file_path, patient_id")
     .eq("id", id)
     .maybeSingle();
-  if (!dok || dok.patient_id !== user.id) return { fehler: "Dokument nicht gefunden." };
+  if (!dok || dok.patient_id !== user.id) return { fehler: "Diese Unterlage gibt es nicht mehr. Bitte laden Sie die Seite neu." };
 
   await supabase.storage.from("patient-docs").remove([dok.file_path]);
   const { error } = await supabase.from("documents").delete().eq("id", id);
-  if (error) return { fehler: "Das Dokument konnte nicht entfernt werden." };
+  if (error) return { fehler: nichtGeklappt("Das Entfernen der Unterlage") };
 
   revalidatePath("/app/dokumente");
   return { ok: true };

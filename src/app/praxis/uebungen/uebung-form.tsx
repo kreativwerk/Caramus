@@ -21,7 +21,7 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
       const datei = dateiRef.current?.files?.[0];
       if (datei) {
         if (datei.size > 45 * 1024 * 1024) {
-          setMeldung("Die Datei ist größer als 45 MB. Bitte Video kürzen oder komprimieren (1080p reicht).");
+          setMeldung("Das Video ist zu lang oder zu groß. Bitte kürzen Sie es oder nehmen Sie es in normaler Qualität auf.");
           return;
         }
         const supabase = createClient();
@@ -31,7 +31,7 @@ export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?:
           .from(MEDIA_BUCKET)
           .upload(pfad, datei, { contentType: datei.type || undefined });
         if (uploadFehler) {
-          setMeldung("Der Upload ist fehlgeschlagen. Bitte erneut versuchen.");
+          setMeldung("Das Hochladen hat gerade nicht geklappt. Bitte versuchen Sie es in einem Moment noch einmal.");
           return;
         }
         fd.set("media_url", pfad);

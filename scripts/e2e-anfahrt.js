@@ -65,14 +65,15 @@ async function login(page, email) {
   try {
     await praxis.goto(BASE + "/praxis", { waitUntil: "networkidle" });
     await praxis.waitForSelector("text=Erika Beispiel", { timeout: 15000 });
-    await praxis.getByRole("button", { name: /Bin unterwegs/ }).click();
+    // Bei mehreren Terminen zaehlt der naechste – der steht oben
+    await praxis.getByRole("button", { name: /Bin unterwegs/ }).first().click();
     await praxis.waitForSelector("text=Wie lange brauchen Sie", { timeout: 5000 });
     // Fallback: Ohne eingerichteten Verkehrsdienst bleibt die manuelle Auswahl
     await praxis.waitForSelector("text=Fahrzeit wird berechnet", { state: "detached", timeout: 20000 });
     if (await praxis.getByRole("button", { name: /Vorschlag:/ }).count()) {
       throw new Error("Vorschlag ohne eingerichteten Anbieter angezeigt");
     }
-    await praxis.getByRole("button", { name: "20 Min.", exact: true }).click();
+    await praxis.getByRole("button", { name: "20 Min.", exact: true }).first().click();
     await praxis.waitForSelector("text=/Unterwegs · noch ca\\./", { timeout: 20000 });
     ok("Therapeut startet Anfahrt mit 20 Minuten, Status wechselt auf 'Unterwegs'");
   } catch (e) { fail("Anfahrt starten", e); }
@@ -98,9 +99,9 @@ async function login(page, email) {
 
   // Verspätung über die Praxis-App melden
   try {
-    await praxis.getByRole("button", { name: "Verspätung melden" }).click();
+    await praxis.getByRole("button", { name: "Verspätung melden" }).first().click();
     await praxis.waitForSelector("text=Wie viel später wird es?", { timeout: 5000 });
-    await praxis.getByRole("button", { name: "+10 Min.", exact: true }).click();
+    await praxis.getByRole("button", { name: "+10 Min.", exact: true }).first().click();
     await praxis.waitForSelector("text=/Verspätung gemeldet um/", { timeout: 20000 });
     await praxis.waitForSelector("text=/noch ca\\. (29|30) Min\\./", { timeout: 10000 });
     ok("Praxis meldet +10 Min. Verspätung, neue Restzeit wird übernommen");
@@ -117,7 +118,7 @@ async function login(page, email) {
 
   // Ankunft melden
   try {
-    await praxis.getByRole("button", { name: "Angekommen" }).click();
+    await praxis.getByRole("button", { name: "Angekommen" }).first().click();
     await praxis.waitForSelector("text=/Angekommen um/", { timeout: 20000 });
     await patient.waitForSelector("text=/ist da/", { timeout: 20000 });
     ok("Ankunft gemeldet: Patient sieht in Echtzeit 'ist da'");

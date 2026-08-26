@@ -22,15 +22,15 @@ export function UploadForm() {
     startTransition(async () => {
       const datei = dateiRef.current?.files?.[0];
       if (!datei) {
-        setMeldung({ typ: "fehler", text: "Bitte wählen Sie eine Datei oder machen Sie ein Foto." });
+        setMeldung({ typ: "fehler", text: "Bitte wählen Sie zuerst eine Unterlage aus oder machen Sie ein Foto." });
         return;
       }
       if (datei.size > MAX_GROESSE) {
-        setMeldung({ typ: "fehler", text: `„${datei.name}" ist größer als 10 MB. Bitte verkleinern oder als PDF speichern.` });
+        setMeldung({ typ: "fehler", text: `„${datei.name}" ist zu groß. Bitte schicken Sie ein Foto in normaler Qualität oder speichern Sie die Unterlage als PDF.` });
         return;
       }
       if (datei.type && !ERLAUBTE_TYPEN.includes(datei.type)) {
-        setMeldung({ typ: "fehler", text: "Bitte ein PDF oder ein Foto (JPG, PNG, HEIC) auswählen." });
+        setMeldung({ typ: "fehler", text: "Das können wir leider nicht öffnen. Bitte schicken Sie ein Foto oder ein PDF." });
         return;
       }
 
@@ -39,7 +39,7 @@ export function UploadForm() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setMeldung({ typ: "fehler", text: "Bitte melden Sie sich erneut an." });
+        setMeldung({ typ: "fehler", text: "Sie sind nicht mehr angemeldet. Bitte melden Sie sich noch einmal an." });
         return;
       }
 
@@ -49,7 +49,7 @@ export function UploadForm() {
         .from(DOCS_BUCKET)
         .upload(pfad, datei, { contentType: datei.type || undefined });
       if (error) {
-        setMeldung({ typ: "fehler", text: "Der Upload ist fehlgeschlagen. Bitte erneut versuchen." });
+        setMeldung({ typ: "fehler", text: "Das Senden Ihrer Unterlage hat gerade nicht geklappt. Bitte versuchen Sie es in einem Moment noch einmal." });
         return;
       }
 

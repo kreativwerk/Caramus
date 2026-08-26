@@ -181,14 +181,15 @@ async function supabaseBridge(ctx) {
     await patient.goto(BASE + "/app/plan", { waitUntil: "networkidle" });
     await patient.waitForSelector("text=Übung 1", { timeout: 15000 });
     await patient.waitForSelector("text=Langsam und kontrolliert", { timeout: 5000 });
-    await patient.getByRole("button", { name: /Übung erledigt/ }).click();
+    // Der Plan kann aus frueheren Testlaeufen mehrere Uebungen enthalten
+    await patient.getByRole("button", { name: /Übung erledigt/ }).first().click();
     await setRange(patient, 'input[type="range"]', "3");
-    await patient.fill("textarea", "Ging gut, leichtes Ziehen im Knie.");
-    await patient.getByRole("button", { name: "Speichern", exact: true }).click();
+    await patient.locator("textarea").first().fill("Ging gut, leichtes Ziehen im Knie.");
+    await patient.getByRole("button", { name: "Speichern", exact: true }).first().click();
     await patient.waitForSelector("text=Heute erledigt", { timeout: 20000 });
     // Zaehler haengt davon ab, wie viele Uebungen im Plan liegen
     await patient.waitForSelector("text=/[1-9]\\d* von \\d+ Übungen geschafft/", { timeout: 8000 });
-    ok("Trainingsplan: Übung abgehakt mit Schmerzskala 3 und Notiz, Fortschritt 1/1");
+    ok("Trainingsplan: Übung abgehakt mit Schmerzskala 3 und Notiz, Fortschritt sichtbar");
   } catch (e) { fail("Plan-Feedback", e); }
 
   try {
@@ -240,6 +241,35 @@ async function supabaseBridge(ctx) {
     ok("Zugriffsschutz: Nicht angemeldet → Weiterleitung zum Login");
     await anon.close();
   } catch (e) { fail("Zugriffsschutz ohne Login", e); }
+
+  // ---------- Verständliche Meldungen ----------
+  // Kein Fachjargon, keine Codes: weder auf den Hinweisseiten noch beim Anmelden
+  const TECHNIK = /\b(error|exception|failed|digest|500|404|undefined|null|stack|token|session|bucket|upload)\b/i;
+
+  try {
+    const antwort = await patient.goto(BASE + "/gibt-es-nicht", { waitUntil: "networkidle" });
+    if (antwort.status() !== 404) throw new Error("Statuscode " + antwort.status());
+    const text = await patient.locator("body").innerText();
+    if (!text.includes("Diese Seite gibt es nicht.")) throw new Error("Freundlicher Text fehlt");
+    if (TECHNIK.test(text)) throw new Error("Technische Begriffe sichtbar: " + text.match(TECHNIK)[0]);
+    ok("Unbekannte Adresse: freundliche Hinweisseite ohne Fachbegriffe");
+  } catch (e) { fail("Hinweisseite unbekannte Adresse", e); }
+
+  try {
+    const anon = await browser.newContext();
+    await supabaseBridge(anon);
+    const anonPage = await anon.newPage();
+    await anonPage.goto(BASE + "/login", { waitUntil: "networkidle" });
+    await anonPage.getByRole("button", { name: "Mit Passwort" }).click();
+    await anonPage.fill("#email", "qa-patient@curamus-test.de");
+    await anonPage.fill("#passwort", "FalschesPasswort!1");
+    await anonPage.getByRole("button", { name: "Anmelden", exact: true }).click();
+    await anonPage.waitForSelector("text=Das hat nicht gepasst", { timeout: 15000 });
+    const text = await anonPage.locator("body").innerText();
+    if (TECHNIK.test(text)) throw new Error("Technische Begriffe sichtbar: " + text.match(TECHNIK)[0]);
+    ok("Falsches Passwort: verständliche Meldung ohne Fachbegriffe");
+    await anon.close();
+  } catch (e) { fail("Meldung bei falschem Passwort", e); }
 
   // Screenshots
   await patient.goto(BASE + "/app/plan", { waitUntil: "networkidle" });

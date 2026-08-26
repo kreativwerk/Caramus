@@ -43,6 +43,19 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - Client-Konfiguration: `.env.example` (öffentliche Schlüssel, kein Geheimnis)
 - Schema-Referenz: `supabase/migrations/0001_curamus_core_schema.sql`
 
+## Sprache der Meldungen
+
+Alles, was Patientinnen, Patienten und das Praxisteam zu sehen bekommen, ist in
+normaler Sprache geschrieben: keine Fehlernummern, keine Fachbegriffe wie
+„Upload", „Server" oder „Session", und immer ein Hinweis, was jetzt zu tun ist.
+
+- Bausteine und Regeln: `src/lib/meldungen.ts`
+- Freundliche Hinweisseiten: `src/app/error.tsx` (Seite lädt nicht),
+  `src/app/not-found.tsx` (Adresse gibt es nicht), `src/app/global-error.tsx`
+  (letztes Auffangnetz, bringt eigene Farben mit)
+- Technische Angaben landen ausschließlich in der Entwicklerkonsole
+- Zwei Prüfungen im QA-Lauf achten darauf, dass keine Fachbegriffe durchrutschen
+
 ## Umsetzung Meeting-Protokoll vom 24.08.2026
 
 | Protokollpunkt | Stand |
