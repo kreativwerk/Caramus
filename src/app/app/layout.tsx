@@ -1,16 +1,16 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { aktuellerNutzer, aktuellesProfil } from "@/lib/sitzung";
 import { AppShell } from "@/components/app-shell";
 import { patientenBenachrichtigungen } from "@/lib/benachrichtigungen";
 
 export default async function PatientLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Beides kommt aus dem Zwischenspeicher, wenn die Seite darunter es auch braucht
+  const user = await aktuellerNutzer();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const profile = await aktuellesProfil();
   if (profile?.role === "therapist") redirect("/praxis");
 
   const items = [

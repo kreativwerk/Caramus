@@ -1,12 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { Chat } from "@/components/chat";
 import type { Message } from "@/lib/types";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 export default async function PatientChatPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const [{ data: therapeutName }, { data: nachrichten }] = await Promise.all([
     supabase.rpc("therapeut_name"),

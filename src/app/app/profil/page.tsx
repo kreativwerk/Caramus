@@ -4,12 +4,11 @@ import { AbmeldenKnopf } from "@/components/abmelden-knopf";
 import { PushSchalter } from "@/components/push-schalter";
 import { PasswortAendern } from "@/components/passwort-aendern";
 import { ProfilForm } from "./profil-form";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const { data: profil } = await supabase.from("profiles").select("*").eq("id", user!.id).single();
 

@@ -3,14 +3,13 @@ import { AbmeldenKnopf } from "@/components/abmelden-knopf";
 import { PushSchalter } from "@/components/push-schalter";
 import { PasswortAendern } from "@/components/passwort-aendern";
 import { formatDate } from "@/lib/types";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 export const metadata = { title: "Profil" };
 
 export default async function PraxisProfilPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const { data: profil } = await supabase
     .from("profiles")

@@ -5,6 +5,7 @@ import type { Appointment, PatientDocument } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
 import { MIcon } from "@/components/m-icon";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 const statusText: Record<string, { label: string; klasse: string }> = {
   pending: { label: "Wartet auf Bestätigung", klasse: "bg-amber-50 text-amber-700" },
@@ -15,9 +16,7 @@ const statusText: Record<string, { label: string; klasse: string }> = {
 
 export default async function TerminePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const jetzt = new Date().toISOString();
   const [{ data: kommende }, { data: vergangene }, { data: anfragen }] = await Promise.all([

@@ -3,14 +3,13 @@ import { resolveDocumentUrl } from "@/lib/media";
 import type { PatientDocument } from "@/lib/types";
 import { UploadForm } from "./upload-form";
 import { DokumentKarte } from "./dokument-karte";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 export const metadata = { title: "Unterlagen" };
 
 export default async function DokumentePage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const { data: dokumente } = await supabase
     .from("documents")

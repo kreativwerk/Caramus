@@ -10,11 +10,21 @@ Reihenfolge einhalten; Punkte mit 👤 brauchen Zugänge/Entscheidungen des Kund
 3. Environment Variables (aus `.env.example`):
    - `NEXT_PUBLIC_SUPABASE_URL` = `https://jiixpoyxctohzagldcel.supabase.co`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `sb_publishable_13ckYlrXxzhgICMDH-Rkrg_WG7m2Sv6`
-4. Optional (Fahrzeit mit Verkehrslage, siehe Abschnitt „Fahrzeit-Berechnung"):
+4. **Region auf Frankfurt stellen** – Settings → Functions → Region = `fra1`.
+   `vercel.json` gibt das bereits vor; im Dashboard bitte gegenprüfen. Steht die
+   App in den USA (Standard `iad1`), geht jeder Seitenaufruf mehrfach über den
+   Atlantik: spürbar langsam, und Patientendaten würden auf US-Servern
+   verarbeitet. Prüfen lässt sich das an der Antwort des Servers – im Kopf
+   `x-vercel-id` muss `fra1` stehen:
+
+   ```bash
+   curl -sI https://app.curamus-medical.de/login | grep x-vercel-id
+   ```
+5. Optional (Fahrzeit mit Verkehrslage, siehe Abschnitt „Fahrzeit-Berechnung"):
    - `FAHRZEIT_ANBIETER` = `here` (oder `google` / `openrouteservice`)
    - `FAHRZEIT_SCHLUESSEL` = API-Schlüssel des Anbieters
    Ohne diese beiden Variablen läuft die App vollständig – Charles wählt die Fahrzeit dann selbst.
-5. Deploy ausführen → Vorschau-URL testen (Login-Seite muss erscheinen).
+6. Deploy ausführen → Vorschau-URL testen (Login-Seite muss erscheinen).
 
 ## 2. Domain verbinden
 

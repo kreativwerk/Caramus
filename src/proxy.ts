@@ -43,5 +43,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
+  // Nur dort prüfen, wo es etwas zu schützen gibt. Jeder Durchlauf kostet eine
+  // Rückfrage bei Supabase in Frankfurt – öffentliche Seiten wie Anmeldung,
+  // Impressum oder Datenschutz sollen die nicht bezahlen.
+  matcher: ["/", "/app/:path*", "/praxis/:path*"],
 };

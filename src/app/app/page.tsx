@@ -6,14 +6,13 @@ import { Schnellzugriff } from "@/components/schnellzugriff";
 import type { Appointment } from "@/lib/types";
 import { formatTime } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 const TAGE = 7;
 
 export default async function PatientStart() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const seit = new Date();
   seit.setDate(seit.getDate() - (TAGE - 1));

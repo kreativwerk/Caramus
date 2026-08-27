@@ -3,12 +3,11 @@ import { resolveMediaUrl } from "@/lib/media";
 import type { PlanFeedback, PlanItem } from "@/lib/types";
 import { FeedbackForm } from "./feedback-form";
 import { MIcon } from "@/components/m-icon";
+import { aktuellerNutzer } from "@/lib/sitzung";
 
 export default async function PlanPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await aktuellerNutzer();
 
   const { data: plan } = await supabase
     .from("training_plans")

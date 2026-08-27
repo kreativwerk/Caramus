@@ -25,6 +25,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Seitenleiste bleibt beim Scrollen stehen, unten ein Profilkasten mit Name und E-Mail
 - [x] Praxis kann Patientinnen und Patienten einladen – per E-Mail oder als Link zum Weitergeben (`/praxis/patienten`)
 - [x] Helle Logo-Variante für dunkle Flächen (`public/logo-mark-hell.png`)
+- [x] Tempo: Region auf Frankfurt festgelegt (`vercel.json`), Anmeldeprüfung nur noch auf geschützten Seiten, Nutzer und Profil einmal pro Aufruf statt mehrfach (`src/lib/sitzung.ts`), Platzhalter beim Seitenwechsel
 
 ## Nächste Schritte (Reihenfolge empfohlen)
 
