@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const MEDIA_BUCKET = "exercise-media";
 export const DOCS_BUCKET = "patient-docs";
+export const FEEDBACK_BUCKET = "feedback-media";
 
 async function signedUrl(supabase: SupabaseClient, bucket: string, path: string) {
   const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
@@ -28,4 +29,12 @@ export async function resolveDocumentUrl(
   filePath: string
 ): Promise<string | null> {
   return signedUrl(supabase, DOCS_BUCKET, filePath);
+}
+
+/** Signierte URL für einen Screenshot aus einer Rückmeldung. */
+export async function resolveFeedbackUrl(
+  supabase: SupabaseClient,
+  filePath: string
+): Promise<string | null> {
+  return signedUrl(supabase, FEEDBACK_BUCKET, filePath);
 }

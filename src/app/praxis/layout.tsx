@@ -21,6 +21,7 @@ export default async function PraxisLayout({ children }: { children: React.React
     { href: "/praxis/patienten", label: "Patienten", icon: "personen" },
     { href: "/praxis/uebungen", label: "Übungen", icon: "plan" },
     { href: "/praxis/chat", label: "Chat", icon: "chat" },
+    { href: "/praxis/feedback", label: "Rückmeldung", icon: "feedback" },
   ] as const;
 
   const benachrichtigungen = await praxisBenachrichtigungen(supabase);

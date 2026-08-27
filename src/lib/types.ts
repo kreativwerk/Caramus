@@ -159,6 +159,66 @@ export function dokumentArtLabel(kind: DocumentKind) {
   return DOKUMENT_ARTEN.find((a) => a.wert === kind)?.label ?? "Dokument";
 }
 
+export type FeedbackArt = "fehler" | "wunsch" | "frage";
+export type FeedbackStatus = "neu" | "in_arbeit" | "erledigt" | "zurueckgestellt";
+
+export type FeedbackAnhang = {
+  id: string;
+  feedback_id: string;
+  file_path: string;
+  file_name: string;
+  content_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+};
+
+export type Feedback = {
+  id: string;
+  author_id: string;
+  title: string;
+  body: string | null;
+  art: FeedbackArt;
+  status: FeedbackStatus;
+  /** Rückmeldung der Agentur an die Praxis */
+  antwort: string | null;
+  created_at: string;
+  updated_at: string;
+  feedback_attachments?: FeedbackAnhang[];
+};
+
+export const FEEDBACK_ARTEN: { wert: FeedbackArt; label: string; hinweis: string }[] = [
+  { wert: "fehler", label: "Etwas funktioniert nicht", hinweis: "Ein Knopf reagiert nicht, etwas wird falsch angezeigt" },
+  { wert: "wunsch", label: "Wunsch oder Idee", hinweis: "Etwas fehlt oder könnte einfacher sein" },
+  { wert: "frage", label: "Frage", hinweis: "Etwas ist unklar" },
+];
+
+export const FEEDBACK_STATUS: Record<FeedbackStatus, { label: string; erklaerung: string; klasse: string }> = {
+  neu: {
+    label: "Eingegangen",
+    erklaerung: "Ist bei uns angekommen – wir schauen es uns an.",
+    klasse: "bg-mist-100 text-navy-700",
+  },
+  in_arbeit: {
+    label: "In Arbeit",
+    erklaerung: "Wir sind dran.",
+    klasse: "bg-amber-50 text-amber-700",
+  },
+  erledigt: {
+    label: "Erledigt",
+    erklaerung: "Ist umgesetzt und live.",
+    klasse: "bg-teal-50 text-teal-600",
+  },
+  zurueckgestellt: {
+    label: "Zurückgestellt",
+    erklaerung: "Haben wir notiert, kommt später dran.",
+    klasse: "bg-mist-100 text-navy-600",
+  },
+};
+
+export function feedbackArtLabel(art: FeedbackArt) {
+  return FEEDBACK_ARTEN.find((a) => a.wert === art)?.label ?? "Rückmeldung";
+}
+
 export type Message = {
   id: string;
   patient_id: string;

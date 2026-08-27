@@ -6,7 +6,7 @@ export default function DatenschutzPage() {
   return (
     <article className="card space-y-5">
       <h1 className="text-3xl font-bold text-navy-800">Datenschutzerklärung</h1>
-      <p className="text-sm text-navy-600/80">für den Patientenbereich mein.curamus-medical.de</p>
+      <p className="text-sm text-navy-600/80">für den Patientenbereich app.curamus-medical.de</p>
 
       <section>
         <h2 className="text-lg font-bold text-navy-800">1. Verantwortlicher</h2>

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Screenshots aus den QA-Testlaeufen
 /*.png
+
+# Aus Feedback-Tickets heruntergeladene Screenshots
+/tickets/

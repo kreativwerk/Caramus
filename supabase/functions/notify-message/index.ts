@@ -11,7 +11,7 @@
 //   SMTP_PASS  – Passwort dieses Postfachs
 //   NOTIFY_FROM – Absender, muss zum Postfach passen,
 //                 z. B. "Curamus Medical <kontakt@curamus-medical.de>"
-//   APP_URL    – z. B. https://mein.curamus-medical.de
+//   APP_URL    – z. B. https://app.curamus-medical.de
 //
 // Deployment: supabase functions deploy notify-message --project-ref jiixpoyxctohzagldcel
 
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     const email = nutzer?.user?.email;
     if (!email) return new Response("no email", { status: 200 });
 
-    const appUrl = Deno.env.get("APP_URL") ?? "https://mein.curamus-medical.de";
+    const appUrl = Deno.env.get("APP_URL") ?? "https://app.curamus-medical.de";
     const ziel = patientSchreibt ? `${appUrl}/praxis/chat/${record.patient_id}` : `${appUrl}/app/chat`;
 
     const port = Number(Deno.env.get("SMTP_PORT") ?? 465);

@@ -3,6 +3,8 @@
 //   (select id from public.profiles where full_name = 'Erika Beispiel');
 // Start: npm run build && npm run start, dann node scripts/e2e-dokumente.js
 const pw = require("playwright-core");
+const path = require("node:path");
+const { speicherRundlauf, testdatenLoeschen } = require("./speicher-check");
 const BASE = "http://localhost:3000";
 const PASS = "QaTest!2026";
 const results = [];
@@ -40,6 +42,15 @@ async function login(page, email) {
   await login(patient, "qa-patient@curamus-test.de");
   await login(praxis, "qa-therapeut@curamus-test.de");
 
+  // Reste frueherer Durchlaeufe wegraeumen, sonst trifft die Suche unten
+  // die alte Karte statt der neuen
+  await testdatenLoeschen({
+    tabelle: "documents",
+    filter: "file_name=eq.test-rezept.pdf",
+    email: "qa-therapeut@curamus-test.de",
+    passwort: PASS,
+  });
+
   // Patient: Unterlage hochladen
   try {
     await patient.goto(BASE + "/app/dokumente", { waitUntil: "networkidle" });
@@ -56,6 +67,21 @@ async function login(page, email) {
     ok("Patient laedt Rezept hoch, Karte zeigt Art und Status 'Eingegangen'");
   } catch (e) { fail("Upload Patient", e); }
   await patient.screenshot({ path: "dok-patient.png", fullPage: false });
+
+  // Der Inhalt muss unveraendert im privaten Speicher ankommen. Der Browsertest
+  // tunnelt seine Anfragen durch Node und verliert dabei Binaerdaten, deshalb
+  // laeuft diese Pruefung ueber die echte Schnittstelle.
+  try {
+    const groesse = await speicherRundlauf({
+      bucket: "patient-docs",
+      dateiPfad: path.join(__dirname, "test-rezept.pdf"),
+      zielPfad: `{uid}/qa-pruefung-${Date.now()}.pdf`,
+      email: "qa-patient@curamus-test.de",
+      passwort: PASS,
+      mime: "application/pdf",
+    });
+    ok(`Rezept kommt unveraendert im privaten Speicher an (${groesse} Byte) und ist ohne Anmeldung gesperrt`);
+  } catch (e) { fail("Speicher-Rundlauf patient-docs", e); }
 
   // Praxis: Eingang sehen und Status setzen
   try {

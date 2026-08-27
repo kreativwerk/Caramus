@@ -1,6 +1,6 @@
 # Curamus Medical – Patienten-App
 
-Webapp für die mobile Physiotherapie-Praxis Curamus Medical (`mein.curamus-medical.de`):
+Webapp für die mobile Physiotherapie-Praxis Curamus Medical (`app.curamus-medical.de`):
 Terminanfragen für Hausbesuche, persönliche Trainingspläne mit Übungen und Rückmeldung,
 Chat zwischen Patient und Therapeut. Responsiv für Handy, Tablet und Desktop,
 seniorenfreundliche Bedienung.
@@ -45,4 +45,4 @@ Patienten sehen ausschließlich ihre eigenen Daten; der Therapeut sieht alle.
 ## Deployment (geplant)
 
 Vercel, Root des Repos, Umgebungsvariablen aus `.env.example`; Subdomain
-`mein.curamus-medical.de` per CNAME. Details und offene Punkte: `docs/projektplan.md`.
+`app.curamus-medical.de` per CNAME. Details und offene Punkte: `docs/projektplan.md`.

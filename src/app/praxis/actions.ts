@@ -428,3 +428,103 @@ export async function dokumentStatusSetzen(formData: FormData): Promise<ActionRe
   revalidatePath("/praxis");
   return { ok: true };
 }
+
+/**
+ * Rückmeldung aus der Praxis: Charles meldet Fehler, Wünsche und Fragen
+ * direkt aus der App – mit Screenshots, damit nichts erklärt werden muss.
+ * Die Bilder liegen schon im geschützten Speicher, hier werden sie nur verknüpft.
+ */
+export async function feedbackSenden(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return { fehler: "Bitte geben Sie der Rückmeldung eine kurze Überschrift." };
+
+  const art = String(formData.get("art") ?? "fehler");
+  if (!["fehler", "wunsch", "frage"].includes(art)) {
+    return { fehler: "Bitte wählen Sie aus, worum es geht." };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: eintrag, error } = await supabase
+    .from("feedback")
+    .insert({
+      author_id: user!.id,
+      title: title.slice(0, 200),
+      body: String(formData.get("body") ?? "").trim() || null,
+      art,
+    })
+    .select("id")
+    .single();
+  if (error || !eintrag) return { fehler: nichtGeklappt("Das Senden Ihrer Rückmeldung") };
+
+  try {
+    const bilder = JSON.parse(String(formData.get("bilder") ?? "[]")) as {
+      file_path: string;
+      file_name: string;
+      content_type?: string;
+      size_bytes?: number;
+    }[];
+    if (Array.isArray(bilder) && bilder.length > 0) {
+      await supabase.from("feedback_attachments").insert(
+        bilder.slice(0, 5).map((b) => ({
+          feedback_id: eintrag.id,
+          file_path: String(b.file_path),
+          file_name: String(b.file_name).slice(0, 200),
+          content_type: b.content_type ? String(b.content_type) : null,
+          size_bytes: typeof b.size_bytes === "number" ? b.size_bytes : null,
+        }))
+      );
+    }
+  } catch {
+    // Die Rückmeldung zählt auch ohne Bild – lieber unvollständig als verloren
+  }
+
+  revalidatePath("/praxis/feedback");
+  return { ok: true };
+}
+
+/** Charles hakt eine erledigte Sache selbst ab oder nimmt sie zurück. */
+export async function feedbackStatusSetzen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const status = String(formData.get("status"));
+  if (!["neu", "in_arbeit", "erledigt", "zurueckgestellt"].includes(status)) {
+    return { fehler: "Diesen Status gibt es nicht. Bitte laden Sie die Seite neu." };
+  }
+
+  const { error } = await supabase
+    .from("feedback")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", String(formData.get("id")));
+  if (error) return { fehler: nichtGeklappt("Das Setzen des Status") };
+
+  revalidatePath("/praxis/feedback");
+  return { ok: true };
+}
+
+/** Rückmeldung wieder zurückziehen, solange noch niemand daran gearbeitet hat. */
+export async function feedbackLoeschen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const id = String(formData.get("id"));
+  const { data: anhaenge } = await supabase
+    .from("feedback_attachments")
+    .select("file_path")
+    .eq("feedback_id", id);
+  if (anhaenge?.length) {
+    await supabase.storage.from("feedback-media").remove(anhaenge.map((a) => a.file_path));
+  }
+
+  const { error } = await supabase.from("feedback").delete().eq("id", id);
+  if (error) return { fehler: nichtGeklappt("Das Zurückziehen der Rückmeldung") };
+
+  revalidatePath("/praxis/feedback");
+  return { ok: true };
+}

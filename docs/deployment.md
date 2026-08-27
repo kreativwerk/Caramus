@@ -1,4 +1,4 @@
-# Deployment-Checkliste – mein.curamus-medical.de
+# Deployment-Checkliste – app.curamus-medical.de
 
 Reihenfolge einhalten; Punkte mit 👤 brauchen Zugänge/Entscheidungen des Kunden oder der Agentur.
 
@@ -18,17 +18,17 @@ Reihenfolge einhalten; Punkte mit 👤 brauchen Zugänge/Entscheidungen des Kund
 
 ## 2. Domain verbinden
 
-1. In Vercel: Project → Settings → Domains → `mein.curamus-medical.de` hinzufügen.
+1. In Vercel: Project → Settings → Domains → `app.curamus-medical.de` hinzufügen.
 2. 👤 Beim Domain-Anbieter von curamus-medical.de einen CNAME-Eintrag setzen:
    `mein` → `cname.vercel-dns.com` (Vercel zeigt den exakten Wert an).
-3. Warten bis Zertifikat aktiv (automatisch), dann `https://mein.curamus-medical.de` testen.
+3. Warten bis Zertifikat aktiv (automatisch), dann `https://app.curamus-medical.de` testen.
 
 ## 3. Supabase auf die Domain umstellen
 
 Dashboard Projekt `jiixpoyxctohzagldcel`:
 
-1. **Authentication → URL Configuration**: Site URL `https://mein.curamus-medical.de`,
-   Redirect URL `https://mein.curamus-medical.de/auth/callback` hinzufügen.
+1. **Authentication → URL Configuration**: Site URL `https://app.curamus-medical.de`,
+   Redirect URL `https://app.curamus-medical.de/auth/callback` hinzufügen.
 2. **Authentication → Emails**: deutsche Vorlagen aus `docs/email-vorlagen.md` einfügen.
 3. 👤 Eigenes Postfach als Absender hinterlegen – siehe Abschnitt
    „E-Mail-Versand über das eigene Postfach". Ohne diesen Schritt stellt Supabase
@@ -36,7 +36,7 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
 
 ## 4. Therapeuten-Konto
 
-1. 👤 Kunde registriert sich unter `https://mein.curamus-medical.de/registrieren`.
+1. 👤 Kunde registriert sich unter `https://app.curamus-medical.de/registrieren`.
 2. SQL-Editor im Supabase-Dashboard:
    ```sql
    update public.profiles set role = 'therapist'

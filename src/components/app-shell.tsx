@@ -175,4 +175,9 @@ export const Icons = {
       <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M8 3v4M16 3v4M3 10h18" /><path d="M10 15.5l1.8 1.8 3.2-3.6" />
     </svg>
   ),
+  feedback: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-12.6 8.3L3 21l.8-5A9 9 0 0 1 12 3Z" /><path d="M12 8.5v4" /><path d="M12 15.6h.01" />
+    </svg>
+  ),
 };

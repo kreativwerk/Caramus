@@ -18,10 +18,11 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Poppins-Schrift wird lokal eingebettet (kein Google-Fonts-Aufruf zur Laufzeit, DSGVO)
 - [x] Deutsche E-Mail-Vorlagen (`docs/email-vorlagen.md`) und Deployment-Checkliste (`docs/deployment.md`)
 - [x] Edge-Function-Gerüst für E-Mail-Benachrichtigung bei neuen Nachrichten (`supabase/functions/notify-message/`)
+- [x] Rückmeldungs-Bereich für die Praxis: Tickets mit Screenshots, Stand und Antwort (`/praxis/feedback`) samt Abhol-Skript `scripts/tickets.js`
 
 ## Nächste Schritte (Reihenfolge empfohlen)
 
-1. **Vercel-Deployment**: Repo verbinden, Env-Variablen aus `.env.example`, Domain `mein.curamus-medical.de` als CNAME. Danach in Supabase (Auth → URL Configuration) Site-URL + Redirect-URL auf die Domain stellen, sonst funktionieren die E-Mail-Links nur lokal.
+1. **Vercel-Deployment**: Repo verbinden, Env-Variablen aus `.env.example`, Domain `app.curamus-medical.de` als CNAME. Danach in Supabase (Auth → URL Configuration) Site-URL + Redirect-URL auf die Domain stellen, sonst funktionieren die E-Mail-Links nur lokal.
 2. **Therapeuten-Konto** anlegen und per SQL auf `therapist` setzen (siehe README). Öffentliche Registrierung optional abschalten (Supabase Auth → „Allow new users to sign up"), sobald alle Patienten eingeladen sind.
 3. **E-Mail-Absender**: Eigene SMTP-Domain in Supabase hinterlegen (z. B. mail@curamus-medical.de), damit Anmelde-Links nicht als Spam landen. E-Mail-Vorlagen auf Deutsch anpassen.
 4. **Design-Feinschliff** anhand der finalen Figma-Screens (Screenshots liegen vor; Logo-Datei vom Kunden anfordern und `src/components/logo.tsx` ersetzen).
@@ -42,6 +43,29 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - Supabase-Projekt: `jiixpoyxctohzagldcel` (Org „Kreativwerk Agentur", Region eu-central-1)
 - Client-Konfiguration: `.env.example` (öffentliche Schlüssel, kein Geheimnis)
 - Schema-Referenz: `supabase/migrations/0001_curamus_core_schema.sql`
+
+## Rückmeldungen aus der Praxis (Tickets)
+
+Charles meldet Fehler, Wünsche und Fragen direkt in der App unter
+**Praxis → Rückmeldung**: Überschrift, Beschreibung, bis zu fünf Screenshots.
+Die Bilder liegen im privaten Speicher `feedback-media` und sind nur mit
+Anmeldung über eine signierte Adresse abrufbar.
+
+Für die Bearbeitung mit Claude Code gibt es `scripts/tickets.js`:
+
+```bash
+TICKET_EMAIL=kontakt@curamus-medical.de TICKET_PASSWORT=… \
+  node scripts/tickets.js holen        # offene Tickets + Screenshots nach ./tickets/
+node scripts/tickets.js status <id> in_arbeit
+node scripts/tickets.js antwort <id> "Ist behoben, bitte einmal ansehen."
+```
+
+`holen` schreibt `tickets/OFFEN.md` – eine Sitzung kann direkt damit anfangen.
+Das Skript meldet sich mit dem Praxiskonto an, ein Service-Schlüssel ist nicht
+nötig. Der Ordner `tickets/` bleibt aus dem Repo heraus.
+
+Stand und Antwort sieht Charles sofort in der App. Er selbst kann eine Sache als
+erledigt abhaken oder wieder öffnen, wenn sie erneut auftritt.
 
 ## Sprache der Meldungen
 

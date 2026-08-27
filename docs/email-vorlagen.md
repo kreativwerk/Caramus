@@ -4,8 +4,8 @@ Einzutragen im Supabase-Dashboard unter **Authentication → Emails → Template
 (Projekt `jiixpoyxctohzagldcel`). Betreffzeilen jeweils darüber angegeben.
 
 Vorher unter **Authentication → URL Configuration**:
-- Site URL: `https://mein.curamus-medical.de`
-- Redirect URLs: `https://mein.curamus-medical.de/auth/callback`
+- Site URL: `https://app.curamus-medical.de`
+- Redirect URLs: `https://app.curamus-medical.de/auth/callback`
 
 ## Magic Link (Anmelde-Link)
 
