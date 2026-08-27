@@ -273,6 +273,60 @@ async function supabaseBridge(ctx) {
     await anon.close();
   } catch (e) { fail("Meldung bei falschem Passwort", e); }
 
+  // ---------- Passwort ----------
+  try {
+    const anon = await browser.newContext();
+    const seite = await anon.newPage();
+    await seite.goto(BASE + "/login", { waitUntil: "networkidle" });
+    await seite.getByRole("button", { name: "Mit Passwort" }).click();
+    await seite.getByRole("link", { name: "Passwort vergessen?" }).click();
+    await seite.waitForURL(/passwort-vergessen/, { timeout: 15000 });
+    await seite.waitForSelector("text=Link zum Zurücksetzen senden", { timeout: 10000 });
+    ok("Anmeldung verlinkt auf 'Passwort vergessen', die Seite laedt");
+    await anon.close();
+  } catch (e) { fail("Seite 'Passwort vergessen'", e); }
+
+  try {
+    // Ohne gueltigen Link darf hier niemand ein Passwort setzen
+    const anon = await browser.newContext();
+    const seite = await anon.newPage();
+    await seite.goto(BASE + "/passwort-neu", { waitUntil: "networkidle" });
+    await seite.waitForSelector("text=/nicht mehr gültig/", { timeout: 15000 });
+    const felder = await seite.locator('input[type="password"]').count();
+    if (felder > 0) throw new Error("Passwortfeld trotz fehlender Anmeldung sichtbar");
+    ok("Ohne gueltigen Link zeigt 'Neues Passwort' nur einen Hinweis, kein Formular");
+    await anon.close();
+  } catch (e) { fail("Schutz von 'Neues Passwort'", e); }
+
+  try {
+    await patient.goto(BASE + "/app/profil", { waitUntil: "networkidle" });
+    const karte = patient.locator("section.card").filter({ hasText: "Passwort" }).first();
+    await karte.getByRole("button", { name: "Passwort ändern" }).click();
+    await patient.fill("#neues-passwort", "kurz");
+    await patient.fill("#neues-passwort-wdh", "kurz");
+    await karte.getByRole("button", { name: "Passwort speichern" }).click();
+    await karte.getByText(/mindestens 6 Zeichen/).waitFor({ timeout: 10000 });
+
+    await patient.fill("#neues-passwort", "EinLangesPasswort1");
+    await patient.fill("#neues-passwort-wdh", "EinAnderesPasswort2");
+    await karte.getByRole("button", { name: "Passwort speichern" }).click();
+    await karte.getByText(/nicht gleich/).waitFor({ timeout: 10000 });
+    ok("Passwort ändern: zu kurz und Tippfehler werden verstaendlich abgefangen");
+  } catch (e) { fail("Passwortpruefung im Profil", e); }
+
+  try {
+    // Bis zu Supabase und zurueck – ohne das QA-Konto zu veraendern wird das
+    // bisherige Passwort erneut gesetzt. Beide moeglichen Antworten sind richtig.
+    const karte = patient.locator("section.card").filter({ hasText: "Passwort" }).first();
+    await patient.fill("#neues-passwort", PASS);
+    await patient.fill("#neues-passwort-wdh", PASS);
+    await karte.getByRole("button", { name: "Passwort speichern" }).click();
+    await karte.getByText(/gespeichert|bisheriges Passwort/).waitFor({ timeout: 20000 });
+    const text = await karte.innerText();
+    if (TECHNIK.test(text)) throw new Error("Technische Begriffe sichtbar: " + text.match(TECHNIK)[0]);
+    ok("Passwort ändern erreicht die Anmeldung und meldet verstaendlich zurueck");
+  } catch (e) { fail("Passwort speichern", e); }
+
   // ---------- Benachrichtigungen ----------
   try {
     await patient.goto(BASE + "/app/profil", { waitUntil: "networkidle" });

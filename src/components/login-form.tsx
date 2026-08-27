@@ -123,6 +123,16 @@ function Formular({ variante }: { variante: Variante }) {
                   />
                 </div>
               )}
+              {modus === "passwort" && (
+                <p className="-mt-2 text-right">
+                  <Link
+                    href="/passwort-vergessen"
+                    className="text-sm font-semibold text-teal-600 hover:underline"
+                  >
+                    Passwort vergessen?
+                  </Link>
+                </p>
+              )}
               {(fehler || linkFehler) && (
                 <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {fehler ?? "Dieser Anmelde-Link ist nicht mehr gültig – er gilt nur eine Stunde. Bitte fordern Sie sich einen neuen an."}

@@ -14,7 +14,7 @@ function erklaerung(error: { message?: string; code?: string }) {
   if (text.includes("already registered") || text.includes("user_already_exists"))
     return "Für diese E-Mail-Adresse gibt es schon einen Zugang. Bitte melden Sie sich einfach an.";
   if (text.includes("weak_password") || text.includes("at least"))
-    return "Bitte wählen Sie ein längeres Passwort – mindestens sechs Zeichen.";
+    return "Bitte wählen Sie ein längeres Passwort – mindestens 6 Zeichen.";
   if (text.includes("email_address_invalid") || text.includes("invalid email"))
     return "Diese E-Mail-Adresse scheint nicht zu stimmen. Bitte schauen Sie noch einmal drüber.";
   if (text.includes("rate limit") || text.includes("over_email_send_rate_limit"))

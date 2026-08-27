@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 import { AbmeldenKnopf } from "@/components/abmelden-knopf";
 import { PushSchalter } from "@/components/push-schalter";
+import { PasswortAendern } from "@/components/passwort-aendern";
 import { ProfilForm } from "./profil-form";
 
 export default async function ProfilPage() {
@@ -24,6 +25,8 @@ export default async function ProfilPage() {
         </p>
       </div>
       <ProfilForm profil={profil as Profile} />
+
+      <PasswortAendern />
 
       <PushSchalter oeffentlicherSchluessel={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
 

@@ -16,7 +16,7 @@ Vorher unter **Authentication → URL Configuration**:
 <p>mit einem Klick auf den folgenden Knopf melden Sie sich sicher in Ihrem
 persönlichen Bereich bei Curamus Medical an:</p>
 <p><a href="{{ .ConfirmationURL }}"
-  style="display:inline-block;background:#2fb5b3;color:#ffffff;padding:12px 24px;
+  style="display:inline-block;background:#34b8be;color:#ffffff;padding:12px 24px;
   border-radius:8px;text-decoration:none;font-weight:bold">Jetzt anmelden</a></p>
 <p>Der Link ist eine Stunde gültig und kann nur einmal verwendet werden.
 Falls Sie diese E-Mail nicht angefordert haben, können Sie sie einfach ignorieren.</p>
@@ -31,7 +31,7 @@ Falls Sie diese E-Mail nicht angefordert haben, können Sie sie einfach ignorier
 <h2>Willkommen bei Curamus Medical!</h2>
 <p>Bitte bestätigen Sie Ihre E-Mail-Adresse, um Ihren Zugang zu aktivieren:</p>
 <p><a href="{{ .ConfirmationURL }}"
-  style="display:inline-block;background:#2fb5b3;color:#ffffff;padding:12px 24px;
+  style="display:inline-block;background:#34b8be;color:#ffffff;padding:12px 24px;
   border-radius:8px;text-decoration:none;font-weight:bold">E-Mail-Adresse bestätigen</a></p>
 <p>Danach können Sie sich jederzeit anmelden – wahlweise mit Passwort oder
 bequem per Anmelde-Link.</p>
@@ -46,7 +46,7 @@ bequem per Anmelde-Link.</p>
 <h2>Guten Tag,</h2>
 <p>Sie möchten Ihr Passwort neu festlegen? Klicken Sie dazu hier:</p>
 <p><a href="{{ .ConfirmationURL }}"
-  style="display:inline-block;background:#2fb5b3;color:#ffffff;padding:12px 24px;
+  style="display:inline-block;background:#34b8be;color:#ffffff;padding:12px 24px;
   border-radius:8px;text-decoration:none;font-weight:bold">Neues Passwort festlegen</a></p>
 <p>Tipp: Sie können sich auch ganz ohne Passwort anmelden – wählen Sie auf der
 Anmeldeseite einfach „Ohne Passwort“.</p>

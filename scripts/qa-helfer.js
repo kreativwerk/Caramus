@@ -103,8 +103,8 @@ async function testdatenLoeschen({ tabelle, filter, email, passwort }) {
 }
 
 /**
- * Bringt die Termine in den Ausgangszustand: genau ein geplanter Termin in
- * drei Stunden, keine laufende Anfahrt. Ohne das stolpert der Anfahrtstest
+ * Bringt die Termine in den Ausgangszustand: genau ein geplanter Termin,
+ * der noch heute ansteht, keine laufende Anfahrt. Ohne das stolpert der Anfahrtstest
  * über die Termine, die frühere Durchläufe angelegt haben.
  */
 async function terminBuehneVorbereiten({ email, passwort }) {
@@ -124,12 +124,18 @@ async function terminBuehneVorbereiten({ email, passwort }) {
     await fetch(`${konf.url}/rest/v1/appointments?id=eq.${t.id}`, { method: "DELETE", headers: kopf });
   }
 
-  const inDreiStunden = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+  // Die Praxis-Übersicht zeigt nur den heutigen Tag. Der Testtermin muss also
+  // in der Zukunft liegen, aber noch heute – sonst taucht er dort nicht auf.
+  const jetzt = new Date();
+  const tagesende = new Date(jetzt);
+  tagesende.setHours(23, 59, 0, 0);
+  const start = new Date(Math.min(jetzt.getTime() + 30 * 60 * 1000, tagesende.getTime()));
+  const beginn = start.toISOString();
   await fetch(`${konf.url}/rest/v1/appointments?id=eq.${termine[0].id}`, {
     method: "PATCH",
     headers: kopf,
     body: JSON.stringify({
-      starts_at: inDreiStunden,
+      starts_at: beginn,
       status: "geplant",
       enroute_at: null,
       eta_minutes: null,
