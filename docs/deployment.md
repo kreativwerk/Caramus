@@ -111,6 +111,35 @@ die Nachricht selbst davon unberührt – sie steht ohnehin sofort in der App.
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
 Mails im Posteingang und nicht im Spam landen.
 
+## Benachrichtigungen aufs Handy (Web Push)
+
+Ein kurzer Hinweis auf dem Sperrbildschirm, wenn eine Nachricht ankommt, ein
+Termin bestätigt wird, die Anfahrt startet oder sich verspätet. Ein- und
+ausschalten kann das jede und jeder selbst im Profil, pro Gerät.
+
+Einrichtung in Vercel (Environment Variables):
+
+1. Schlüsselpaar erzeugen: `npx web-push generate-vapid-keys`
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = der öffentliche Schlüssel
+   - `VAPID_PRIVATE_KEY` = der private Schlüssel (geheim halten)
+   - `VAPID_SUBJECT` = `mailto:kontakt@curamus-medical.de`
+2. `SUPABASE_SERVICE_ROLE_KEY` aus dem Supabase-Dashboard (Settings → API).
+   Nur damit kann der Server die Geräte des Empfängers nachschlagen. Dieser
+   Schlüssel gehört ausschließlich in die Server-Variablen, niemals in eine
+   Variable mit `NEXT_PUBLIC_`.
+
+Fehlt eine dieser Angaben, wird still nichts versendet – die App läuft normal
+weiter und zeigt alles Neue wie bisher beim nächsten Öffnen.
+
+**iPhone:** Apple erlaubt Benachrichtigungen nur, wenn die App vorher über
+„Teilen → Zum Home-Bildschirm" abgelegt wurde. Solange das nicht passiert ist,
+zeigt das Profil dort die Anleitung statt eines Schalters. Auf Android und am
+Computer geht es sofort.
+
+Datenschutz: In der Benachrichtigung steht nie der Inhalt einer Nachricht,
+sondern nur, dass es etwas Neues gibt – auf einem gesperrten Bildschirm hat
+Gesundheitliches nichts zu suchen.
+
 ## Fahrzeit-Berechnung (optional, jederzeit nachrüstbar)
 
 Standard ohne Konfiguration: Charles tippt beim Losfahren auf „Bin unterwegs" und wählt

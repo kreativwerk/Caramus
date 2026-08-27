@@ -19,6 +19,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Deutsche E-Mail-Vorlagen (`docs/email-vorlagen.md`) und Deployment-Checkliste (`docs/deployment.md`)
 - [x] Edge-Function-Gerüst für E-Mail-Benachrichtigung bei neuen Nachrichten (`supabase/functions/notify-message/`)
 - [x] Rückmeldungs-Bereich für die Praxis: Tickets mit Screenshots, Stand und Antwort (`/praxis/feedback`) samt Abhol-Skript `scripts/tickets.js`
+- [x] Benachrichtigungen aufs Handy (Web Push) mit Schalter im Profil, Probeversand und iPhone-Anleitung; ohne Schlüssel im Server läuft die App unverändert weiter
 
 ## Nächste Schritte (Reihenfolge empfohlen)
 
@@ -27,7 +28,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 3. **E-Mail-Absender**: Eigene SMTP-Domain in Supabase hinterlegen (z. B. mail@curamus-medical.de), damit Anmelde-Links nicht als Spam landen. E-Mail-Vorlagen auf Deutsch anpassen.
 4. **Design-Feinschliff** anhand der finalen Figma-Screens (Screenshots liegen vor; Logo-Datei vom Kunden anfordern und `src/components/logo.tsx` ersetzen).
 5. **Übungsinhalte**: Klären, ob Physiotec/Wibbi-Material verlinkt werden darf (Lizenz!). Alternativ eigene Fotos/Videos in den Storage-Bucket `exercise-media` laden (Upload-Maske in der Übungsbibliothek ergänzen, signierte URLs).
-6. **Benachrichtigungen** (Fragebogen: E-Mail + Push): E-Mail bei neuer Nachricht/Anfrage über Supabase Edge Function, Versand per SMTP über das eigene Postfach – kein Drittanbieter; Web-Push als PWA-Ausbau.
+6. **Benachrichtigungen**: Push ist gebaut und wartet nur auf die Schlüssel in Vercel. Offen ist der E-Mail-Versand per SMTP über das eigene Postfach (siehe `docs/deployment.md`).
 7. **Google-Kalender-Abgleich** (fest zugesagt): Google Cloud OAuth einrichten, bestätigte Termine in den Kalender schreiben, Belegtzeiten beim Bestätigen anzeigen. Aufwandstreiber – als eigenes Arbeitspaket planen.
 8. **DSGVO-Unterlagen**: AV-Verträge (Supabase, Vercel), Datenschutzerklärung + Impressum in die App, Verzeichnis der Verarbeitungstätigkeiten.
 

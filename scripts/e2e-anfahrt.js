@@ -6,6 +6,7 @@
 // Start: npm run build && npm run start, dann
 //   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=<CA> node scripts/e2e-anfahrt.js
 const pw = require("playwright-core");
+const { terminBuehneVorbereiten } = require("./qa-helfer");
 const BASE = "http://localhost:3000";
 const PASS = "QaTest!2026";
 const results = [];
@@ -49,6 +50,9 @@ async function login(page, email) {
   await supabaseBridge(praxisCtx);
   const patient = await patientCtx.newPage();
   const praxis = await praxisCtx.newPage();
+
+  // Ausgangszustand herstellen: ein geplanter Termin, keine laufende Anfahrt
+  await terminBuehneVorbereiten({ email: "qa-therapeut@curamus-test.de", passwort: PASS });
 
   await login(patient, "qa-patient@curamus-test.de");
   await login(praxis, "qa-therapeut@curamus-test.de");

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
 import { adresseZuKoordinate, fahrzeitMinuten, fahrzeitVerfuegbar } from "@/lib/fahrzeit";
+import { pushSenden } from "@/lib/push";
+import { formatDateTime } from "@/lib/types";
 
 export type ActionResult = { ok?: boolean; fehler?: string | null; planId?: string };
 
@@ -54,6 +56,13 @@ export async function anfrageBestaetigen(formData: FormData) {
     .update({ status: "confirmed", handled_at: new Date().toISOString() })
     .eq("id", anfrageId);
   if (e2) return { fehler: "Der Termin steht, nur die Anfrage zeigt noch den alten Stand. Bitte laden Sie die Seite neu." };
+
+  await pushSenden([patientId], {
+    titel: "Ihr Termin ist bestätigt",
+    text: `Hausbesuch am ${formatDateTime(new Date(startsAt).toISOString())} Uhr.`,
+    ziel: "/app/termine",
+    gruppe: "termin",
+  });
 
   revalidatePath("/praxis/anfragen");
   revalidatePath("/praxis/termine");
@@ -116,6 +125,14 @@ export async function terminAnlegen(formData: FormData) {
     notes: String(formData.get("notes") ?? "").trim() || null,
   });
   if (error) return { fehler: nichtGeklappt("Das Anlegen des Termins") };
+
+  await pushSenden([patientId], {
+    titel: "Neuer Termin",
+    text: `Hausbesuch am ${formatDateTime(new Date(startsAt).toISOString())} Uhr.`,
+    ziel: "/app/termine",
+    gruppe: "termin",
+  });
+
   revalidatePath("/praxis/termine");
   revalidatePath("/praxis");
   return { ok: true };
@@ -222,7 +239,7 @@ export async function verspaetungMelden(formData: FormData): Promise<ActionResul
   const terminId = String(formData.get("termin_id"));
   const { data: termin } = await supabase
     .from("appointments")
-    .select("eta_minutes, enroute_at")
+    .select("eta_minutes, enroute_at, patient_id")
     .eq("id", terminId)
     .maybeSingle();
   if (!termin?.enroute_at || !termin.eta_minutes) return { fehler: "Für diesen Termin ist gerade keine Anfahrt gestartet." };
@@ -236,6 +253,16 @@ export async function verspaetungMelden(formData: FormData): Promise<ActionResul
     })
     .eq("id", terminId);
   if (error) return { fehler: nichtGeklappt("Das Melden der Verspätung") };
+
+  const grund = String(formData.get("grund") ?? "").trim();
+  await pushSenden([termin.patient_id], {
+    titel: "Es dauert etwas länger",
+    text: grund
+      ? `${grund} – die neue Ankunftszeit steht in der App.`
+      : "Die neue Ankunftszeit steht in der App.",
+    ziel: "/app",
+    gruppe: "anfahrt",
+  });
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");
@@ -262,6 +289,20 @@ export async function fahrtStarten(formData: FormData): Promise<ActionResult> {
     })
     .eq("id", String(formData.get("termin_id")));
   if (error) return { fehler: nichtGeklappt("Das Starten der Anfahrt") };
+
+  const { data: unterwegs } = await supabase
+    .from("appointments")
+    .select("patient_id")
+    .eq("id", String(formData.get("termin_id")))
+    .maybeSingle();
+  if (unterwegs) {
+    await pushSenden([unterwegs.patient_id], {
+      titel: "Ihr Therapeut ist unterwegs",
+      text: `Ankunft in etwa ${eta} Minuten.`,
+      ziel: "/app",
+      gruppe: "anfahrt",
+    });
+  }
 
   revalidatePath("/praxis");
   revalidatePath("/praxis/termine");

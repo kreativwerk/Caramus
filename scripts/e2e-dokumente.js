@@ -4,7 +4,7 @@
 // Start: npm run build && npm run start, dann node scripts/e2e-dokumente.js
 const pw = require("playwright-core");
 const path = require("node:path");
-const { speicherRundlauf, testdatenLoeschen } = require("./speicher-check");
+const { speicherRundlauf, testdatenLoeschen } = require("./qa-helfer");
 const BASE = "http://localhost:3000";
 const PASS = "QaTest!2026";
 const results = [];

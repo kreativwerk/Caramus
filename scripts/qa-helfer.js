@@ -1,6 +1,8 @@
 /*
- * Prüft einen Storage-Bucket auf Herz und Nieren: hochladen, signiert wieder
- * abrufen, Byte für Byte vergleichen, löschen.
+ * Helfer für die Testläufe, die den Browser nicht brauchen.
+ *
+ * `speicherRundlauf` prüft einen Storage-Bucket auf Herz und Nieren:
+ * hochladen, signiert wieder abrufen, Byte für Byte vergleichen, löschen.
  *
  * Warum eigens: Der Browsertest tunnelt seine Anfragen durch Node, weil die
  * TLS-Prüfung der Testumgebung die Verbindung sonst abbricht. Bei diesem Umweg
@@ -100,4 +102,44 @@ async function testdatenLoeschen({ tabelle, filter, email, passwort }) {
   });
 }
 
-module.exports = { speicherRundlauf, testdatenLoeschen };
+/**
+ * Bringt die Termine in den Ausgangszustand: genau ein geplanter Termin in
+ * drei Stunden, keine laufende Anfahrt. Ohne das stolpert der Anfahrtstest
+ * über die Termine, die frühere Durchläufe angelegt haben.
+ */
+async function terminBuehneVorbereiten({ email, passwort }) {
+  const konf = konfiguration();
+  const { token } = await anmelden(konf, email, passwort);
+  const kopf = { apikey: konf.key, Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
+  const antwort = await fetch(`${konf.url}/rest/v1/appointments?select=id&order=starts_at.asc`, {
+    headers: kopf,
+  });
+  const termine = await antwort.json();
+  if (!Array.isArray(termine) || termine.length === 0) {
+    throw new Error("Kein Testtermin vorhanden – bitte einen Termin anlegen");
+  }
+
+  for (const t of termine.slice(1)) {
+    await fetch(`${konf.url}/rest/v1/appointments?id=eq.${t.id}`, { method: "DELETE", headers: kopf });
+  }
+
+  const inDreiStunden = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+  await fetch(`${konf.url}/rest/v1/appointments?id=eq.${termine[0].id}`, {
+    method: "PATCH",
+    headers: kopf,
+    body: JSON.stringify({
+      starts_at: inDreiStunden,
+      status: "geplant",
+      enroute_at: null,
+      eta_minutes: null,
+      arrived_at: null,
+      eta_updated_at: null,
+      delay_note: null,
+      eta_quelle: "manuell",
+    }),
+  });
+  return termine[0].id;
+}
+
+module.exports = { speicherRundlauf, testdatenLoeschen, terminBuehneVorbereiten };

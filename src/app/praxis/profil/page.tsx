@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { AbmeldenKnopf } from "@/components/abmelden-knopf";
+import { PushSchalter } from "@/components/push-schalter";
 import { formatDate } from "@/lib/types";
 
 export const metadata = { title: "Profil" };
@@ -45,6 +46,8 @@ export default async function PraxisProfilPage() {
           </div>
         )}
       </div>
+
+      <PushSchalter oeffentlicherSchluessel={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
 
       <div className="card">
         <p className="text-lg font-bold text-navy-800">Sitzung beenden</p>

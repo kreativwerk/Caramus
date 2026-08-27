@@ -4,7 +4,7 @@ const pw = require("playwright-core");
 const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
-const { speicherRundlauf } = require("./speicher-check");
+const { speicherRundlauf } = require("./qa-helfer");
 
 const BASE = "http://localhost:3000";
 const PASS = "QaTest!2026";

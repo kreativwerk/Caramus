@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { pushNeueNachricht } from "@/lib/push-actions";
 import type { Message } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 
@@ -89,6 +90,8 @@ export function Chat({
     if (!error && data) {
       setNachrichten((alt) => (alt.some((m) => m.id === data.id) ? alt : [...alt, data as Message]));
       setText("");
+      // Hinweis aufs Handy anstoßen; klappt das nicht, bleibt die Nachricht trotzdem stehen
+      pushNeueNachricht(patientId).catch(() => {});
     } else {
       // Der Text bleibt im Feld stehen, damit nichts verlorengeht
       setFehler("Ihre Nachricht ist nicht angekommen. Bitte tippen Sie noch einmal auf „Senden“.");

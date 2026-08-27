@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
+import { pushAnPraxis } from "@/lib/push";
 
 export async function terminAnfragen(formData: FormData) {
   const supabase = await createClient();
@@ -49,6 +50,13 @@ export async function terminAnfragen(formData: FormData) {
   } catch {
     // Anfrage bleibt gültig, auch wenn die Dokument-Verknüpfung scheitert
   }
+
+  await pushAnPraxis({
+    titel: "Neue Terminanfrage",
+    text: `Wunschzeiten: ${preferred_times.slice(0, 120)}`,
+    ziel: "/praxis/anfragen",
+    gruppe: "anfrage",
+  });
 
   revalidatePath("/app/termine");
   return { ok: true };
@@ -128,6 +136,13 @@ export async function dokumentSpeichern(formData: FormData) {
     kind: String(formData.get("kind") ?? "sonstiges"),
   });
   if (error) return { fehler: nichtGeklappt("Das Ablegen Ihrer Unterlage") };
+
+  await pushAnPraxis({
+    titel: "Neue Unterlage",
+    text: "Eine Patientin oder ein Patient hat etwas hochgeladen.",
+    ziel: "/praxis/dokumente",
+    gruppe: "dokument",
+  });
 
   revalidatePath("/app/dokumente");
   return { ok: true };

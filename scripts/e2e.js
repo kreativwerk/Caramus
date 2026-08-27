@@ -61,6 +61,8 @@ async function supabaseBridge(ctx) {
   const browser = await pw.chromium.launch({ executablePath: process.env.PW_CHROMIUM || "/opt/pw-browsers/chromium" });
   const patientCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const praxisCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // Fuer den Test der Benachrichtigungen: Der Browser fragt sonst nicht
+  await patientCtx.grantPermissions(["notifications"], { origin: BASE });
   await supabaseBridge(patientCtx);
   await supabaseBridge(praxisCtx);
   const patient = await patientCtx.newPage();
@@ -270,6 +272,27 @@ async function supabaseBridge(ctx) {
     ok("Falsches Passwort: verständliche Meldung ohne Fachbegriffe");
     await anon.close();
   } catch (e) { fail("Meldung bei falschem Passwort", e); }
+
+  // ---------- Benachrichtigungen ----------
+  try {
+    await patient.goto(BASE + "/app/profil", { waitUntil: "networkidle" });
+    const karte = patient.locator("section.card").filter({ hasText: "Benachrichtigungen" }).first();
+    await karte.waitFor({ timeout: 15000 });
+    const knopf = karte.getByRole("button", { name: /Benachrichtigungen einschalten/ });
+    await knopf.waitFor({ timeout: 10000 });
+    ok("Profil zeigt den Schalter für Benachrichtigungen");
+  } catch (e) { fail("Schalter für Benachrichtigungen", e); }
+
+  try {
+    // Im Testbrowser gibt es keinen Push-Dienst. Genau dieser Fall darf nicht
+    // haengenbleiben, sondern muss verstaendlich abbrechen.
+    const karte = patient.locator("section.card").filter({ hasText: "Benachrichtigungen" }).first();
+    await karte.getByRole("button", { name: /Benachrichtigungen einschalten/ }).click();
+    await karte.getByText(/nicht geklappt|eingeschaltet|gesperrt/).waitFor({ timeout: 30000 });
+    const text = await karte.innerText();
+    if (TECHNIK.test(text)) throw new Error("Technische Begriffe sichtbar: " + text.match(TECHNIK)[0]);
+    ok("Ohne erreichbaren Push-Dienst bricht der Schalter verstaendlich ab statt haengenzubleiben");
+  } catch (e) { fail("Abbruch ohne Push-Dienst", e); }
 
   // Screenshots
   await patient.goto(BASE + "/app/plan", { waitUntil: "networkidle" });
