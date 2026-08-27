@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Chat } from "@/components/chat";
 import type { Message } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 export default async function PraxisChatPage({
   params,
@@ -25,7 +26,7 @@ export default async function PraxisChatPage({
     <div className="space-y-6">
       <div>
         <Link href="/praxis/chat" className="text-sm font-semibold text-teal-600 hover:underline">
-          ← Alle Unterhaltungen
+          <MIcon name="pfeilLinks" className="mr-1.5" />Alle Unterhaltungen
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-navy-800">{patient.full_name}</h1>
       </div>

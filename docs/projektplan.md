@@ -21,6 +21,10 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Rückmeldungs-Bereich für die Praxis: Tickets mit Screenshots, Stand und Antwort (`/praxis/feedback`) samt Abhol-Skript `scripts/tickets.js`
 - [x] Benachrichtigungen aufs Handy (Web Push) mit Schalter im Profil, Probeversand und iPhone-Anleitung; ohne Schlüssel im Server läuft die App unverändert weiter
 - [x] Passwort vergessen, neues Passwort per E-Mail-Link setzen und Passwort im Profil ändern (`/passwort-vergessen`, `/passwort-neu`)
+- [x] Keine Emojis mehr: alle Symbole sind Material Symbols (Rounded 400) als eingebettete Pfade in `src/components/m-icon.tsx` – nicht von Google nachgeladen
+- [x] Seitenleiste bleibt beim Scrollen stehen, unten ein Profilkasten mit Name und E-Mail
+- [x] Praxis kann Patientinnen und Patienten einladen – per E-Mail oder als Link zum Weitergeben (`/praxis/patienten`)
+- [x] Helle Logo-Variante für dunkle Flächen (`public/logo-mark-hell.png`)
 
 ## Nächste Schritte (Reihenfolge empfohlen)
 

@@ -31,6 +31,7 @@ export default async function PraxisLayout({ children }: { children: React.React
       items={[...items]}
       basis="/praxis"
       nutzerName={profile.full_name}
+      nutzerEmail={user.email ?? ""}
       bereich="Praxisbereich"
       profilHref="/praxis/profil"
       benachrichtigungen={benachrichtigungen}

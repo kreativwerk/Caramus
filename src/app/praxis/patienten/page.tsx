@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { einladungMoeglich } from "@/lib/einladung";
+import { Einladen } from "./einladen";
 
 export default async function PatientenPage() {
   const supabase = await createClient();
@@ -17,9 +19,12 @@ export default async function PatientenPage() {
           Ihre <span className="text-teal-500">Patientinnen und Patienten</span>.
         </h1>
         <p className="mt-1 text-navy-600/80">
-          Neue Patienten richten ihren Zugang selbst unter „Zugang einrichten“ ein – danach erscheinen sie hier.
+          Laden Sie neue Patientinnen und Patienten ein – oder sie richten ihren Zugang selbst unter
+          „Zugang einrichten“ ein.
         </p>
       </div>
+
+      <Einladen moeglich={einladungMoeglich()} />
 
       {patienten?.length ? (
         <div className="grid gap-3 sm:grid-cols-2">

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Appointment } from "@/lib/types";
 import { formatTime } from "@/lib/types";
 import { AnfahrtSteuerung } from "./anfahrt-steuerung";
+import { MIcon } from "@/components/m-icon";
 
 export default async function PraxisStart() {
   const supabase = await createClient();
@@ -89,7 +90,11 @@ export default async function PraxisStart() {
                   <p className="text-sm text-white/70">
                     {t.address ?? "Adresse fehlt – bitte im Patientenprofil ergänzen"} · {t.duration_min} Min.
                   </p>
-                  {t.travel_note && <p className="text-sm text-teal-400">🚗 {t.travel_note}</p>}
+                  {t.travel_note && (
+                    <p className="flex items-center gap-1.5 text-sm text-teal-400">
+                      <MIcon name="auto" /> {t.travel_note}
+                    </p>
+                  )}
                   <div className="mt-3">
                     <AnfahrtSteuerung termin={t as Appointment} />
                   </div>

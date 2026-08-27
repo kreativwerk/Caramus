@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Benachrichtigung } from "@/lib/benachrichtigungen";
+import { MIcon } from "@/components/m-icon";
 
 function initialen(name: string) {
   const teile = name.trim().split(/\s+/).filter(Boolean);
@@ -69,7 +70,7 @@ export function HeaderActions({
             </p>
             {anzahl === 0 ? (
               <p className="px-4 py-6 text-center text-navy-600/70">
-                Alles erledigt – nichts Neues. 🎉
+                <MIcon name="erledigt" className="mr-1.5 text-teal-500" />Alles erledigt – nichts Neues.
               </p>
             ) : (
               <ul className="max-h-[60vh] divide-y divide-mist-100 overflow-y-auto">

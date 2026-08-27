@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
+import { MIcon } from "@/components/m-icon";
 
 /**
  * Neues Passwort anfordern. Ob es die Adresse gibt, verrät die Seite bewusst
@@ -52,7 +53,9 @@ export default function PasswortVergessenPage() {
           {status === "gesendet" ? (
             <>
               <p className="mt-4 rounded-lg bg-teal-50 p-4 text-navy-800">
-                <strong className="block">Schauen Sie in Ihr Postfach. ✉️</strong>
+                <strong className="flex items-center gap-2">
+                  <MIcon name="mail" className="text-teal-600" /> Schauen Sie in Ihr Postfach.
+                </strong>
                 <span className="mt-1 block text-sm">
                   Falls es für <strong>{email}</strong> einen Zugang gibt, haben wir eine E-Mail
                   geschickt. Darin ist ein Link, mit dem Sie ein neues Passwort vergeben können. Er

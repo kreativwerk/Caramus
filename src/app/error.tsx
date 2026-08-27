@@ -21,7 +21,7 @@ export default function Error({
 
   return (
     <HinweisSeite
-      symbol="🤕"
+      symbol="verletzt"
       titel="Da ist uns etwas dazwischengekommen."
       text="Diese Seite lässt sich gerade nicht anzeigen. Das liegt nicht an Ihnen – bitte versuchen Sie es einfach noch einmal."
     >

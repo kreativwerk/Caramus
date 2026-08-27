@@ -7,6 +7,7 @@ import { DateiFeld } from "@/components/datei-feld";
 import { MEDIA_BUCKET } from "@/lib/media";
 import { uebungLoeschen, uebungSpeichern } from "../actions";
 import type { Exercise } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 export function UebungForm({ uebung, onFertig }: { uebung?: Exercise; onFertig?: () => void }) {
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -144,7 +145,7 @@ export function UebungKarte({ uebung, anzeigeUrl }: { uebung: Exercise; anzeigeU
             <img src={anzeigeUrl} alt={uebung.title} className="h-full w-full object-cover" />
           )
         ) : (
-          <span className="text-3xl" aria-hidden>🏋️</span>
+          <MIcon name="training" groesse="1.875rem" className="text-navy-300" />
         )}
       </div>
       {uebung.category && <span className="badge-pill self-start">{uebung.category}</span>}

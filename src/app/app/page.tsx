@@ -5,6 +5,7 @@ import { FortschrittKarte } from "@/components/fortschritt-karte";
 import { Schnellzugriff } from "@/components/schnellzugriff";
 import type { Appointment } from "@/lib/types";
 import { formatTime } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 const TAGE = 7;
 
@@ -92,7 +93,7 @@ export default async function PatientStart() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-navy-800">
-          Hallo{vorname ? ` ${vorname}` : ""} 👋
+          Hallo{vorname ? ` ${vorname}` : ""} <MIcon name="winken" className="text-teal-500" />
         </h1>
         <p className="mt-1 text-navy-600/80">Schön, dass Sie da sind.</p>
       </div>
@@ -154,7 +155,9 @@ export default async function PatientStart() {
 
       {!profile?.street && (
         <div className="card border-teal-500/40 bg-teal-50">
-          <p className="font-semibold text-navy-800">📍 Ihre Adresse fehlt noch</p>
+          <p className="flex items-center gap-2 font-semibold text-navy-800">
+            <MIcon name="ort" className="text-teal-600" /> Ihre Adresse fehlt noch
+          </p>
           <p className="mt-1 text-sm text-navy-600/90">
             Damit Ihr Therapeut zu Ihnen nach Hause kommen kann, hinterlegen Sie bitte einmalig Ihre
             Anschrift im Profil.

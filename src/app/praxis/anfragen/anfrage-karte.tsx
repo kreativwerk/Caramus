@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { anfrageAblehnen, anfrageBestaetigen, anfrageVorschlagen } from "../actions";
 import type { AppointmentRequest, Profile } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 export function AnfrageKarte({
   anfrage,
@@ -36,8 +37,14 @@ export function AnfrageKarte({
         <div>
           <p className="text-lg font-bold text-navy-800">{patient?.full_name}</p>
           <p className="text-sm text-navy-600/80">
-            📍 {adresse || "Keine Adresse hinterlegt"}
-            {patient?.phone ? ` · 📞 ${patient.phone}` : ""}
+            <MIcon name="ort" className="mr-1 text-navy-600/70" />{adresse || "Keine Adresse hinterlegt"}
+            {patient?.phone ? (
+              <>
+                {" · "}
+                <MIcon name="telefon" className="mr-1 text-navy-600/70" />
+                {patient.phone}
+              </>
+            ) : null}
           </p>
           <p className="mt-1 text-xs text-navy-600/60">Angefragt am {formatDateTime(anfrage.created_at)}</p>
         </div>
@@ -62,10 +69,10 @@ export function AnfrageKarte({
               {dokumente.map((d, i) =>
                 d.url ? (
                   <a key={i} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium text-navy-700 shadow-sm hover:text-teal-600">
-                    📄 {d.name}
+                    <MIcon name="dokument" className="mr-1 text-navy-600/70" />{d.name}
                   </a>
                 ) : (
-                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium text-navy-700 shadow-sm">📄 {d.name}</span>
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 font-medium text-navy-700 shadow-sm"><MIcon name="dokument" className="mr-1 text-navy-600/70" />{d.name}</span>
                 )
               )}
             </p>

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatTime } from "@/lib/types";
 import { NeuerTerminForm, TerminStatusButtons } from "./termin-formulare";
+import { MIcon } from "@/components/m-icon";
 
 export default async function PraxisTerminePage() {
   const supabase = await createClient();
@@ -49,9 +50,13 @@ export default async function PraxisTerminePage() {
                     {formatTime(t.starts_at)} Uhr · {(t.profiles as { full_name?: string })?.full_name}
                   </p>
                   <p className="text-sm text-navy-600/80">
-                    📍 {t.address ?? "Adresse fehlt"} · {t.duration_min} Min.
+                    <MIcon name="ort" className="mr-1 text-navy-600/70" />{t.address ?? "Adresse fehlt"} · {t.duration_min} Min.
                   </p>
-                  {t.notes && <p className="text-sm text-navy-600/80">📝 {t.notes}</p>}
+                  {t.notes && (
+                <p className="flex items-center gap-1.5 text-sm text-navy-600/80">
+                  <MIcon name="notiz" /> {t.notes}
+                </p>
+              )}
                 </div>
                 <TerminStatusButtons terminId={t.id} />
               </div>

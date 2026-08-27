@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveMediaUrl } from "@/lib/media";
 import type { PlanFeedback, PlanItem } from "@/lib/types";
 import { FeedbackForm } from "./feedback-form";
+import { MIcon } from "@/components/m-icon";
 
 export default async function PlanPage() {
   const supabase = await createClient();
@@ -90,7 +91,7 @@ export default async function PlanPage() {
                           <img src={medienUrl} alt={uebung?.title ?? "Übung"} className="h-full w-full object-cover" />
                         )
                       ) : (
-                        <span className="text-4xl" aria-hidden>🏋️</span>
+                        <MIcon name="training" groesse="2.25rem" className="text-navy-300" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -105,7 +106,7 @@ export default async function PlanPage() {
                       )}
                       {item.instructions && (
                         <p className="mt-2 rounded-lg bg-teal-50 px-3 py-2 text-sm text-navy-800">
-                          💡 Hinweis für Sie: {item.instructions}
+                          <MIcon name="tipp" className="mr-1.5 text-teal-600" />Hinweis für Sie: {item.instructions}
                         </p>
                       )}
                       <FeedbackForm planItemId={item.id} heutigesFeedback={feedbackMap.get(item.id) ?? null} />

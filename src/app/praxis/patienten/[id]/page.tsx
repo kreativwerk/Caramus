@@ -5,6 +5,7 @@ import { resolveDocumentUrl } from "@/lib/media";
 import type { Exercise, PatientDocument, PlanItem } from "@/lib/types";
 import { formatDate, formatDateTime } from "@/lib/types";
 import { PlanEditor } from "./plan-editor";
+import { MIcon } from "@/components/m-icon";
 
 export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -59,12 +60,18 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
     <div className="space-y-6">
       <div>
         <Link href="/praxis/patienten" className="text-sm font-semibold text-teal-600 hover:underline">
-          ← Alle Patienten
+          <MIcon name="pfeilLinks" className="mr-1.5" />Alle Patienten
         </Link>
         <h1 className="mt-2 text-3xl font-bold text-navy-800">{patient.full_name}</h1>
         <p className="mt-1 text-navy-600/80">
-          📍 {adresse || "Keine Adresse hinterlegt"}
-          {patient.phone ? ` · 📞 ${patient.phone}` : ""}
+          <MIcon name="ort" className="mr-1 text-navy-600/70" />{adresse || "Keine Adresse hinterlegt"}
+          {patient.phone ? (
+            <>
+              {" · "}
+              <MIcon name="telefon" className="mr-1 text-navy-600/70" />
+              {patient.phone}
+            </>
+          ) : null}
         </p>
         <div className="mt-3 flex gap-2">
           <Link href={`/praxis/chat/${patient.id}`} className="btn-secondary">Nachricht schreiben</Link>
@@ -85,7 +92,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                     {(f.plan_items as { exercises?: { title?: string } })?.exercises?.title}
                   </p>
                   <p className="text-navy-600/80">
-                    {f.completed ? "✓ erledigt" : "nicht erledigt"}
+                    {f.completed ? <><MIcon name="haken" className="mr-1" />erledigt</> : "nicht erledigt"}
                     {f.pain_level !== null ? ` · Schmerz ${f.pain_level}/10` : ""}
                   </p>
                   {f.note && <p className="mt-1 text-navy-600/90">„{f.note}“</p>}
@@ -123,7 +130,9 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
           <ul className="mt-3 space-y-2">
             {dokumentLinks.map(({ dokument, url }) => (
               <li key={dokument.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-mist-50 px-4 py-3 text-sm">
-                <span className="font-medium text-navy-800">📄 {dokument.file_name}</span>
+                <span className="font-medium text-navy-800">
+                    <MIcon name="dokument" className="mr-1.5 text-navy-600/70" />{dokument.file_name}
+                  </span>
                 <span className="flex items-center gap-3">
                   <span className="text-navy-600/70">{formatDate(dokument.created_at)}</span>
                   {url && (

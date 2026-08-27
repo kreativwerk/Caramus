@@ -28,6 +28,7 @@ export default async function PatientLayout({ children }: { children: React.Reac
       items={[...items]}
       basis="/app"
       nutzerName={profile?.full_name ?? ""}
+      nutzerEmail={user.email ?? ""}
       bereich="Patientenbereich"
       profilHref="/app/profil"
       benachrichtigungen={benachrichtigungen}

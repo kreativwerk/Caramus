@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DOKUMENT_STATUS, dokumentArtLabel, formatDate } from "@/lib/types";
 import type { PatientDocument } from "@/lib/types";
 import { dokumentLoeschen } from "../actions";
+import { MIcon } from "@/components/m-icon";
 
 export function DokumentKarte({
   dokument,
@@ -35,7 +36,7 @@ export function DokumentKarte({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-bold text-navy-800">
-            📄 {dokumentArtLabel(dokument.kind)}
+            <MIcon name="dokument" className="mr-1.5 text-navy-600/70" />{dokumentArtLabel(dokument.kind)}
           </p>
           <p className="truncate text-sm text-navy-600/80">{dokument.file_name}</p>
           <p className="mt-1 text-xs text-navy-600/60">

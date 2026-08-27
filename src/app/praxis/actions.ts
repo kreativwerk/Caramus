@@ -5,9 +5,16 @@ import { createClient } from "@/lib/supabase/server";
 import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
 import { adresseZuKoordinate, fahrzeitMinuten, fahrzeitVerfuegbar } from "@/lib/fahrzeit";
 import { pushSenden } from "@/lib/push";
+import { einladungAlsLink, einladungVerschicken } from "@/lib/einladung";
 import { formatDateTime } from "@/lib/types";
 
-export type ActionResult = { ok?: boolean; fehler?: string | null; planId?: string };
+export type ActionResult = {
+  ok?: boolean;
+  fehler?: string | null;
+  planId?: string;
+  link?: string | null;
+  verschickt?: boolean;
+};
 
 async function therapeutClient() {
   const supabase = await createClient();
@@ -568,4 +575,30 @@ export async function feedbackLoeschen(formData: FormData) {
 
   revalidatePath("/praxis/feedback");
   return { ok: true };
+}
+
+/**
+ * Neue Patientin oder neuen Patienten einladen – wahlweise per E-Mail oder
+ * als Link zum Weitergeben. Der Zugang entsteht in beiden Fällen sofort; die
+ * Person vergibt beim ersten Öffnen ihr Passwort.
+ */
+export async function patientEinladen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const name = String(formData.get("name") ?? "").trim();
+  const alsLink = String(formData.get("weg") ?? "mail") === "link";
+
+  if (!name) return { fehler: "Bitte tragen Sie Vor- und Nachname ein." };
+  if (!email || !email.includes("@")) return { fehler: "Bitte tragen Sie eine E-Mail-Adresse ein." };
+
+  const ergebnis = alsLink
+    ? await einladungAlsLink(email, name.slice(0, 120))
+    : await einladungVerschicken(email, name.slice(0, 120));
+
+  if (!ergebnis.ok) return { fehler: ergebnis.fehler };
+
+  revalidatePath("/praxis/patienten");
+  return { ok: true, link: ergebnis.link ?? null, verschickt: ergebnis.verschickt };
 }

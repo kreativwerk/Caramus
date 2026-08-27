@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/logo";
+import { MIcon, type MIconName } from "@/components/m-icon";
 
 /**
  * Ganzseitiger, freundlicher Hinweis für Fälle, in denen eine Seite nicht
@@ -12,7 +13,7 @@ export function HinweisSeite({
   text,
   children,
 }: {
-  symbol: string;
+  symbol: MIconName;
   titel: string;
   text: string;
   children?: ReactNode;
@@ -24,9 +25,7 @@ export function HinweisSeite({
           <Logo dark />
         </div>
         <div className="card text-center">
-          <span className="text-4xl" aria-hidden>
-            {symbol}
-          </span>
+          <MIcon name={symbol} groesse="2.75rem" className="text-teal-500" />
           <h1 className="mt-3 text-2xl font-bold text-navy-800">{titel}</h1>
           <p className="mt-2 text-navy-600/80">{text}</p>
           {children && <div className="mt-6 flex flex-col gap-2">{children}</div>}

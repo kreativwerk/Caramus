@@ -91,13 +91,13 @@ async function login(page, email) {
   } catch (e) { fail("Eingang Praxis", e); }
 
   try {
-    await praxis.getByRole("button", { name: "→ In Prüfung" }).first().click();
+    await praxis.getByRole("button", { name: "In Prüfung" }).first().click();
     await praxis.waitForSelector("h2:has-text('In Prüfung')", { timeout: 20000 });
     ok("Praxis setzt Status auf 'In Prüfung', Gruppierung aktualisiert sich");
   } catch (e) { fail("Status in Pruefung", e); }
 
   try {
-    await praxis.getByRole("button", { name: "→ Unvollständig" }).first().click();
+    await praxis.getByRole("button", { name: "Unvollständig" }).first().click();
     await praxis.fill('input[name="status_note"]', "Bitte die Rückseite mit dem Vermerk Hausbesuch nachreichen.");
     await praxis.getByRole("button", { name: "Hinweis senden" }).click();
     await praxis.waitForSelector("text=/Hinweis an Patient/", { timeout: 20000 });
@@ -116,7 +116,7 @@ async function login(page, email) {
   // Weitergeleitet -> Patient kann nicht mehr loeschen
   try {
     await praxis.goto(BASE + "/praxis/dokumente", { waitUntil: "networkidle" });
-    await praxis.getByRole("button", { name: "→ Weitergeleitet" }).first().click();
+    await praxis.getByRole("button", { name: "Weitergeleitet" }).first().click();
     await praxis.waitForSelector("h2:has-text('Weitergeleitet')", { timeout: 20000 });
     await patient.reload({ waitUntil: "networkidle" });
     await patient.waitForSelector("text=/An die Abrechnung weitergeleitet/", { timeout: 15000 });

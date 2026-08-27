@@ -11,6 +11,7 @@ import {
 } from "./actions";
 import type { Appointment } from "@/lib/types";
 import { formatTime, restMinuten } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 const SCHNELLWAHL = [15, 20, 30, 45];
 const VERSPAETUNGEN = [5, 10, 15];
@@ -100,7 +101,7 @@ export function AnfahrtSteuerung({ termin }: { termin: Appointment }) {
   if (termin.arrived_at) {
     return (
       <p className="text-sm font-semibold text-teal-400">
-        ✓ Angekommen um {formatTime(termin.arrived_at)} Uhr
+        <MIcon name="erledigt" className="mr-1.5" />Angekommen um {formatTime(termin.arrived_at)} Uhr
       </p>
     );
   }
@@ -220,7 +221,7 @@ export function AnfahrtSteuerung({ termin }: { termin: Appointment }) {
         }}
         className="rounded-lg bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-teal-600/25 transition active:scale-95"
       >
-        🚗 Bin unterwegs
+        <MIcon name="auto" className="mr-1.5" />Bin unterwegs
       </button>
     );
   }
@@ -247,7 +248,7 @@ export function AnfahrtSteuerung({ termin }: { termin: Appointment }) {
               Mit aktueller Verkehrslage berechnet
             </span>
           </span>
-          <span aria-hidden>→</span>
+          <MIcon name="pfeilRechts" />
         </button>
       )}
 

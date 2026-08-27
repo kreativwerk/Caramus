@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
 import { PasswortFelder, passwortPruefen } from "@/components/passwort-felder";
+import { MIcon } from "@/components/m-icon";
 
 /**
  * Neues Passwort vergeben, nachdem der Link aus der E-Mail angeklickt wurde.
@@ -85,7 +86,9 @@ export default function PasswortNeuPage() {
 
           {bereit === "ja" && fertig && (
             <p className="mt-4 rounded-lg bg-teal-50 p-4 text-navy-800">
-              <strong className="block">Geschafft. ✓</strong>
+              <strong className="flex items-center gap-2">
+                <MIcon name="erledigt" className="text-teal-600" /> Geschafft.
+              </strong>
               <span className="mt-1 block text-sm">
                 Ihr neues Passwort ist gespeichert. Wir bringen Sie gleich in Ihren Bereich.
               </span>

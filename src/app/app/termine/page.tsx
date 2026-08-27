@@ -4,6 +4,7 @@ import { resolveDocumentUrl } from "@/lib/media";
 import type { Appointment, PatientDocument } from "@/lib/types";
 import { formatDateTime } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
+import { MIcon } from "@/components/m-icon";
 
 const statusText: Record<string, { label: string; klasse: string }> = {
   pending: { label: "Wartet auf Bestätigung", klasse: "bg-amber-50 text-amber-700" },
@@ -122,17 +123,17 @@ export default async function TerminePage() {
                       {dokumenteProAnfrage.get(a.id)!.map((d, i) =>
                         d.url ? (
                           <a key={i} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-mist-100 px-3 py-1 font-medium text-navy-700 hover:text-teal-600">
-                            📄 {d.name}
+                            <MIcon name="dokument" className="mr-1 text-navy-600/70" />{d.name}
                           </a>
                         ) : (
-                          <span key={i} className="inline-flex items-center gap-1 rounded-full bg-mist-100 px-3 py-1 font-medium text-navy-700">📄 {d.name}</span>
+                          <span key={i} className="inline-flex items-center gap-1 rounded-full bg-mist-100 px-3 py-1 font-medium text-navy-700"><MIcon name="dokument" className="mr-1 text-navy-600/70" />{d.name}</span>
                         )
                       )}
                     </p>
                   ) : null}
                   {a.status === "proposed" && a.proposal && (
                     <p className="mt-3 rounded-lg bg-teal-50 px-4 py-3 text-sm text-navy-800">
-                      💬 Vorschlag Ihres Therapeuten: <strong>{a.proposal}</strong> – bitte antworten
+                      <MIcon name="sprechblase" className="mr-1.5 text-teal-600" />Vorschlag Ihres Therapeuten: <strong>{a.proposal}</strong> – bitte antworten
                       Sie kurz über die Nachrichten.
                     </p>
                   )}

@@ -117,6 +117,20 @@ steht ohnehin sofort in der App.
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
 Mails im Posteingang und nicht im Spam landen.
 
+## Einladungen aus der Praxis
+
+Unter **Praxis → Patienten** legt Charles Zugänge an: per E-Mail (Supabase
+verschickt die Einladung über das eigene Postfach) oder als Link zum Weitergeben,
+etwa direkt beim Hausbesuch. Beides braucht `SUPABASE_SERVICE_ROLE_KEY` in
+Vercel – ohne den Schlüssel steht dort ein Hinweis und die Selbstregistrierung
+bleibt der Weg.
+
+Die eingeladene Person landet nach dem Klick auf `/passwort-neu` und vergibt ihr
+Passwort selbst. Der Einladungslink gilt 24 Stunden.
+
+Vorlage dafür: **Authentication → Emails → Invite user**, Text in
+`docs/email-vorlagen.md`.
+
 ## Benachrichtigungen aufs Handy (Web Push)
 
 Ein kurzer Hinweis auf dem Sperrbildschirm, wenn eine Nachricht ankommt, ein

@@ -6,6 +6,7 @@ import { BaumReihe } from "@/components/baum-reihe";
 import { CuramusVan } from "@/components/curamus-van";
 import type { Appointment } from "@/lib/types";
 import { fahrtFortschritt, formatTime, restMinuten } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 /** Ab dieser Restzeit wird auf „Ankunft in Kürze" gewechselt. */
 const KURZ_VOR_ANKUNFT_MIN = 5;
@@ -91,7 +92,9 @@ export function AnfahrtLive({
 
       {angekommen ? (
         <>
-          <p className="mt-3 text-2xl font-bold">{vorname} ist da. 🎉</p>
+          <p className="mt-3 flex items-center gap-2 text-2xl font-bold">
+            <MIcon name="feier" className="text-teal-400" /> {vorname} ist da.
+          </p>
           <p className="mt-1 text-white/70">Angekommen um {formatTime(aktuell.arrived_at!)} Uhr.</p>
         </>
       ) : (

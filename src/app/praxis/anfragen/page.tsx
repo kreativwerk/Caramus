@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveDocumentUrl } from "@/lib/media";
 import type { AppointmentRequest, PatientDocument, Profile } from "@/lib/types";
 import { AnfrageKarte } from "./anfrage-karte";
+import { MIcon } from "@/components/m-icon";
 
 export default async function AnfragenPage() {
   const supabase = await createClient();
@@ -44,7 +45,9 @@ export default async function AnfragenPage() {
           ))}
         </div>
       ) : (
-        <p className="card text-navy-600/80">🎉 Alles erledigt – keine offenen Anfragen.</p>
+        <p className="card flex items-center gap-2 text-navy-600/80">
+          <MIcon name="erledigt" className="text-teal-500" /> Alles erledigt – keine offenen Anfragen.
+        </p>
       )}
     </div>
   );

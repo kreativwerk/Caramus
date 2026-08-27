@@ -110,7 +110,7 @@ export function Chat({
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
         {nachrichten.length === 0 && (
           <p className="pt-8 text-center text-navy-600/60">
-            Noch keine Nachrichten. Schreiben Sie die erste! 👋
+            Noch keine Nachrichten. Schreiben Sie die erste!
           </p>
         )}
         {nachrichten.map((m) => {

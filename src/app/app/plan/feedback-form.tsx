@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { feedbackSpeichern } from "../actions";
 import type { PlanFeedback } from "@/lib/types";
+import { MIcon } from "@/components/m-icon";
 
 export function FeedbackForm({
   planItemId,
@@ -35,7 +36,9 @@ export function FeedbackForm({
   if (erledigt && !offen) {
     return (
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-teal-50 px-4 py-3">
-        <p className="font-semibold text-teal-600">✓ Heute erledigt – super gemacht!</p>
+        <p className="flex items-center gap-2 font-semibold text-teal-600">
+          <MIcon name="erledigt" /> Heute erledigt – super gemacht!
+        </p>
         <button onClick={() => setOffen(true)} className="text-sm font-semibold text-navy-600/80 hover:text-teal-600">
           Rückmeldung ändern
         </button>

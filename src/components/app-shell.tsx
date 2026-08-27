@@ -9,6 +9,13 @@ import type { Benachrichtigung } from "@/lib/benachrichtigungen";
 export type IconName = keyof typeof Icons;
 export type NavItem = { href: string; label: string; icon: IconName };
 
+/** Erste Buchstaben von Vor- und Nachname, wie im Kopfbereich. */
+function initialen(name: string) {
+  const teile = name.trim().split(/\s+/).filter(Boolean);
+  if (teile.length === 0) return "?";
+  return (teile[0][0] + (teile.at(-1)?.[0] ?? "")).toUpperCase();
+}
+
 function istAktiv(pathname: string, href: string, basis: string) {
   if (href === basis) return pathname === basis;
   return pathname.startsWith(href);
@@ -18,6 +25,7 @@ export function AppShell({
   items,
   basis,
   nutzerName,
+  nutzerEmail,
   bereich,
   profilHref,
   benachrichtigungen,
@@ -26,6 +34,7 @@ export function AppShell({
   items: NavItem[];
   basis: string;
   nutzerName: string;
+  nutzerEmail: string;
   bereich: string;
   profilHref: string;
   benachrichtigungen: Benachrichtigung[];
@@ -35,15 +44,16 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh lg:flex">
-      {/* Desktop-Sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-navy-900 px-4 py-6 lg:flex">
+      {/* Desktop-Sidebar: bleibt beim Scrollen stehen */}
+      <aside className="hidden w-64 shrink-0 lg:block">
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-navy-900 px-4 py-6">
         <div className="px-2">
           <Logo dark />
           <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-400">
             {bereich}
           </p>
         </div>
-        <nav className="mt-8 flex flex-1 flex-col gap-1">
+        <nav className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto">
           {items.map((item) => {
             const aktiv = istAktiv(pathname, item.href, basis);
             return (
@@ -60,13 +70,19 @@ export function AppShell({
             );
           })}
         </nav>
-        <div className="border-t border-white/10 pt-4">
-          <Link
-            href={profilHref}
-            className="block truncate rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition hover:bg-white/5 hover:text-white"
-          >
-            {nutzerName}
-          </Link>
+        {/* Profilkasten unten – etwas heller abgesetzt */}
+        <Link
+          href={profilHref}
+          className="mt-4 flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 transition hover:bg-white/15"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-500 text-sm font-bold text-white">
+            {initialen(nutzerName)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-white">{nutzerName}</span>
+            <span className="block truncate text-xs text-white/60">{nutzerEmail}</span>
+          </span>
+        </Link>
         </div>
       </aside>
 

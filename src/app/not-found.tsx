@@ -5,7 +5,7 @@ import { HinweisSeite } from "@/components/hinweis-seite";
 export default function NichtGefunden() {
   return (
     <HinweisSeite
-      symbol="🔎"
+      symbol="suche"
       titel="Diese Seite gibt es nicht."
       text="Vielleicht hat sich ein Tippfehler in die Adresse geschlichen, oder der Link ist schon älter."
     >

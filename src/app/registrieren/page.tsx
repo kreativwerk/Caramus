@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
+import { MIcon } from "@/components/m-icon";
+
+/*
+ * Hinweis zum Text nach dem Absenden: Existiert die Adresse bereits, verschickt
+ * Supabase absichtlich keine zweite E-Mail und meldet trotzdem Erfolg – sonst
+ * könnte man über dieses Formular herausfinden, wer hier Patient ist. Der Text
+ * muss deshalb für beide Fälle stimmen und darf keine Mail versprechen.
+ */
 
 /**
  * Übersetzt die Rückmeldung der Anmeldung in einen Satz, den jede und jeder
@@ -68,11 +76,25 @@ export default function RegistrierenPage() {
 
           {status === "fertig" ? (
             <div className="mt-6 rounded-lg bg-teal-50 p-4 text-navy-800">
-              <p className="font-semibold">Fast geschafft! ✉️</p>
-              <p className="mt-1 text-sm">
-                Wir haben Ihnen eine E-Mail an <strong>{email}</strong> gesendet. Bitte bestätigen
-                Sie dort Ihre Adresse – danach können Sie sich anmelden.
+              <p className="flex items-center gap-2 font-semibold">
+                <MIcon name="mail" className="text-teal-600" /> Fast geschafft!
               </p>
+              <p className="mt-1 text-sm">
+                Wenn es für <strong>{email}</strong> noch keinen Zugang gab, ist jetzt eine E-Mail
+                unterwegs. Bitte bestätigen Sie darin Ihre Adresse – danach können Sie sich anmelden.
+              </p>
+              <p className="mt-3 text-sm">
+                Hatten Sie hier schon einmal einen Zugang, kommt keine neue E-Mail. Melden Sie sich
+                dann einfach an – oder fordern Sie ein neues Passwort an.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/login" className="btn-primary">
+                  Zur Anmeldung
+                </Link>
+                <Link href="/passwort-vergessen" className="btn-secondary">
+                  Passwort vergessen?
+                </Link>
+              </div>
             </div>
           ) : (
             <form onSubmit={absenden} className="mt-6 space-y-4">

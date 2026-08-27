@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
+import { MIcon } from "@/components/m-icon";
 
 type Variante = {
   badge: string;
@@ -88,7 +89,9 @@ function Formular({ variante }: { variante: Variante }) {
 
           {status === "linkGesendet" ? (
             <div className="mt-6 rounded-lg bg-teal-50 p-4 text-navy-800">
-              <p className="font-semibold">Ihr Anmelde-Link ist unterwegs. ✉️</p>
+              <p className="flex items-center gap-2 font-semibold">
+                  <MIcon name="mail" className="text-teal-600" /> Ihr Anmelde-Link ist unterwegs.
+                </p>
               <p className="mt-1 text-sm">
                 Bitte öffnen Sie die E-Mail an <strong>{email}</strong> und tippen Sie auf den Link –
                 Sie werden dann automatisch angemeldet.

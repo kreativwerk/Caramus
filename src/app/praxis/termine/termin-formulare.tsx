@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { terminAnlegen, terminStatusSetzen } from "../actions";
+import { MIcon } from "@/components/m-icon";
 
 export function NeuerTerminForm({ patienten }: { patienten: { id: string; full_name: string }[] }) {
   const [offen, setOffen] = useState(false);
@@ -85,7 +86,7 @@ export function TerminStatusButtons({ terminId }: { terminId: string }) {
         disabled={laeuft}
         className="rounded-lg border border-mist-200 px-3 py-1.5 text-sm font-semibold text-teal-600 transition hover:border-teal-500 disabled:opacity-50"
       >
-        ✓ Erledigt
+        <MIcon name="erledigt" className="mr-1.5" />Erledigt
       </button>
       <button
         onClick={() => setzen("abgesagt")}

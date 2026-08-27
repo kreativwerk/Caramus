@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { DOKUMENT_STATUS } from "@/lib/types";
 import type { DocumentStatus, PatientDocument } from "@/lib/types";
 import { dokumentStatusSetzen } from "../actions";
+import { MIcon } from "@/components/m-icon";
 
 const SCHRITTE: { wert: DocumentStatus; knopf: string }[] = [
   { wert: "in_pruefung", knopf: "In Prüfung" },
@@ -43,7 +44,7 @@ export function StatusSteuerung({ dokument }: { dokument: PatientDocument }) {
                 : "text-teal-600 hover:border-teal-500"
             }`}
           >
-            → {s.knopf}
+            <MIcon name="pfeilRechts" className="mr-1" />{s.knopf}
           </button>
         ))}
       </div>
