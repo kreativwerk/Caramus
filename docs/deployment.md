@@ -101,11 +101,17 @@ SMTP liegt die Voreinstellung bei 30 neuen Nutzern pro Stunde.
 **3. Vorlagen hinterlegen** – die deutschen Texte stehen in `docs/email-vorlagen.md`
 (Authentication → Emails → Templates).
 
-**4. Chat-Benachrichtigung** – `supabase/functions/notify-message/` versendet
-ebenfalls per SMTP (denomailer). Secrets setzen: `SMTP_HOST`, `SMTP_PORT`,
-`SMTP_USER`, `SMTP_PASS`, `NOTIFY_FROM`, `APP_URL`. Dann deployen und den
-Database-Webhook auf `messages` INSERT anlegen. Schlägt der Versand fehl, bleibt
-die Nachricht selbst davon unberührt – sie steht ohnehin sofort in der App.
+**4. Chat-Benachrichtigung** – `supabase/functions/notify-message/` ist
+deployt (Stand 27.08.2026) und versendet per SMTP (denomailer). Es fehlen noch:
+
+- 👤 Secrets unter Edge Functions → Secrets: `SMTP_HOST` = `w021b7b7.kasserver.com`,
+  `SMTP_PORT` = `465`, `SMTP_USER` und `NOTIFY_FROM` = `kontakt@curamus-medical.de`,
+  `SMTP_PASS` = Postfach-Passwort, `APP_URL` = `https://app.curamus-medical.de`
+- 👤 Database → Webhooks: Tabelle `public.messages`, Ereignis INSERT,
+  Ziel = die Funktion `notify-message`
+
+Schlägt der Versand fehl, bleibt die Nachricht selbst davon unberührt – sie
+steht ohnehin sofort in der App.
 
 **5. Probelauf** – Registrierung mit einer echten Adresse, Anmelde-Link,
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
