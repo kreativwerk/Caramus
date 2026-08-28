@@ -163,15 +163,12 @@ export function AnfahrtLive({
           />
           {/* Fahrzeug */}
           <div
-            className="absolute bottom-4 transition-[left] duration-1000 ease-linear"
+            className="absolute bottom-[1.4rem] transition-[left] duration-1000 ease-linear"
             // Der Wagen bleibt vollstaendig sichtbar: er startet mit dem Heck am
             // Startpunkt und steht am Ende mit der Front am Ziel.
             style={{ left: `calc(1rem + (100% - 2rem - 4.5rem) * ${fortschritt})` }}
           >
-            <CuramusWagen
-              className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`}
-              raederDrehen={!angekommen}
-            />
+            <CuramusWagen className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`} />
           </div>
         </div>
         <div className="mt-1 flex justify-between text-xs text-white/60">
