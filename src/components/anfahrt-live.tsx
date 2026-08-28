@@ -11,6 +11,20 @@ import { MIcon } from "@/components/m-icon";
 /** Ab dieser Restzeit wird auf „Ankunft in Kürze" gewechselt. */
 const KURZ_VOR_ANKUNFT_MIN = 5;
 
+/*
+ * Maße der Fahrszene. Die Mitte des Wagens sitzt immer auf dem Ende des
+ * Fortschritts – deshalb beginnt die Strecke eine halbe Wagenlänge vom Rand
+ * entfernt, plus ein wenig Luft, damit der Wagen an keinem Ende am Bildrand
+ * klebt.
+ */
+const WAGEN_BREITE = "6rem";
+/** Luft zwischen Wagen und Bildrand an beiden Enden. */
+const RAND = "0.5rem";
+/** Anfang und Ende der Strecke: Rand + halbe Wagenlänge. */
+const BAHN_RAND = "3.5rem";
+/** Weg, den die Wagenmitte zurücklegt: Breite minus beide Bahnränder. */
+const WEG = "calc(100% - 7rem)";
+
 /**
  * Live-Anzeige der Anfahrt: Der Therapeut startet die Fahrt selbst, der Patient
  * sieht Countdown und animierten Fortschritt. Bewusst ohne Standortfreigabe –
@@ -144,32 +158,42 @@ export function AnfahrtLive({
           {/* Straßenband */}
           <div className="absolute inset-x-0 bottom-0 h-8 bg-navy-950/70" />
 
-          {/* Strecke */}
-          <div className="absolute inset-x-4 bottom-5 h-1.5 rounded-full bg-white/15" />
+          {/*
+            Strecke. Sie beginnt und endet eine halbe Wagenlänge vom Rand
+            entfernt: so steht das Ende des Fortschritts immer genau in der
+            Mitte des Wagens, und der Wagen ragt an keinem Ende aus dem Bild.
+          */}
           <div
-            className="absolute left-4 bottom-5 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
-            style={{ width: `calc((100% - 2rem) * ${fortschritt})` }}
+            className="absolute bottom-5 h-1.5 rounded-full bg-white/15"
+            style={{ left: BAHN_RAND, right: BAHN_RAND }}
+          />
+          <div
+            className="absolute bottom-5 h-1.5 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 transition-[width] duration-1000 ease-linear"
+            style={{ left: BAHN_RAND, width: `calc(${WEG} * ${fortschritt})` }}
           />
           {/* Start- und Zielpunkt */}
           <span
-            className="absolute left-4 bottom-[0.95rem] h-4 w-4 -translate-x-1/2 rounded-full border-2 border-teal-400 bg-navy-950"
+            className="absolute bottom-[0.95rem] h-4 w-4 -translate-x-1/2 rounded-full border-2 border-teal-400 bg-navy-950"
+            style={{ left: BAHN_RAND }}
             aria-hidden
           />
           <span
-            className={`absolute right-4 bottom-[0.95rem] h-4 w-4 translate-x-1/2 rounded-full border-2 ${
+            className={`absolute bottom-[0.95rem] h-4 w-4 translate-x-1/2 rounded-full border-2 ${
               angekommen ? "border-teal-400 bg-teal-400" : "border-white/40 bg-navy-950"
             }`}
+            style={{ right: BAHN_RAND }}
             aria-hidden
           />
-          {/* Fahrzeug */}
+          {/* Fahrzeug – seine Mitte sitzt auf dem Ende des Fortschritts */}
           <div
             className="absolute bottom-[1.4rem] transition-[left] duration-1000 ease-linear"
-            // Der Wagen bleibt vollstaendig sichtbar: er startet mit dem Heck am
-            // Startpunkt und steht am Ende mit der Front am Ziel.
-            style={{ left: `calc(1rem + (100% - 2rem - 4.5rem) * ${fortschritt})` }}
+            style={{
+              width: WAGEN_BREITE,
+              left: `calc(${RAND} + ${WEG} * ${fortschritt})`,
+            }}
           >
             <CuramusWagen
-              className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`}
+              className={`w-full ${angekommen ? "" : "animate-fahrt-bob"}`}
               raederDrehen={!angekommen}
             />
           </div>
