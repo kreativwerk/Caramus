@@ -132,15 +132,17 @@ export function CuramusWagen({
       {/* Chromleiste am Schweller */}
       <rect x="20" y="37.5" width="46" height="0.75" rx="0.38" fill="#dbe6f4" opacity="0.55" />
 
-      {/* Wortmarke auf den Türen */}
+      {/* Wortmarke auf den Türen: gleiche Schrift wie im Kopf der App,
+          mittig auf dem Radstand, ohne die Bildmarke. */}
       <text
-        x="36"
+        x="48.5"
         y="35.4"
+        textAnchor="middle"
         fill="#ffffff"
         fontFamily={SCHRIFT}
         fontSize="5"
         fontWeight="700"
-        letterSpacing="0.2"
+        letterSpacing="0.13"
       >
         CURAMUS
       </text>
