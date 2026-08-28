@@ -602,3 +602,47 @@ export async function patientEinladen(formData: FormData) {
   revalidatePath("/praxis/patienten");
   return { ok: true, link: ergebnis.link ?? null, verschickt: ergebnis.verschickt };
 }
+
+/** Textbaustein anlegen – Überschrift und Inhalt, mehr braucht es nicht. */
+export async function bausteinSpeichern(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  if (!title) return { fehler: "Bitte geben Sie dem Baustein eine Überschrift." };
+  if (!body) return { fehler: "Bitte tragen Sie ein, was kopiert werden soll." };
+
+  const id = String(formData.get("id") ?? "").trim();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = id
+    ? await supabase
+        .from("snippets")
+        .update({ title: title.slice(0, 120), body, updated_at: new Date().toISOString() })
+        .eq("id", id)
+    : await supabase
+        .from("snippets")
+        .insert({ author_id: user!.id, title: title.slice(0, 120), body });
+
+  if (error) return { fehler: nichtGeklappt("Das Speichern des Bausteins") };
+
+  revalidatePath("/praxis/bausteine");
+  revalidatePath("/praxis");
+  return { ok: true };
+}
+
+/** Baustein entfernen. */
+export async function bausteinLoeschen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const { error } = await supabase.from("snippets").delete().eq("id", String(formData.get("id")));
+  if (error) return { fehler: nichtGeklappt("Das Entfernen des Bausteins") };
+
+  revalidatePath("/praxis/bausteine");
+  revalidatePath("/praxis");
+  return { ok: true };
+}

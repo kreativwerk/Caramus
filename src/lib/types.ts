@@ -221,6 +221,16 @@ export function feedbackArtLabel(art: FeedbackArt) {
   return FEEDBACK_ARTEN.find((a) => a.wert === art)?.label ?? "Rückmeldung";
 }
 
+export type Baustein = {
+  id: string;
+  author_id: string;
+  title: string;
+  body: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Message = {
   id: string;
   patient_id: string;

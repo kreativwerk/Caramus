@@ -25,6 +25,10 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Seitenleiste bleibt beim Scrollen stehen, unten ein Profilkasten mit Name und E-Mail
 - [x] Praxis kann Patientinnen und Patienten einladen – per E-Mail oder als Link zum Weitergeben (`/praxis/patienten`)
 - [x] Helle Logo-Variante für dunkle Flächen (`public/logo-mark-hell.png`)
+- [x] Zwischenablage für die Praxis: Bausteine mit Überschrift und Inhalt, Symbol oben rechts, Vorschau bei langem Text (`/praxis/bausteine`)
+- [x] Praxis-Seitenleiste in Gruppen (Mein Tag, Betreuung, Inhalte); auf dem Handy fünf Ziele plus „Mehr"
+- [x] Untere Leiste größer und luftiger
+- [x] Drei Beispielübungen nach dem Otago-Programm mit Fotos (Aufstehen vom Stuhl, Wadenheben, Einbeinstand)
 - [x] Willkommen beim ersten Anmelden: Funktionsüberblick, Datenschutz-Versprechen und drei kurze Schritte für Name, Anschrift und Kontakt (`/willkommen`)
 - [x] Dashboard aufgeräumt: Schnellzugriff entfernt, Fortschritt erst wenn ein Plan existiert – sonst ein Hinweis statt einer Null
 - [x] Tempo: Region auf Frankfurt festgelegt (`vercel.json`), Anmeldeprüfung nur noch auf geschützten Seiten, Nutzer und Profil einmal pro Aufruf statt mehrfach (`src/lib/sitzung.ts`), Platzhalter beim Seitenwechsel

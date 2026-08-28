@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { aktuellerNutzer, aktuellesProfil } from "@/lib/sitzung";
 import { AppShell } from "@/components/app-shell";
 import { praxisBenachrichtigungen } from "@/lib/benachrichtigungen";
+import type { Baustein } from "@/lib/types";
 
 export default async function PraxisLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,18 +14,24 @@ export default async function PraxisLayout({ children }: { children: React.React
   const profile = await aktuellesProfil();
   if (profile?.role !== "therapist") redirect("/app");
 
+  // Reihenfolge nach Arbeitsalltag: erst der Tag, dann die Menschen, dann die
+  // Inhalte. Die ersten fünf stehen auf dem Handy in der unteren Leiste.
   const items = [
-    { href: "/praxis", label: "Übersicht", icon: "home" },
-    { href: "/praxis/anfragen", label: "Anfragen", icon: "anfrage" },
-    { href: "/praxis/dokumente", label: "Dokumente", icon: "dokument" },
-    { href: "/praxis/termine", label: "Termine", icon: "kalender" },
-    { href: "/praxis/patienten", label: "Patienten", icon: "personen" },
-    { href: "/praxis/uebungen", label: "Übungen", icon: "plan" },
-    { href: "/praxis/chat", label: "Chat", icon: "chat" },
-    { href: "/praxis/feedback", label: "Rückmeldung", icon: "feedback" },
+    { href: "/praxis", label: "Übersicht", icon: "home", gruppe: "Mein Tag" },
+    { href: "/praxis/anfragen", label: "Anfragen", icon: "anfrage", gruppe: "Mein Tag" },
+    { href: "/praxis/termine", label: "Termine", icon: "kalender", gruppe: "Mein Tag" },
+    { href: "/praxis/patienten", label: "Patienten", icon: "personen", gruppe: "Betreuung" },
+    { href: "/praxis/chat", label: "Chat", icon: "chat", gruppe: "Betreuung" },
+    { href: "/praxis/dokumente", label: "Dokumente", icon: "dokument", gruppe: "Betreuung" },
+    { href: "/praxis/uebungen", label: "Übungen", icon: "plan", gruppe: "Inhalte" },
+    { href: "/praxis/bausteine", label: "Zwischenablage", icon: "klammer", gruppe: "Inhalte" },
+    { href: "/praxis/feedback", label: "Rückmeldung", icon: "feedback", gruppe: "Inhalte" },
   ] as const;
 
-  const benachrichtigungen = await praxisBenachrichtigungen(supabase);
+  const [benachrichtigungen, { data: bausteine }] = await Promise.all([
+    praxisBenachrichtigungen(supabase),
+    supabase.from("snippets").select("*").order("position").order("created_at").limit(30),
+  ]);
 
   return (
     <AppShell
@@ -35,6 +42,7 @@ export default async function PraxisLayout({ children }: { children: React.React
       bereich="Praxisbereich"
       profilHref="/praxis/profil"
       benachrichtigungen={benachrichtigungen}
+      bausteine={(bausteine ?? []) as Baustein[]}
     >
       {children}
     </AppShell>

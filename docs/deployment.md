@@ -127,6 +127,15 @@ steht ohnehin sofort in der App.
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
 Mails im Posteingang und nicht im Spam landen.
 
+## Beispielübungen
+
+Die Bibliothek enthält drei illustrierte Beispiele aus dem Otago-Übungsprogramm
+(Sturzprävention im häuslichen Umfeld): Aufstehen vom Stuhl, Wadenheben im
+Stand, Einbeinstand am Tresen. Die Bilder wurden für dieses Projekt erzeugt und
+sind rechtefrei nutzbar – sie sind als Platzhalter gedacht, bis Charles eigene
+Aufnahmen macht. Die Anleitungen sind fachlich üblich, sollten von ihm aber vor
+dem Einsatz gegengelesen werden.
+
 ## Einladungen aus der Praxis
 
 Unter **Praxis → Patienten** legt Charles Zugänge an: per E-Mail (Supabase

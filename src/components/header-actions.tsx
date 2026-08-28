@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Benachrichtigung } from "@/lib/benachrichtigungen";
+import type { Baustein } from "@/lib/types";
+import { BausteineMenue } from "@/components/bausteine-menue";
 import { MIcon } from "@/components/m-icon";
 
 function initialen(name: string) {
@@ -16,10 +18,13 @@ export function HeaderActions({
   profilHref,
   nutzerName,
   benachrichtigungen,
+  bausteine,
 }: {
   profilHref: string;
   nutzerName: string;
   benachrichtigungen: Benachrichtigung[];
+  /** Nur im Praxisbereich gesetzt – Patienten haben keine Zwischenablage. */
+  bausteine?: Baustein[];
 }) {
   const [offen, setOffen] = useState(false);
   const bereichRef = useRef<HTMLDivElement>(null);
@@ -44,6 +49,7 @@ export function HeaderActions({
 
   return (
     <div className="flex items-center gap-2">
+      {bausteine && <BausteineMenue bausteine={bausteine} />}
       <div ref={bereichRef} className="relative">
         <button
           type="button"
