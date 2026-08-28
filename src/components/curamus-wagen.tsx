@@ -11,14 +11,34 @@
  * Sie liegt als Text über dem Bild und nicht darin: so bleibt sie auf jedem
  * Bildschirm scharf und lässt sich ändern, ohne die Bilddatei anzufassen.
  *
- * Die Bilddatei ist bewusst klein gehalten (WebP, rund 25 kB) – die Anzeige
- * lädt auch im Mobilfunknetz sofort.
+ * Die beiden Felgen liegen als eigene, kreisrund ausgeschnittene Bilder über
+ * dem Wagen und drehen sich während der Fahrt. Die Reifen bleiben stehen –
+ * sichtbar dreht sich bei einem Rad ohnehin nur das Muster der Felge.
+ *
+ * Alle drei Dateien zusammen bleiben unter 60 kB; die Anzeige lädt auch im
+ * Mobilfunknetz sofort.
  */
 const BILD = "/wagen.webp";
 /** Seitenverhältnis der Bilddatei; hält den Platz frei, bevor das Bild da ist. */
 const VERHAELTNIS = "560 / 180";
 
-export function CuramusWagen({ className }: { className?: string }) {
+/**
+ * Sitz der beiden Felgen, gemessen an der Bilddatei und in Prozent umgerechnet:
+ * so sitzen sie bei jeder Größe an derselben Stelle.
+ */
+const FELGEN = [
+  { bild: "/felge-hinten.webp", links: "21.63%", oben: "76.72%" },
+  { bild: "/felge-vorne.webp", links: "82.91%", oben: "76.47%" },
+];
+const FELGE_BREITE = "11.72%";
+
+export function CuramusWagen({
+  className,
+  raederDrehen = false,
+}: {
+  className?: string;
+  raederDrehen?: boolean;
+}) {
   return (
     <div
       className={`relative ${className ?? ""}`}
@@ -37,6 +57,30 @@ export function CuramusWagen({ className }: { className?: string }) {
         draggable={false}
         aria-hidden
       />
+
+      {/* Drehende Felgen, passgenau über den stehenden Reifen */}
+      {FELGEN.map((f) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={f.bild}
+          src={f.bild}
+          alt=""
+          draggable={false}
+          aria-hidden
+          className={`pointer-events-none absolute select-none ${raederDrehen ? "animate-rad" : ""}`}
+          style={{
+            left: f.links,
+            top: f.oben,
+            width: FELGE_BREITE,
+            aspectRatio: "1",
+            // Prozentwerte im Rand beziehen sich immer auf die Breite –
+            // deshalb ist die Verschiebung nach oben dieselbe wie nach links.
+            marginLeft: `calc(${FELGE_BREITE} / -2)`,
+            marginTop: `calc(${FELGE_BREITE} / -2)`,
+          }}
+        />
+      ))}
+
       {/* Beschriftung auf den vorderen und hinteren Türen */}
       <span
         className="pointer-events-none absolute select-none font-bold leading-none text-white"

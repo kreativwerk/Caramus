@@ -101,6 +101,20 @@ async function login(page, email) {
     ok(`Animation läuft: Fortschritt wandert (${vorher?.slice(0, 24)} → ${nachher?.slice(0, 24)})`);
   } catch (e) { fail("Fortschrittsanimation", e); }
 
+  // Die Felgen liegen als eigene Bilder ueber dem Wagen und muessen sich drehen
+  try {
+    const felge = patient.locator(".animate-rad").first();
+    if ((await patient.locator(".animate-rad").count()) !== 2) {
+      throw new Error("Es sollten zwei drehende Felgen sein");
+    }
+    const dreh = () => felge.evaluate((el) => getComputedStyle(el).transform);
+    const a = await dreh();
+    await patient.waitForTimeout(250);
+    const b = await dreh();
+    if (a === b) throw new Error("Felge steht still: " + a);
+    ok("Beide Felgen drehen sich waehrend der Fahrt");
+  } catch (e) { fail("Felgendrehung", e); }
+
   // Verspätung über die Praxis-App melden
   try {
     await praxis.getByRole("button", { name: "Verspätung melden" }).first().click();

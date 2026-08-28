@@ -168,7 +168,10 @@ export function AnfahrtLive({
             // Startpunkt und steht am Ende mit der Front am Ziel.
             style={{ left: `calc(1rem + (100% - 2rem - 4.5rem) * ${fortschritt})` }}
           >
-            <CuramusWagen className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`} />
+            <CuramusWagen
+              className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`}
+              raederDrehen={!angekommen}
+            />
           </div>
         </div>
         <div className="mt-1 flex justify-between text-xs text-white/60">

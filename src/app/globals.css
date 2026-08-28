@@ -104,6 +104,16 @@ body {
   animation: baeume-fahrt 17s linear infinite;
 }
 
+/* Die Felgen liegen als eigene Bilder über dem Wagen und drehen sich während
+   der Fahrt; die Reifen bleiben stehen. */
+@keyframes rad-dreh {
+  to { transform: rotate(360deg); }
+}
+
+.animate-rad {
+  animation: rad-dreh 0.75s linear infinite;
+}
+
 /* Leichtes Wippen des Wagens. Bewusst sehr klein und langsam: seit der Wagen
    ein Foto ist, sitzt er formatfüllend im Rahmen – zwei Pixel waren dort fast
    ein Zehntel seiner Höhe und sahen aus wie ein Hüpfen. */
@@ -152,6 +162,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fahrt-bob,
+  .animate-rad,
   .animate-baeume-nah,
   .animate-baeume-fern,
   .animate-schritt,
