@@ -58,11 +58,10 @@ export function AppShell({
       {/* Desktop-Sidebar: bleibt beim Scrollen stehen */}
       <aside className="hidden w-64 shrink-0 lg:block">
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-navy-900 px-4 py-6">
+        {/* Nur die Wortmarke: Welcher Bereich es ist, steht schon oben in der
+            Kopfzeile – zweimal untereinander war es einmal zu viel. */}
         <div className="px-2">
           <Logo dark />
-          <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-teal-400">
-            {bereich}
-          </p>
         </div>
         <nav className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto">
           {items.map((item, i) => {
