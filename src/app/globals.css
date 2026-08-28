@@ -90,14 +90,6 @@ body {
   100% { transform: scale(3); opacity: 0; }
 }
 
-@keyframes rad-dreh {
-  to { transform: rotate(360deg); }
-}
-
-.animate-rad {
-  animation: rad-dreh 0.55s linear infinite;
-}
-
 /* Kulisse: Streifen wird doppelt gerendert und um die halbe Breite verschoben */
 @keyframes baeume-fahrt {
   from { transform: translateX(0); }
@@ -112,13 +104,16 @@ body {
   animation: baeume-fahrt 17s linear infinite;
 }
 
+/* Leichtes Wippen des Wagens. Bewusst sehr klein und langsam: seit der Wagen
+   ein Foto ist, sitzt er formatfüllend im Rahmen – zwei Pixel waren dort fast
+   ein Zehntel seiner Höhe und sahen aus wie ein Hüpfen. */
 @keyframes fahrt-bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+  50% { transform: translateY(-0.8px); }
 }
 
 .animate-fahrt-bob {
-  animation: fahrt-bob 0.9s ease-in-out infinite;
+  animation: fahrt-bob 1.8s ease-in-out infinite;
 }
 
 
@@ -157,7 +152,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fahrt-bob,
-  .animate-rad,
   .animate-baeume-nah,
   .animate-baeume-fern,
   .animate-schritt,
