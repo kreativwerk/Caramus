@@ -1,8 +1,11 @@
 export type Role = "therapist" | "patient";
 
+export type Anrede = "herr" | "frau";
+
 export type Profile = {
   id: string;
   role: Role;
+  anrede: Anrede | null;
   full_name: string;
   phone: string | null;
   street: string | null;
@@ -231,6 +234,55 @@ export type Baustein = {
   updated_at: string;
 };
 
+export type PraxisEinstellungen = {
+  id: boolean;
+  slot_minuten: number;
+  puffer_minuten: number;
+  vorlauf_stunden: number;
+  horizont_tage: number;
+  auto_bestaetigen: boolean;
+  updated_at: string;
+};
+
+export type Verfuegbarkeit = {
+  id: string;
+  wochentag: number;
+  von: string;
+  bis: string;
+  aktiv: boolean;
+};
+
+export type Sperrzeit = {
+  id: string;
+  datum: string;
+  von: string | null;
+  bis: string | null;
+  grund: string | null;
+};
+
+export const WOCHENTAGE = [
+  "Sonntag",
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+] as const;
+
+/**
+ * Förmliche Ansprache. Ohne hinterlegte Anrede bleibt es beim Vornamen –
+ * lieber vertraulich als falsch geraten.
+ */
+export function ansprache(profil: { anrede?: Anrede | null; full_name?: string | null }) {
+  const name = (profil.full_name ?? "").trim();
+  const nachname = name.includes(" ") ? name.split(" ").slice(-1)[0] : "";
+  if (profil.anrede && nachname) {
+    return `${profil.anrede === "herr" ? "Herr" : "Frau"} ${nachname}`;
+  }
+  return name.split(" ")[0] ?? "";
+}
+
 export type Message = {
   id: string;
   patient_id: string;
@@ -240,17 +292,35 @@ export type Message = {
   read_at: string | null;
 };
 
+/**
+ * Alle Zeitangaben in deutscher Ortszeit, unabhängig davon, wie das Gerät
+ * eingestellt ist. Ein Hausbesuch in Nürnberg findet um 8 Uhr deutscher Zeit
+ * statt – auch wenn jemand die App im Urlaub oder mit falsch gestellter
+ * Zeitzone öffnet.
+ */
+export const ZEITZONE = "Europe/Berlin";
+
 export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("de-DE", {
     weekday: "short",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: ZEITZONE,
   });
 }
 
 export function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: ZEITZONE,
+  });
+}
+
+/** Datum als YYYY-MM-DD in deutscher Ortszeit – zum Gruppieren nach Tagen. */
+export function tagesSchluessel(iso: string) {
+  return new Date(iso).toLocaleDateString("sv-SE", { timeZone: ZEITZONE });
 }
 
 export function formatDateTime(iso: string) {

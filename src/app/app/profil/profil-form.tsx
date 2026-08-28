@@ -22,6 +22,16 @@ export function ProfilForm({ profil }: { profil: Profile }) {
   return (
     <form action={absenden} className="card space-y-4">
       <div>
+        <label htmlFor="anrede" className="label-base">Anrede</label>
+        <select id="anrede" name="anrede" defaultValue={profil.anrede ?? ""} className="input-base">
+          <option value="">Ohne Anrede</option>
+          <option value="frau">Frau</option>
+          <option value="herr">Herr</option>
+        </select>
+        <p className="mt-1 mb-4 text-xs text-navy-600/70">
+          So spricht die App Sie an, zum Beispiel „Guten Tag, Frau Mustermann“.
+        </p>
+
         <label htmlFor="full_name" className="label-base">Vor- und Nachname</label>
         <input id="full_name" name="full_name" required defaultValue={profil.full_name} className="input-base" />
       </div>

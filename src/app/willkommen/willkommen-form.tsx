@@ -8,6 +8,7 @@ import { MIcon, type MIconName } from "@/components/m-icon";
 import { onboardingSpeichern } from "@/app/app/actions";
 
 type Werte = {
+  anrede: "" | "herr" | "frau";
   vorname: string;
   nachname: string;
   street: string;
@@ -54,6 +55,7 @@ export function WillkommenForm({ vorschlagName }: { vorschlagName: string }) {
   const teile = vorschlagName.trim().split(/\s+/).filter(Boolean);
   const [schritt, setSchritt] = useState(0);
   const [werte, setWerte] = useState<Werte>({
+    anrede: "",
     vorname: teile.length > 1 ? teile[0] : "",
     nachname: teile.length > 1 ? teile.slice(1).join(" ") : "",
     street: "",
@@ -66,7 +68,7 @@ export function WillkommenForm({ vorschlagName }: { vorschlagName: string }) {
   const [laeuft, startTransition] = useTransition();
   const router = useRouter();
 
-  function setze(feld: keyof Werte, wert: string) {
+  function setze<K extends keyof Werte>(feld: K, wert: Werte[K]) {
     setWerte((alt) => ({ ...alt, [feld]: wert }));
   }
 
@@ -89,6 +91,7 @@ export function WillkommenForm({ vorschlagName }: { vorschlagName: string }) {
   function abschliessen() {
     setFehler(null);
     const fd = new FormData();
+    fd.set("anrede", werte.anrede);
     fd.set("full_name", `${werte.vorname.trim()} ${werte.nachname.trim()}`.trim());
     fd.set("street", werte.street.trim());
     fd.set("zip", werte.zip.trim());
@@ -197,7 +200,33 @@ export function WillkommenForm({ vorschlagName }: { vorschlagName: string }) {
                 <h1 className="mt-3 text-2xl font-bold text-navy-800">
                   Wie dürfen wir Sie <span className="text-teal-500">ansprechen</span>?
                 </h1>
+                <p className="mt-2 text-navy-600/80">
+                  Ihre Praxis spricht Sie damit persönlich an.
+                </p>
                 <div className="mt-6 space-y-4">
+                  <div>
+                    <span className="label-base">Anrede</span>
+                    <div className="flex gap-2">
+                      {([
+                        ["frau", "Frau"],
+                        ["herr", "Herr"],
+                        ["", "Ohne Anrede"],
+                      ] as const).map(([wert, label]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setze("anrede", wert)}
+                          className={`flex-1 rounded-xl border px-3 py-3 font-semibold transition ${
+                            werte.anrede === wert
+                              ? "border-teal-500 bg-teal-500 text-white"
+                              : "border-mist-200 text-navy-800 hover:border-teal-500"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div>
                     <label htmlFor="vorname" className="label-base">
                       Vorname

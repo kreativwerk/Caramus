@@ -71,8 +71,8 @@ async function supabaseBridge(ctx) {
   // ---------- Patient: Login, Profil, Terminanfrage ----------
   try {
     await login(patient, "qa-patient@curamus-test.de");
-    await patient.waitForSelector("text=Hallo Erika", { timeout: 15000 });
-    ok("Patient-Login mit Passwort, Dashboard begrüßt mit Vornamen");
+    await patient.waitForSelector("text=Guten Tag, Frau Beispiel", { timeout: 20000 });
+    ok("Patient-Login mit Passwort, Dashboard begrüßt förmlich mit Nachnamen");
   } catch (e) { fail("Patient-Login", e); }
 
   try {
@@ -86,8 +86,33 @@ async function supabaseBridge(ctx) {
     ok("Patient-Profil: Adresse gespeichert");
   } catch (e) { fail("Patient-Profil speichern", e); }
 
+  // Buchung über die freie Auswahl – der Hauptweg
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
+    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
+    await patient.locator("button", { hasText: /freie Zeit/ }).first().click();
+    const zeitKnopf = patient.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).first();
+    const gewaehlt = await zeitKnopf.innerText();
+    await zeitKnopf.click();
+    await patient.getByRole("button", { name: /^Weiter/ }).click();
+    await patient.getByRole("button", { name: "Termin buchen" }).click();
+    await patient.waitForSelector("text=Ihr Termin steht", { timeout: 25000 });
+    ok(`Termin über die freie Auswahl gebucht (${gewaehlt} Uhr)`);
+  } catch (e) { fail("Termin buchen", e); }
+
+  // Der Platz darf danach nicht mehr angeboten werden
+  try {
+    await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
+    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
+    const text = await patient.locator("section.card").filter({ hasText: "Wann passt es Ihnen" }).innerText();
+    if (!/freie Zeit/.test(text)) throw new Error("Keine Zeiten mehr angeboten");
+    ok("Nach der Buchung stehen weiterhin andere Zeiten zur Auswahl");
+  } catch (e) { fail("Auswahl nach Buchung", e); }
+
+  try {
+    await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
+    // Der klassische Weg über Wunschzeiten liegt jetzt hinter einem Aufklapper
+    await patient.getByText("Keine passende Zeit dabei?").click();
     await patient.getByRole("button", { name: "Termin anfragen" }).click();
     await patient.fill("#wunschzeiten", "Donnerstag Vormittag oder Freitag zwischen 14 und 17 Uhr");
     await patient.fill("#nachricht", "Bitte klingeln, Aufzug vorhanden.");

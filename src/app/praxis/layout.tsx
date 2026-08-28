@@ -20,6 +20,7 @@ export default async function PraxisLayout({ children }: { children: React.React
     { href: "/praxis", label: "Übersicht", icon: "home", gruppe: "Mein Tag" },
     { href: "/praxis/anfragen", label: "Anfragen", icon: "anfrage", gruppe: "Mein Tag" },
     { href: "/praxis/termine", label: "Termine", icon: "kalender", gruppe: "Mein Tag" },
+    { href: "/praxis/verfuegbarkeit", label: "Verfügbarkeit", icon: "uhr", gruppe: "Mein Tag" },
     { href: "/praxis/patienten", label: "Patienten", icon: "personen", gruppe: "Betreuung" },
     { href: "/praxis/chat", label: "Chat", icon: "chat", gruppe: "Betreuung" },
     { href: "/praxis/dokumente", label: "Dokumente", icon: "dokument", gruppe: "Betreuung" },

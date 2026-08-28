@@ -2,8 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { AnfahrtLive } from "@/components/anfahrt-live";
 import { resolveDocumentUrl } from "@/lib/media";
 import type { Appointment, PatientDocument } from "@/lib/types";
-import { formatDateTime } from "@/lib/types";
+import { formatDateTime, tagesSchluessel } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
+import { TerminBuchen } from "./termin-buchen";
+import type { PraxisEinstellungen } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
 import { aktuellerNutzer } from "@/lib/sitzung";
 
@@ -57,6 +59,26 @@ export default async function TerminePage() {
   }
 
   // Nächster Termin: Live-Karte immer einbinden, sie zeigt sich erst bei Fahrtbeginn.
+  const heute = new Date();
+  const horizont = new Date(heute);
+  horizont.setDate(heute.getDate() + 56);
+
+  const [{ data: einstellungen }, { data: slots }] = await Promise.all([
+    supabase.from("praxis_einstellungen").select("*").maybeSingle<PraxisEinstellungen>(),
+    supabase.rpc("freie_termine", {
+      p_von: heute.toISOString().slice(0, 10),
+      p_bis: horizont.toISOString().slice(0, 10),
+    }),
+  ]);
+
+  // Freie Zeiten nach Tagen bündeln – in Ortszeit, so wie sie angezeigt werden
+  const nachTag = new Map<string, string[]>();
+  for (const zeile of (slots ?? []) as { beginn: string }[]) {
+    const schluessel = tagesSchluessel(zeile.beginn);
+    nachTag.set(schluessel, [...(nachTag.get(schluessel) ?? []), zeile.beginn]);
+  }
+  const startTage = [...nachTag.entries()].map(([datum, zeiten]) => ({ datum, zeiten }));
+
   const anfahrt = ((kommende ?? []) as Appointment[]).find((t) => t.status === "geplant");
   const { data: therapeutName } = anfahrt ? await supabase.rpc("therapeut_name") : { data: null };
 
@@ -71,7 +93,25 @@ export default async function TerminePage() {
 
       {anfahrt && <AnfahrtLive termin={anfahrt} therapeutName={therapeutName ?? "Ihr Therapeut"} />}
 
-      <AnfrageForm />
+      <TerminBuchen
+        slotMinuten={einstellungen?.slot_minuten ?? 60}
+        autoBestaetigen={einstellungen?.auto_bestaetigen ?? true}
+        startTage={startTage}
+      />
+
+      {/* Rückfalllösung: Wenn nichts Passendes dabei ist, bleibt der Weg über
+          freie Wunschzeiten offen. */}
+      <details className="card">
+        <summary className="cursor-pointer font-semibold text-navy-800">
+          Keine passende Zeit dabei?
+        </summary>
+        <p className="mt-2 text-sm text-navy-600/80">
+          Nennen Sie uns einfach Ihre Wunschzeiten – Ihre Praxis meldet sich mit einem Vorschlag.
+        </p>
+        <div className="mt-4">
+          <AnfrageForm />
+        </div>
+      </details>
 
       <section>
         <h2 className="mb-3 text-lg font-bold text-navy-800">Kommende Termine</h2>

@@ -646,3 +646,117 @@ export async function bausteinLoeschen(formData: FormData) {
   revalidatePath("/praxis");
   return { ok: true };
 }
+
+/** Grundeinstellungen der Terminbuchung. */
+export async function einstellungenSpeichern(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const zahl = (feld: string, min: number, max: number, standard: number) => {
+    const n = Number(formData.get(feld));
+    return Number.isFinite(n) && n >= min && n <= max ? Math.round(n) : standard;
+  };
+
+  const { error } = await supabase
+    .from("praxis_einstellungen")
+    .update({
+      slot_minuten: zahl("slot_minuten", 15, 240, 60),
+      puffer_minuten: zahl("puffer_minuten", 0, 180, 30),
+      vorlauf_stunden: zahl("vorlauf_stunden", 0, 336, 24),
+      horizont_tage: zahl("horizont_tage", 1, 180, 28),
+      auto_bestaetigen: formData.get("auto_bestaetigen") === "on",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", true);
+  if (error) return { fehler: nichtGeklappt("Das Speichern der Einstellungen") };
+
+  revalidatePath("/praxis/verfuegbarkeit");
+  revalidatePath("/app/termine");
+  return { ok: true };
+}
+
+/** Sprechzeit für einen Wochentag anlegen. */
+export async function sprechzeitAnlegen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const wochentag = Number(formData.get("wochentag"));
+  const von = String(formData.get("von") ?? "");
+  const bis = String(formData.get("bis") ?? "");
+  if (!Number.isInteger(wochentag) || wochentag < 0 || wochentag > 6) {
+    return { fehler: "Bitte wählen Sie einen Wochentag." };
+  }
+  if (!von || !bis || bis <= von) {
+    return { fehler: "Die Endzeit muss nach der Startzeit liegen." };
+  }
+
+  const { error } = await supabase.from("verfuegbarkeit").insert({ wochentag, von, bis });
+  if (error) return { fehler: nichtGeklappt("Das Anlegen der Sprechzeit") };
+
+  revalidatePath("/praxis/verfuegbarkeit");
+  revalidatePath("/app/termine");
+  return { ok: true };
+}
+
+/** Sprechzeit entfernen oder vorübergehend abschalten. */
+export async function sprechzeitAendern(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const id = String(formData.get("id"));
+  const aktion = String(formData.get("aktion"));
+
+  const { error } =
+    aktion === "loeschen"
+      ? await supabase.from("verfuegbarkeit").delete().eq("id", id)
+      : await supabase
+          .from("verfuegbarkeit")
+          .update({ aktiv: aktion === "an" })
+          .eq("id", id);
+  if (error) return { fehler: nichtGeklappt("Das Ändern der Sprechzeit") };
+
+  revalidatePath("/praxis/verfuegbarkeit");
+  revalidatePath("/app/termine");
+  return { ok: true };
+}
+
+/** Urlaub, Fortbildung oder einen freien Nachmittag eintragen. */
+export async function sperrzeitAnlegen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const datum = String(formData.get("datum") ?? "");
+  if (!datum) return { fehler: "Bitte wählen Sie ein Datum." };
+
+  const ganztags = formData.get("ganztags") === "on";
+  const von = ganztags ? null : String(formData.get("von") ?? "") || null;
+  const bis = ganztags ? null : String(formData.get("bis") ?? "") || null;
+  if (!ganztags && (!von || !bis || bis <= von)) {
+    return { fehler: "Bitte geben Sie eine Zeitspanne an – oder wählen Sie den ganzen Tag." };
+  }
+
+  const { error } = await supabase.from("sperrzeiten").insert({
+    datum,
+    von,
+    bis,
+    grund: String(formData.get("grund") ?? "").trim() || null,
+  });
+  if (error) return { fehler: nichtGeklappt("Das Eintragen der freien Zeit") };
+
+  revalidatePath("/praxis/verfuegbarkeit");
+  revalidatePath("/app/termine");
+  return { ok: true };
+}
+
+/** Eingetragene freie Zeit wieder aufheben. */
+export async function sperrzeitLoeschen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const { error } = await supabase.from("sperrzeiten").delete().eq("id", String(formData.get("id")));
+  if (error) return { fehler: nichtGeklappt("Das Aufheben der freien Zeit") };
+
+  revalidatePath("/praxis/verfuegbarkeit");
+  revalidatePath("/app/termine");
+  return { ok: true };
+}

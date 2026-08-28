@@ -25,6 +25,10 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Seitenleiste bleibt beim Scrollen stehen, unten ein Profilkasten mit Name und E-Mail
 - [x] Praxis kann Patientinnen und Patienten einladen – per E-Mail oder als Link zum Weitergeben (`/praxis/patienten`)
 - [x] Helle Logo-Variante für dunkle Flächen (`public/logo-mark-hell.png`)
+- [x] Terminbuchung mit echten freien Zeiten: Patient wählt Tag und Uhrzeit in vier Schritten (`/app/termine`), berechnet aus Sprechzeiten, Terminlänge, Fahrzeit-Puffer, Vorlauf und Sperrzeiten
+- [x] Praxis stellt das alles selbst ein (`/praxis/verfuegbarkeit`) – inklusive Schalter, ob Buchungen sofort gelten oder erst bestätigt werden
+- [x] Förmliche Anrede: „Guten Tag, Frau Beispiel"; Anrede im Willkommen und im Profil änderbar
+- [x] Alle Zeitangaben fest in deutscher Ortszeit, unabhängig von der Geräteeinstellung
 - [x] Zwischenablage für die Praxis: Bausteine mit Überschrift und Inhalt, Symbol oben rechts, Vorschau bei langem Text (`/praxis/bausteine`)
 - [x] Praxis-Seitenleiste in Gruppen (Mein Tag, Betreuung, Inhalte); auf dem Handy fünf Ziele plus „Mehr"
 - [x] Untere Leiste größer und luftiger

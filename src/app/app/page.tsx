@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AnfahrtLive } from "@/components/anfahrt-live";
 import { FortschrittKarte } from "@/components/fortschritt-karte";
 import type { Appointment } from "@/lib/types";
-import { formatTime } from "@/lib/types";
+import { ansprache, formatTime, ZEITZONE } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
 import { aktuellerNutzer } from "@/lib/sitzung";
 
@@ -19,7 +19,7 @@ export default async function PatientStart() {
 
   const [{ data: profile }, { data: termin }, { data: plan }, { count: ungelesen }, { data: feedback }] =
     await Promise.all([
-      supabase.from("profiles").select("full_name, street").eq("id", user!.id).single(),
+      supabase.from("profiles").select("anrede, full_name, street").eq("id", user!.id).single(),
       // Auch bereits begonnene Termine berücksichtigen, damit die Live-Anfahrt
       // sichtbar bleibt, wenn sich der Start leicht verschoben hat.
       supabase
@@ -52,7 +52,7 @@ export default async function PatientStart() {
         .gte("on_date", seit.toISOString().slice(0, 10)),
     ]);
 
-  const vorname = (profile?.full_name ?? "").split(" ")[0];
+  const angesprochen = ansprache(profile ?? {});
   const aktuellerTermin = termin as Appointment | null;
   const { data: therapeutName } = aktuellerTermin
     ? await supabase.rpc("therapeut_name")
@@ -89,7 +89,8 @@ export default async function PatientStart() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-navy-800">
-          Hallo{vorname ? ` ${vorname}` : ""} <MIcon name="winken" className="text-teal-500" />
+          Guten Tag{angesprochen ? `, ${angesprochen}` : ""}{" "}
+          <MIcon name="winken" className="text-teal-500" />
         </h1>
         <p className="mt-1 text-navy-600/80">Schön, dass Sie da sind.</p>
       </div>
@@ -122,9 +123,11 @@ export default async function PatientStart() {
         {aktuellerTermin && terminDatum ? (
           <Link href="/app/termine" className="mt-3 flex items-center gap-4">
             <span className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-2xl bg-mist-100">
-              <span className="text-2xl font-bold text-navy-800">{terminDatum.getDate()}</span>
+              <span className="text-2xl font-bold text-navy-800">
+                {terminDatum.toLocaleDateString("de-DE", { day: "numeric", timeZone: ZEITZONE })}
+              </span>
               <span className="text-sm font-medium text-navy-600/80">
-                {terminDatum.toLocaleDateString("de-DE", { month: "long" })}
+                {terminDatum.toLocaleDateString("de-DE", { month: "long", timeZone: ZEITZONE })}
               </span>
             </span>
             <span className="min-w-0 flex-1 border-l border-mist-100 pl-4">

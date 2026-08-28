@@ -127,6 +127,26 @@ steht ohnehin sofort in der App.
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
 Mails im Posteingang und nicht im Spam landen.
 
+## Terminbuchung einrichten
+
+Unter **Praxis → Verfügbarkeit** stellt Charles alles selbst ein:
+
+- Sprechzeiten je Wochentag (voreingestellt Mo–Fr 8–18 Uhr, Sa 9–14 Uhr)
+- Dauer eines Termins, Fahrzeit zwischen zwei Hausbesuchen
+- Wie kurzfristig gebucht werden darf und wie weit im Voraus
+- Urlaub und einzelne freie Stunden
+- Ob Buchungen sofort gelten oder er sie erst bestätigt
+
+Die freien Zeiten berechnet die Datenbank (`freie_termine`) aus diesen Angaben
+und den bereits vergebenen Terminen. Patientinnen und Patienten sehen dadurch
+nur Zeiten, die wirklich buchbar sind – ohne die Termine anderer einsehen zu
+können. Gebucht wird über `termin_buchen`, das den Platz im selben Aufruf noch
+einmal prüft; zwei Personen können denselben Platz also nicht gleichzeitig
+nehmen.
+
+Alle Zeiten laufen in `Europe/Berlin`, unabhängig davon, wie das Gerät der
+Patientin oder des Patienten eingestellt ist.
+
 ## Beispielübungen
 
 Die Bibliothek enthält drei illustrierte Beispiele aus dem Otago-Übungsprogramm

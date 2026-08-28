@@ -99,9 +99,12 @@ export async function profilSpeichern(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { fehler: MELDUNG.abgemeldet };
 
+  const anredeRoh = String(formData.get("anrede") ?? "");
+
   const { error } = await supabase
     .from("profiles")
     .update({
+      anrede: anredeRoh === "herr" || anredeRoh === "frau" ? anredeRoh : null,
       full_name: String(formData.get("full_name") ?? "").trim(),
       phone: String(formData.get("phone") ?? "").trim() || null,
       street: String(formData.get("street") ?? "").trim() || null,
@@ -188,9 +191,13 @@ export async function onboardingSpeichern(formData: FormData) {
 
   const geburtstag = String(formData.get("birth_date") ?? "").trim();
 
+  const anredeRoh = String(formData.get("anrede") ?? "");
+  const anrede = anredeRoh === "herr" || anredeRoh === "frau" ? anredeRoh : null;
+
   const { error } = await supabase
     .from("profiles")
     .update({
+      anrede,
       full_name: full_name.slice(0, 120),
       street: String(formData.get("street") ?? "").trim() || null,
       zip: String(formData.get("zip") ?? "").trim() || null,
