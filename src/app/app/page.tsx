@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AnfahrtLive } from "@/components/anfahrt-live";
 import { FortschrittKarte } from "@/components/fortschritt-karte";
-import { Schnellzugriff } from "@/components/schnellzugriff";
 import type { Appointment } from "@/lib/types";
 import { formatTime } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
@@ -78,13 +77,11 @@ export default async function PatientStart() {
     ? Math.round((verlauf.reduce((a, b) => a + b, 0) / verlauf.length) * 100)
     : 0;
   const fortschrittText =
-    uebungenImPlan === 0
-      ? "Sobald Ihr Trainingsplan steht, sehen Sie hier Ihren Verlauf."
-      : prozent >= 70
-        ? "Weiter so – Sie sind auf einem sehr guten Weg."
-        : prozent >= 30
-          ? "Gut dabei. Jede Übung zählt."
-          : "Jeder Anfang zählt – schon eine Übung am Tag hilft.";
+    prozent >= 70
+      ? "Weiter so – Sie sind auf einem sehr guten Weg."
+      : prozent >= 30
+        ? "Gut dabei. Jede Übung zählt."
+        : "Jeder Anfang zählt – schon eine Übung am Tag hilft.";
 
   const terminDatum = aktuellerTermin ? new Date(aktuellerTermin.starts_at) : null;
 
@@ -101,7 +98,24 @@ export default async function PatientStart() {
         <AnfahrtLive termin={aktuellerTermin} therapeutName={therapeutName ?? "Ihr Therapeut"} />
       )}
 
-      <FortschrittKarte prozent={prozent} verlauf={verlauf} text={fortschrittText} />
+      {uebungenImPlan > 0 ? (
+        <FortschrittKarte prozent={prozent} verlauf={verlauf} text={fortschrittText} />
+      ) : (
+        /* Ohne Plan wäre eine 0-Prozent-Anzeige nur entmutigend – hier steht
+           stattdessen, was an dieser Stelle einmal zu sehen sein wird. */
+        <div className="card flex items-start gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal-50 text-teal-600">
+            <MIcon name="training" groesse="1.6rem" />
+          </span>
+          <span>
+            <span className="block text-lg font-bold text-navy-800">Ihr Trainingsplan</span>
+            <span className="mt-1 block text-navy-600/80">
+              Sobald Ihre Praxis Übungen für Sie zusammengestellt hat, finden Sie sie hier – mit
+              Video-Anleitung und Ihrem Verlauf der letzten Tage.
+            </span>
+          </span>
+        </div>
+      )}
 
       <div className="card">
         <p className="text-lg font-bold text-navy-800">Nächster Termin</p>
@@ -135,8 +149,6 @@ export default async function PatientStart() {
           </>
         )}
       </div>
-
-      <Schnellzugriff />
 
       {ungelesen ? (
         <Link href="/app/chat" className="card flex items-center justify-between gap-3 transition hover:border-teal-500">

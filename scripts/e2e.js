@@ -273,6 +273,22 @@ async function supabaseBridge(ctx) {
     await anon.close();
   } catch (e) { fail("Meldung bei falschem Passwort", e); }
 
+  // ---------- Willkommen ----------
+  try {
+    // Ein frisch eingeladener Zugang landet zuerst im Willkommen. Geprueft wird
+    // hier, dass ein fertig eingerichtetes Konto NICHT wieder hineingeschickt wird.
+    await patient.goto(BASE + "/willkommen", { waitUntil: "networkidle" });
+    await patient.waitForURL(/\/app$/, { timeout: 15000 });
+    ok("Wer das Willkommen hinter sich hat, wird nicht erneut hineingeschickt");
+  } catch (e) { fail("Willkommen ueberspringen", e); }
+
+  try {
+    await patient.goto(BASE + "/app", { waitUntil: "networkidle" });
+    const text = await patient.locator("body").innerText();
+    if (text.includes("Schnellzugriff")) throw new Error("Schnellzugriff ist noch da");
+    ok("Dashboard ohne Schnellzugriff");
+  } catch (e) { fail("Dashboard aufgeraeumt", e); }
+
   // ---------- Passwort ----------
   try {
     const anon = await browser.newContext();

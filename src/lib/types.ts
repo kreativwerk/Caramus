@@ -11,6 +11,8 @@ export type Profile = {
   birth_date: string | null;
   notes: string | null;
   created_at: string;
+  /** Zeitpunkt, an dem das Willkommen durchlaufen wurde */
+  onboarding_at: string | null;
 };
 
 export type AppointmentRequest = {

@@ -12,6 +12,9 @@ export default async function PatientLayout({ children }: { children: React.Reac
 
   const profile = await aktuellesProfil();
   if (profile?.role === "therapist") redirect("/praxis");
+  // Beim ersten Mal zuerst durch das Willkommen – dort werden Name und
+  // Anschrift erfasst, ohne die ein Hausbesuch nicht planbar ist.
+  if (!profile?.onboarding_at) redirect("/willkommen");
 
   const items = [
     { href: "/app", label: "Übersicht", icon: "home" },

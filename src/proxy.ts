@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // Exakte Segmentprüfung: /praxis-login ist öffentlich und darf nicht
   // von der /praxis-Regel erfasst werden.
-  const isProtected = /^\/(app|praxis)(\/|$)/.test(pathname);
+  const isProtected = /^\/(app|praxis|willkommen)(\/|$)/.test(pathname);
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
@@ -46,5 +46,5 @@ export const config = {
   // Nur dort prüfen, wo es etwas zu schützen gibt. Jeder Durchlauf kostet eine
   // Rückfrage bei Supabase in Frankfurt – öffentliche Seiten wie Anmeldung,
   // Impressum oder Datenschutz sollen die nicht bezahlen.
-  matcher: ["/", "/app/:path*", "/praxis/:path*"],
+  matcher: ["/", "/app/:path*", "/praxis/:path*", "/willkommen"],
 };

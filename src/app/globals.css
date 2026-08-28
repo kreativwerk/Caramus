@@ -121,13 +121,55 @@ body {
   animation: fahrt-bob 0.9s ease-in-out infinite;
 }
 
+
+/* Willkommen: Schritt gleitet leicht von unten herein, damit der Wechsel
+   nachvollziehbar bleibt und nicht springt */
+@keyframes schritt-ein {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-schritt {
+  animation: schritt-ein 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Punkte einer Aufzählung erscheinen nacheinander */
+@keyframes punkt-ein {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-punkt {
+  animation: punkt-ein 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Abschluss: Kreis und Haken werden gezeichnet */
+@keyframes kreis-zeichnen { to { stroke-dashoffset: 0; } }
+@keyframes haken-zeichnen { to { stroke-dashoffset: 0; } }
+.animate-kreis {
+  stroke-dasharray: 208;
+  stroke-dashoffset: 208;
+  animation: kreis-zeichnen 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.animate-haken {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: haken-zeichnen 0.35s cubic-bezier(0.65, 0, 0.35, 1) 0.55s forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fahrt-bob,
   .animate-rad,
   .animate-baeume-nah,
   .animate-baeume-fern,
+  .animate-schritt,
+  .animate-punkt,
   .live-dot::after {
     animation: none;
+  }
+  /* Gezeichnete Formen sofort vollständig zeigen */
+  .animate-kreis,
+  .animate-haken {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }
 

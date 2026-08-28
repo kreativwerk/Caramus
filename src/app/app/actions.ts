@@ -171,3 +171,39 @@ export async function dokumentLoeschen(formData: FormData) {
   revalidatePath("/app/dokumente");
   return { ok: true };
 }
+
+/**
+ * Abschluss des Willkommens: Name, Anschrift und die freiwilligen Angaben in
+ * einem Rutsch. `onboarding_at` sorgt dafür, dass es nur einmal erscheint.
+ */
+export async function onboardingSpeichern(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { fehler: MELDUNG.abgemeldet };
+
+  const full_name = String(formData.get("full_name") ?? "").trim();
+  if (!full_name) return { fehler: "Bitte tragen Sie Ihren Namen ein." };
+
+  const geburtstag = String(formData.get("birth_date") ?? "").trim();
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: full_name.slice(0, 120),
+      street: String(formData.get("street") ?? "").trim() || null,
+      zip: String(formData.get("zip") ?? "").trim() || null,
+      city: String(formData.get("city") ?? "").trim() || null,
+      phone: String(formData.get("phone") ?? "").trim() || null,
+      birth_date: geburtstag || null,
+      onboarding_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+
+  if (error) return { fehler: nichtGeklappt("Das Speichern Ihrer Angaben") };
+
+  revalidatePath("/app");
+  revalidatePath("/app/profil");
+  return { ok: true };
+}
