@@ -231,6 +231,22 @@ Sicherheitsnetz im Code (`src/lib/fahrzeit.ts`):
 - Web-Push-Benachrichtigungen (PWA-Ausbau)
 - Physiotec/Wibbi-Inhalte, sobald Nutzungsrechte geklärt sind
 
+## Vorführseite für die Live-Anfahrt
+
+`https://app.curamus-medical.de/vorschau/anfahrt`
+
+Öffentlich erreichbar, ohne Anmeldung, nicht verlinkt und für Suchmaschinen
+gesperrt (`robots: noindex`). Zeigt dieselbe Anzeige wie beim Patienten, aber
+mit erfundenen Zeiten – gedacht, um die Live-Anfahrt jemandem zu zeigen, ohne
+einen echten Termin anzulegen.
+
+Sechs Momente per Klick: gerade losgefahren, halbe Strecke, Verspätung
+gemeldet, kurz vor der Tür, angekommen, und ein Zeitraffer mit zwei Minuten
+Fahrzeit, in dem man den Wagen wirklich fahren sieht.
+
+Die Seite liest und schreibt nichts: `AnfahrtLive` bekommt `livedaten={false}`
+und lässt die Echtzeitverbindung zur Datenbank dann aus.
+
 ## QA-Testkonten (nach Abnahme löschen!)
 
 Für Tests wurden zwei Konten mit bestätigter E-Mail angelegt (Passwort jeweils `QaTest!2026`):

@@ -19,12 +19,19 @@ const KURZ_VOR_ANKUNFT_MIN = 5;
 export function AnfahrtLive({
   termin,
   therapeutName,
+  livedaten = true,
 }: {
   termin: Appointment;
   therapeutName: string;
+  /**
+   * Aus für die Vorführseite: Dort gibt es keinen Termin in der Datenbank,
+   * die Anzeige folgt allein dem übergebenen Stand.
+   */
+  livedaten?: boolean;
 }) {
-  const [aktuell, setAktuell] = useState<Appointment>(termin);
+  const [ausDerDatenbank, setAusDerDatenbank] = useState<Appointment | null>(null);
   const [jetzt, setJetzt] = useState(() => Date.now());
+  const aktuell = livedaten ? (ausDerDatenbank ?? termin) : termin;
 
   // Sekundentakt für Countdown und Fortschritt
   useEffect(() => {
@@ -37,13 +44,14 @@ export function AnfahrtLive({
   // (Klinik-WLAN, restriktive Mobilfunknetze) kommt keine Echtzeitverbindung
   // zustande, die Anzeige darf dann trotzdem nicht stehenbleiben.
   useEffect(() => {
+    if (!livedaten) return;
     const supabase = createClient();
     const kanal = supabase
       .channel(`termin-${termin.id}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "appointments", filter: `id=eq.${termin.id}` },
-        (payload) => setAktuell(payload.new as Appointment)
+        (payload) => setAusDerDatenbank(payload.new as Appointment)
       )
       .subscribe();
 
@@ -54,7 +62,7 @@ export function AnfahrtLive({
         .select("*")
         .eq("id", termin.id)
         .maybeSingle();
-      if (data) setAktuell(data as Appointment);
+      if (data) setAusDerDatenbank(data as Appointment);
     }
     const abrufTimer = setInterval(abrufen, 15_000);
     document.addEventListener("visibilitychange", abrufen);
@@ -64,7 +72,7 @@ export function AnfahrtLive({
       clearInterval(abrufTimer);
       document.removeEventListener("visibilitychange", abrufen);
     };
-  }, [termin.id]);
+  }, [termin.id, livedaten]);
 
   if (!aktuell.enroute_at || !aktuell.eta_minutes) return null;
 
