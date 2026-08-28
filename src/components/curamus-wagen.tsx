@@ -1,7 +1,11 @@
 /**
- * Der Curamus-Wagen in der Anfahrt-Anzeige: eine Fastback-Limousine in
- * Lapizblau, freigestellt vor durchsichtigem Hintergrund. Die Front zeigt nach
- * rechts – also in die Fahrtrichtung, in der der Wagen über die Strecke fährt.
+ * Der Curamus-Wagen in der Anfahrt-Anzeige: eine gezeichnete Fastback-Limousine
+ * in Lapizblau, freigestellt vor durchsichtigem Hintergrund. Die Front zeigt
+ * nach rechts – also in die Fahrtrichtung, in der der Wagen über die Strecke
+ * fährt.
+ *
+ * Eine detaillierte Zeichnung, kein Foto: Sie bleibt auf dem dunklen Untergrund
+ * klar lesbar und passt zur übrigen Kulisse, die ebenfalls gezeichnet ist.
  *
  * Auf den Türen steht die Wortmarke in Weiß, wie eine echte Fahrzeugbeschriftung.
  * Sie liegt als Text über dem Bild und nicht darin: so bleibt sie auf jedem
@@ -12,7 +16,7 @@
  */
 const BILD = "/wagen.webp";
 /** Seitenverhältnis der Bilddatei; hält den Platz frei, bevor das Bild da ist. */
-const VERHAELTNIS = "560 / 177";
+const VERHAELTNIS = "560 / 180";
 
 export function CuramusWagen({ className }: { className?: string }) {
   return (
@@ -38,7 +42,7 @@ export function CuramusWagen({ className }: { className?: string }) {
         className="pointer-events-none absolute select-none font-bold leading-none text-white"
         style={{
           left: "50.5%",
-          top: "70%",
+          top: "64%",
           transform: "translate(-50%, -50%)",
           fontSize: "5.2cqw",
           letterSpacing: "0.04em",
