@@ -4,8 +4,8 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { DateiFeld } from "@/components/datei-feld";
+import { MIcon } from "@/components/m-icon";
 import { FEEDBACK_BUCKET } from "@/lib/media";
-import { FEEDBACK_ARTEN } from "@/lib/types";
 import { feedbackSenden } from "../actions";
 
 const MAX_BILDER = 5;
@@ -13,12 +13,17 @@ const MAX_GROESSE = 10 * 1024 * 1024;
 const ERLAUBTE_TYPEN = ["image/jpeg", "image/png", "image/heic", "image/heif", "image/webp", "application/pdf"];
 
 /**
- * Rückmeldung aus der Praxis. Die Screenshots gehen direkt aus dem Browser in
- * den geschützten Speicher, erst danach wird das Ticket angelegt – so landet
- * kein Bild auf einem Zwischenserver.
+ * Feedback schreiben: ein Textfeld, ein Knopf für Bilder, fertig. Bewusst ohne
+ * Überschrift und ohne Auswahl der Art – beides hat Charles beim Tippen nur
+ * aufgehalten. Die Überschrift für die Liste entsteht aus dem ersten Satz.
+ *
+ * Die Bilder gehen direkt aus dem Browser in den geschützten Speicher, erst
+ * danach entsteht das Ticket – so landet kein Screenshot auf einem
+ * Zwischenserver.
  */
 export function FeedbackForm() {
-  const [offen, setOffen] = useState(false);
+  const [text, setText] = useState("");
+  const [bildNamen, setBildNamen] = useState<string[]>([]);
   const [meldung, setMeldung] = useState<{ typ: "ok" | "fehler"; text: string } | null>(null);
   const [laeuft, startTransition] = useTransition();
   const bildRef = useRef<HTMLInputElement>(null);
@@ -27,6 +32,7 @@ export function FeedbackForm() {
 
   function absenden(formData: FormData) {
     startTransition(async () => {
+      setMeldung(null);
       const bilder = [...(bildRef.current?.files ?? [])];
       if (bilder.length > MAX_BILDER) {
         setMeldung({ typ: "fehler", text: `Bitte hängen Sie höchstens ${MAX_BILDER} Bilder an.` });
@@ -85,90 +91,38 @@ export function FeedbackForm() {
         setMeldung({ typ: "fehler", text: ergebnis.fehler });
         return;
       }
-      setMeldung({
-        typ: "ok",
-        text: "Danke! Ihre Rückmeldung ist bei uns – Sie sehen den Stand gleich hier in der Liste.",
-      });
+      setMeldung({ typ: "ok", text: "Danke! Steht jetzt rechts in der Liste." });
       formRef.current?.reset();
-      setOffen(false);
+      setText("");
+      setBildNamen([]);
       router.refresh();
     });
   }
 
-  if (!offen) {
-    return (
-      <div className="card">
-        <h2 className="text-lg font-bold text-navy-800">Etwas gefunden?</h2>
-        <p className="mt-1 text-navy-600/80">
-          Schreiben Sie es hier auf – am besten mit einem Screenshot. Dann müssen Sie es niemandem
-          erklären.
-        </p>
-        {meldung && (
-          <p
-            className={`mt-4 rounded-lg px-4 py-3 text-sm font-medium ${
-              meldung.typ === "ok" ? "bg-teal-50 text-teal-700" : "bg-red-50 text-red-700"
-            }`}
-          >
-            {meldung.text}
-          </p>
-        )}
-        <button onClick={() => setOffen(true)} className="btn-primary mt-4 w-full sm:w-auto">
-          Rückmeldung schreiben
-        </button>
-      </div>
-    );
-  }
-
   return (
     <form ref={formRef} action={absenden} className="card space-y-4">
-      <h2 className="text-lg font-bold text-navy-800">Rückmeldung schreiben</h2>
-
-      <div>
-        <label htmlFor="art" className="label-base">
-          Worum geht es?
-        </label>
-        <select id="art" name="art" defaultValue="fehler" className="input-base">
-          {FEEDBACK_ARTEN.map((a) => (
-            <option key={a.wert} value={a.wert}>
-              {a.label} – {a.hinweis}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="title" className="label-base">
-          Überschrift
-        </label>
-        <input
-          id="title"
-          name="title"
-          required
-          maxLength={200}
-          placeholder="z. B. Termin lässt sich nicht speichern"
-          className="input-base"
-        />
-      </div>
-
       <div>
         <label htmlFor="body" className="label-base">
-          Was ist passiert?
+          Was ist Ihnen aufgefallen?
         </label>
         <textarea
           id="body"
           name="body"
-          rows={5}
-          placeholder="Wo waren Sie in der App, was haben Sie getan, was haben Sie erwartet?"
+          rows={7}
+          required
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Zum Beispiel: Wenn ich bei einem Termin auf Bestätigen tippe, passiert nichts."
           className="input-base"
         />
         <p className="mt-1 text-xs text-navy-600/70">
-          Je genauer, desto schneller können wir es beheben. Ein Satz reicht aber auch.
+          Ein Satz reicht. Je genauer, desto schneller lässt es sich beheben.
         </p>
       </div>
 
       <div>
         <label htmlFor="bilder" className="label-base">
-          Screenshots (optional)
+          Bilder <span className="font-normal text-navy-600/60">(optional)</span>
         </label>
         <DateiFeld
           id="bilder"
@@ -176,15 +130,17 @@ export function FeedbackForm() {
           accept="image/*,application/pdf"
           multiple
           knopfText="Bilder wählen"
+          onAuswahl={setBildNamen}
         />
         <p className="mt-1 text-xs text-navy-600/70">
-          Bis zu {MAX_BILDER} Bilder. Auf dem Handy: Sperrtaste und Leiser gleichzeitig drücken,
-          auf dem Mac Umschalt + Befehl + 4.
+          Bis zu {MAX_BILDER}. Screenshot auf dem Handy: Sperrtaste und Leiser gleichzeitig
+          drücken, auf dem Mac Umschalt + Befehl + 4.
         </p>
       </div>
 
       {meldung && (
         <p
+          role="status"
           className={`rounded-lg px-4 py-3 text-sm font-medium ${
             meldung.typ === "ok" ? "bg-teal-50 text-teal-700" : "bg-red-50 text-red-700"
           }`}
@@ -193,21 +149,20 @@ export function FeedbackForm() {
         </p>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={laeuft} className="btn-primary disabled:opacity-60">
-          {laeuft ? "Wird gesendet …" : "Rückmeldung senden"}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setOffen(false);
-            setMeldung(null);
-          }}
-          className="btn-secondary"
-        >
-          Abbrechen
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={laeuft || !text.trim()}
+        className="btn-primary w-full disabled:opacity-50"
+      >
+        {laeuft ? (
+          "Wird gesendet …"
+        ) : (
+          <>
+            <MIcon name="pfeilHoch" /> Absenden
+            {bildNamen.length > 0 && ` (${bildNamen.length} ${bildNamen.length === 1 ? "Bild" : "Bilder"})`}
+          </>
+        )}
+      </button>
     </form>
   );
 }

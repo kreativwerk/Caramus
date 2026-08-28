@@ -482,17 +482,27 @@ export async function dokumentStatusSetzen(formData: FormData): Promise<ActionRe
  * direkt aus der App – mit Screenshots, damit nichts erklärt werden muss.
  * Die Bilder liegen schon im geschützten Speicher, hier werden sie nur verknüpft.
  */
+/**
+ * Erste Zeile beziehungsweise erster Satz als Überschrift, damit die Liste
+ * etwas zum Anzeigen hat. Wird nur gekürzt, nie umformuliert.
+ */
+function ueberschriftAus(text: string) {
+  const ersteZeile = text.split("\n")[0].trim();
+  const bisSatzende = ersteZeile.split(/(?<=[.!?])\s/)[0].trim() || ersteZeile;
+  const kurz = bisSatzende.length > 90 ? bisSatzende.slice(0, 88).trimEnd() + " …" : bisSatzende;
+  return kurz.slice(0, 200) || "Rückmeldung";
+}
+
 export async function feedbackSenden(formData: FormData) {
   const { supabase, fehler } = await therapeutClient();
   if (!supabase) return { fehler };
 
-  const title = String(formData.get("title") ?? "").trim();
-  if (!title) return { fehler: "Bitte geben Sie der Rückmeldung eine kurze Überschrift." };
-
-  const art = String(formData.get("art") ?? "fehler");
-  if (!["fehler", "wunsch", "frage"].includes(art)) {
-    return { fehler: "Bitte wählen Sie aus, worum es geht." };
-  }
+  // Ein einziges Textfeld: Die Überschrift entsteht aus dem ersten Satz, den
+  // Rest hält der Text. Charles soll nicht zwei Felder ausfüllen müssen, nur
+  // damit die Liste eine Zeile zum Anzeigen hat.
+  const text = String(formData.get("body") ?? "").trim();
+  if (!text) return { fehler: "Bitte schreiben Sie kurz, worum es geht." };
+  const title = ueberschriftAus(text);
 
   const {
     data: { user },
@@ -502,9 +512,9 @@ export async function feedbackSenden(formData: FormData) {
     .from("feedback")
     .insert({
       author_id: user!.id,
-      title: title.slice(0, 200),
-      body: String(formData.get("body") ?? "").trim() || null,
-      art,
+      title,
+      body: text,
+      art: "fehler",
     })
     .select("id")
     .single();

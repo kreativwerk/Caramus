@@ -56,24 +56,22 @@ function skript(...args) {
 
   // Ticket mit Screenshot schreiben
   try {
-    await praxis.goto(BASE + "/praxis/feedback", { waitUntil: "networkidle" });
-    await praxis.getByRole("button", { name: "Rückmeldung schreiben" }).click();
-    await praxis.selectOption("#art", "fehler");
-    await praxis.fill("#title", TITEL);
-    await praxis.fill("#body", "Beim Speichern passiert nichts, der Knopf bleibt grau.");
+    await praxis.goto(BASE + "/praxis/feedback", { waitUntil: "domcontentloaded" });
+    await praxis.waitForSelector("#body", { timeout: 20000 });
+    // Ein einziges Textfeld: die Ueberschrift entsteht aus dem ersten Satz
+    await praxis.fill("#body", `${TITEL}. Beim Speichern passiert nichts, der Knopf bleibt grau.`);
     await praxis.setInputFiles("#bilder", path.join(__dirname, "test-screenshot.png"));
-    await praxis.getByRole("button", { name: "Rückmeldung senden" }).click();
-    const karte = praxis.locator("li.card").filter({ hasText: TITEL }).first();
+    await praxis.getByRole("button", { name: /Absenden/ }).click();
+    const karte = praxis.locator("li:has(> .card)").filter({ hasText: TITEL }).first();
     await karte.waitFor({ timeout: 25000 });
     const text = await karte.textContent();
     if (!text.includes("Eingegangen")) throw new Error("Stand fehlt: " + text.slice(0, 90));
-    if (!text.includes("Etwas funktioniert nicht")) throw new Error("Art fehlt: " + text.slice(0, 90));
-    ok("Ticket mit Screenshot angelegt, Karte zeigt Art und Stand 'Eingegangen'");
+    ok("Ticket mit Screenshot angelegt, Zeitstrahl zeigt Stand 'Eingegangen'");
   } catch (e) { fail("Ticket anlegen", e); }
 
   // Screenshot wird als Vorschau angezeigt
   try {
-    const karte = praxis.locator("li.card").filter({ hasText: TITEL }).first();
+    const karte = praxis.locator("li:has(> .card)").filter({ hasText: TITEL }).first();
     const bild = karte.locator("img").first();
     await bild.waitFor({ timeout: 15000 });
     const quelle = await bild.getAttribute("src");
@@ -120,8 +118,9 @@ function skript(...args) {
     if (!id) throw new Error("Ticket-Nummer nicht gefunden");
     skript("status", id, "in_arbeit");
     skript("antwort", id, "Ist erkannt, wir bauen das gerade um.");
-    await praxis.reload({ waitUntil: "networkidle" });
-    const karte = praxis.locator("li.card").filter({ hasText: TITEL }).first();
+    await praxis.reload({ waitUntil: "domcontentloaded" });
+    await praxis.waitForSelector("#body", { timeout: 20000 });
+    const karte = praxis.locator("li:has(> .card)").filter({ hasText: TITEL }).first();
     const text = await karte.textContent();
     if (!text.includes("In Arbeit")) throw new Error("Stand nicht übernommen: " + text.slice(0, 90));
     if (!text.includes("Ist erkannt")) throw new Error("Antwort fehlt");
@@ -131,18 +130,19 @@ function skript(...args) {
 
   // Charles hakt selbst ab
   try {
-    const karte = praxis.locator("li.card").filter({ hasText: TITEL }).first();
-    await karte.getByRole("button", { name: /Passt jetzt/ }).click();
-    await praxis.waitForSelector(`li.card:has-text("${TITEL}"):has-text("Erledigt")`, { timeout: 20000 });
-    ok("Praxis hakt die Rückmeldung selbst als erledigt ab");
+    const karte = praxis.locator("li:has(> .card)").filter({ hasText: TITEL }).first();
+    await karte.getByRole("button", { name: /Erledigt/ }).click();
+    await praxis.waitForSelector(`li:has(> .card):has-text("${TITEL}"):has-text("Erledigt")`, { timeout: 20000 });
+    ok("Praxis hakt den Eintrag selbst als erledigt ab");
   } catch (e) { fail("Erledigt abhaken", e); }
 
   // Aufräumen: Testticket entfernen
   if (ticketId) {
     try {
       skript("status", ticketId, "neu");
-      await praxis.reload({ waitUntil: "networkidle" });
-      const karte = praxis.locator("li.card").filter({ hasText: TITEL }).first();
+      await praxis.reload({ waitUntil: "domcontentloaded" });
+    await praxis.waitForSelector("#body", { timeout: 20000 });
+      const karte = praxis.locator("li:has(> .card)").filter({ hasText: TITEL }).first();
       await karte.getByRole("button", { name: "Zurückziehen" }).click();
       await praxis.waitForTimeout(2500);
     } catch { /* Testdaten dürfen liegenbleiben */ }

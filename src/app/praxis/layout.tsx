@@ -26,7 +26,7 @@ export default async function PraxisLayout({ children }: { children: React.React
     { href: "/praxis/dokumente", label: "Dokumente", icon: "dokument", gruppe: "Betreuung" },
     { href: "/praxis/uebungen", label: "Übungen", icon: "plan", gruppe: "Inhalte" },
     { href: "/praxis/bausteine", label: "Zwischenablage", icon: "klammer", gruppe: "Inhalte" },
-    { href: "/praxis/feedback", label: "Rückmeldung", icon: "feedback", gruppe: "Inhalte" },
+    { href: "/praxis/feedback", label: "Feedback", icon: "feedback", gruppe: "Inhalte" },
   ] as const;
 
   const [benachrichtigungen, { data: bausteine }] = await Promise.all([

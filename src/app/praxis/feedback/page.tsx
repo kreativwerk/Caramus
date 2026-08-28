@@ -1,14 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { resolveFeedbackUrl } from "@/lib/media";
-import type { Feedback, FeedbackStatus } from "@/lib/types";
+import type { Feedback } from "@/lib/types";
 import { FeedbackForm } from "./feedback-form";
-import { TicketKarte } from "./ticket-karte";
+import { TicketTimeline, type TicketEintrag } from "./ticket-timeline";
 
-export const metadata = { title: "Rückmeldung" };
+export const metadata = { title: "Feedback" };
 
-/** Offene Sachen zuerst, Erledigtes unten. */
-const REIHENFOLGE: FeedbackStatus[] = ["in_arbeit", "neu", "zurueckgestellt", "erledigt"];
-
+/**
+ * Feedback: links schreiben, rechts der Zeitstrahl aller Einträge mit ihrem
+ * Stand. Bewusst auf zwei Dinge reduziert – ein Textfeld und ein Knopf für
+ * Bilder. Was daraus wird, steht daneben.
+ */
 export default async function FeedbackPage() {
   const supabase = await createClient();
 
@@ -20,7 +22,7 @@ export default async function FeedbackPage() {
 
   const tickets = (data ?? []) as Feedback[];
 
-  const mitBildern = await Promise.all(
+  const eintraege: TicketEintrag[] = await Promise.all(
     tickets.map(async (t) => ({
       eintrag: t,
       bilder: await Promise.all(
@@ -37,35 +39,34 @@ export default async function FeedbackPage() {
   return (
     <div className="space-y-6">
       <header>
-        <span className="badge-pill">Rückmeldung</span>
+        <span className="badge-pill">Feedback</span>
         <h1 className="mt-3 text-2xl font-bold text-navy-800 sm:text-3xl">
           Was sollen wir <span className="text-teal-500">verbessern</span>?
         </h1>
         <p className="mt-1 text-navy-600/80">
           {offen > 0
-            ? `${offen} ${offen === 1 ? "Sache ist" : "Sachen sind"} gerade bei uns offen.`
+            ? `${offen} ${offen === 1 ? "Sache ist" : "Sachen sind"} gerade offen.`
             : "Gerade ist nichts offen – schreiben Sie einfach, wenn Ihnen etwas auffällt."}
         </p>
       </header>
 
-      <FeedbackForm />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-start">
+        {/* Links schreiben – bleibt beim Scrollen stehen */}
+        <div className="lg:sticky lg:top-6">
+          <FeedbackForm />
+        </div>
 
-      {mitBildern.length === 0 ? (
-        <p className="card text-navy-600/80">
-          Noch keine Rückmeldungen. Alles, was Sie hier notieren, landet direkt bei uns.
-        </p>
-      ) : (
-        <ul className="space-y-4">
-          {[...mitBildern]
-            .sort(
-              (a, b) =>
-                REIHENFOLGE.indexOf(a.eintrag.status) - REIHENFOLGE.indexOf(b.eintrag.status)
-            )
-            .map((e) => (
-              <TicketKarte key={e.eintrag.id} eintrag={e.eintrag} bilder={e.bilder} />
-            ))}
-        </ul>
-      )}
+        {/* Rechts der Verlauf */}
+        <div className="space-y-4">
+          <TicketTimeline eintraege={eintraege} />
+          {eintraege.length > 0 && (
+            <p className="px-1 text-xs text-navy-600/60">
+              „In Arbeit“ und „Erledigt“ setzen wir beim Beheben selbst – Sie sehen hier also
+              ohne Nachfrage, woran gerade gearbeitet wird.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

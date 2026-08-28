@@ -231,6 +231,31 @@ Sicherheitsnetz im Code (`src/lib/fahrzeit.ts`):
 - Web-Push-Benachrichtigungen (PWA-Ausbau)
 - Physiotec/Wibbi-Inhalte, sobald Nutzungsrechte geklärt sind
 
+## Feedback-Routine
+
+Charles schreibt unter **Feedback** in ein einziges Textfeld, was ihm auffällt,
+und hängt bei Bedarf Screenshots an. Rechts daneben steht der Zeitstrahl aller
+Einträge mit ihrem Stand; erledigte Sachen hakt er dort selbst ab.
+
+Die Gegenseite ist `scripts/tickets.js`, der Einstiegspunkt für eine
+Claude-Code-Sitzung:
+
+```
+TICKET_EMAIL=<Praxiskonto> TICKET_PASSWORT=<Passwort> npm run feedback holen
+```
+
+Das legt jedes offene Ticket samt Screenshots als Markdown unter `tickets/` ab.
+Danach im selben Lauf:
+
+```
+npm run feedback status <id> in_arbeit      # Charles sieht "In Arbeit"
+npm run feedback antwort <id> "Behoben, ..." # Antwort erscheint am Ticket
+npm run feedback status <id> erledigt        # hakt es ab
+```
+
+Beide Wege schreiben in dieselbe Liste: Was die Routine setzt, sieht Charles
+sofort im Zeitstrahl, und was er selbst abhakt, sieht die nächste Sitzung.
+
 ## Vorführseite für die Live-Anfahrt
 
 `https://app.curamus-medical.de/vorschau/anfahrt`
