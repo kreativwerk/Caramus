@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BaumReihe } from "@/components/baum-reihe";
-import { CuramusVan } from "@/components/curamus-van";
+import { CuramusWagen } from "@/components/curamus-wagen";
 import type { Appointment } from "@/lib/types";
 import { fahrtFortschritt, formatTime, restMinuten } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
@@ -164,9 +164,11 @@ export function AnfahrtLive({
           {/* Fahrzeug */}
           <div
             className="absolute bottom-4 transition-[left] duration-1000 ease-linear"
-            style={{ left: `calc(1rem + (100% - 2rem) * ${fortschritt} - 2.25rem)` }}
+            // Der Wagen bleibt vollstaendig sichtbar: er startet mit dem Heck am
+            // Startpunkt und steht am Ende mit der Front am Ziel.
+            style={{ left: `calc(1rem + (100% - 2rem - 4.5rem) * ${fortschritt})` }}
           >
-            <CuramusVan
+            <CuramusWagen
               className={`w-[4.5rem] ${angekommen ? "" : "animate-fahrt-bob"}`}
               raederDrehen={!angekommen}
             />
