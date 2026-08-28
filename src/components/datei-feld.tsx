@@ -14,6 +14,7 @@ export function DateiFeld({
   multiple = false,
   required = false,
   knopfText = "Datei wählen",
+  onAuswahl,
 }: {
   id: string;
   feldRef: RefObject<HTMLInputElement | null>;
@@ -21,6 +22,8 @@ export function DateiFeld({
   multiple?: boolean;
   required?: boolean;
   knopfText?: string;
+  /** Meldet dem Formular, was ausgewählt wurde – etwa für Pflichtangaben. */
+  onAuswahl?: (namen: string[]) => void;
 }) {
   const [namen, setNamen] = useState<string[]>([]);
 
@@ -46,7 +49,11 @@ export function DateiFeld({
         accept={accept}
         multiple={multiple}
         required={required}
-        onChange={(e) => setNamen([...(e.target.files ?? [])].map((f) => f.name))}
+        onChange={(e) => {
+          const gewaehlt = [...(e.target.files ?? [])].map((f) => f.name);
+          setNamen(gewaehlt);
+          onAuswahl?.(gewaehlt);
+        }}
         className="sr-only"
       />
     </div>

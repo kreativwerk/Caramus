@@ -16,9 +16,10 @@ export default async function PraxisChatPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: patient }, { data: nachrichten }] = await Promise.all([
+  const [{ data: patient }, { data: nachrichten }, { data: ich }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", patientId).single(),
     supabase.from("messages").select("*").eq("patient_id", patientId).order("created_at").limit(200),
+    supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle(),
   ]);
   if (!patient) notFound();
 
@@ -35,6 +36,7 @@ export default async function PraxisChatPage({
         meId={user!.id}
         initialMessages={(nachrichten ?? []) as Message[]}
         empfaengerName={patient.full_name}
+        meinName={ich?.full_name || "Praxis"}
       />
     </div>
   );

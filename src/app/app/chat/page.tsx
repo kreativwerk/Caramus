@@ -1,13 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { Chat } from "@/components/chat";
 import type { Message } from "@/lib/types";
-import { aktuellerNutzer } from "@/lib/sitzung";
+import { aktuellerNutzer, aktuellesProfil } from "@/lib/sitzung";
 
 export default async function PatientChatPage() {
   const supabase = await createClient();
   const user = await aktuellerNutzer();
 
-  const [{ data: therapeutName }, { data: nachrichten }] = await Promise.all([
+  const [{ data: therapeutName }, { data: nachrichten }, profil] = await Promise.all([
     supabase.rpc("therapeut_name"),
     supabase
       .from("messages")
@@ -15,6 +15,7 @@ export default async function PatientChatPage() {
       .eq("patient_id", user!.id)
       .order("created_at")
       .limit(200),
+    aktuellesProfil(),
   ]);
 
   return (
@@ -30,6 +31,7 @@ export default async function PatientChatPage() {
         meId={user!.id}
         initialMessages={(nachrichten ?? []) as Message[]}
         empfaengerName={therapeutName ?? "Ihr Therapeut"}
+        meinName={profil?.full_name || "Sie"}
       />
     </div>
   );

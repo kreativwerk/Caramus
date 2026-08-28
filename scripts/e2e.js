@@ -87,14 +87,27 @@ async function supabaseBridge(ctx) {
   } catch (e) { fail("Patient-Profil speichern", e); }
 
   // Buchung über die freie Auswahl – der Hauptweg
+  let gewaehlt = "";
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
     await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
     await patient.locator("button", { hasText: /freie Zeit/ }).first().click();
     const zeitKnopf = patient.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).first();
-    const gewaehlt = await zeitKnopf.innerText();
+    gewaehlt = await zeitKnopf.innerText();
     await zeitKnopf.click();
+    // Ohne Angabe zum Rezept darf es nicht weitergehen
+    await patient.waitForSelector("text=Ihr Rezept", { timeout: 15000 });
+    if (await patient.getByRole("button", { name: /^Weiter/ }).isEnabled()) {
+      throw new Error("Weiter war ohne Angabe zum Rezept anklickbar");
+    }
+    ok("Buchung fragt das Rezept ab und laesst sich ohne Angabe nicht fortsetzen");
+  } catch (e) { fail("Rezept-Pflicht", e); }
+
+  try {
+    await patient.getByRole("button", { name: /Die Praxis hat es schon/ }).click();
     await patient.getByRole("button", { name: /^Weiter/ }).click();
+    await patient.getByRole("button", { name: /^(Weiter|Überspringen)/ }).click();
+    await patient.waitForSelector("text=Rezept liegt der Praxis bereits vor", { timeout: 10000 });
     await patient.getByRole("button", { name: "Termin buchen" }).click();
     await patient.waitForSelector("text=Ihr Termin steht", { timeout: 25000 });
     ok(`Termin über die freie Auswahl gebucht (${gewaehlt} Uhr)`);
@@ -191,6 +204,15 @@ async function supabaseBridge(ctx) {
     await praxis.waitForSelector("text=Ihr Termin ist bestätigt", { timeout: 15000 });
     ok("Chat: Nachricht Therapeut → Patient gesendet");
   } catch (e) { fail("Chat senden (Therapeut)", e); }
+
+  try {
+    // Unter dem Beitrag steht, von wem er kommt
+    await praxis.waitForSelector("text=Charles Mba (QA)", { timeout: 10000 });
+    // Der Senden-Knopf traegt nur noch das Pfeilsymbol
+    const knopfText = (await praxis.getByRole("button", { name: "Senden" }).innerText()).trim();
+    if (knopfText !== "") throw new Error("Senden-Knopf zeigt Text statt nur des Pfeils: " + knopfText);
+    ok("Chat: Absendername steht unter dem Beitrag, Senden ist ein Pfeilknopf");
+  } catch (e) { fail("Chat-Darstellung", e); }
 
   // ---------- Patient: Termin, Plan-Feedback, Chat-Antwort ----------
   try {
