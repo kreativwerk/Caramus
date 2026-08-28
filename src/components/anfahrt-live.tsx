@@ -12,18 +12,17 @@ import { MIcon } from "@/components/m-icon";
 const KURZ_VOR_ANKUNFT_MIN = 5;
 
 /*
- * Maße der Fahrszene. Die Mitte des Wagens sitzt immer auf dem Ende des
- * Fortschritts – deshalb beginnt die Strecke eine halbe Wagenlänge vom Rand
- * entfernt, plus ein wenig Luft, damit der Wagen an keinem Ende am Bildrand
- * klebt.
+ * Maße der Fahrszene. Die Strecke läuft über die volle Breite, von Rand zu
+ * Rand. Die Mitte des Wagens sitzt dabei immer genau auf dem Ende des
+ * Fortschritts – ganz am Anfang und ganz am Ende steht er deshalb mit einem
+ * Stück über der Bildkante.
  */
 const WAGEN_BREITE = "6rem";
-/** Luft zwischen Wagen und Bildrand an beiden Enden. */
-const RAND = "0.5rem";
-/** Anfang und Ende der Strecke: Rand + halbe Wagenlänge. */
-const BAHN_RAND = "3.5rem";
-/** Weg, den die Wagenmitte zurücklegt: Breite minus beide Bahnränder. */
-const WEG = "calc(100% - 7rem)";
+const HALBER_WAGEN = "3rem";
+/** Abstand der Strecke zum Bildrand. */
+const BAHN_RAND = "1rem";
+/** Weg, den das Ende des Fortschritts zurücklegt. */
+const WEG = "calc(100% - 2rem)";
 
 /**
  * Live-Anzeige der Anfahrt: Der Therapeut startet die Fahrt selbst, der Patient
@@ -158,11 +157,7 @@ export function AnfahrtLive({
           {/* Straßenband */}
           <div className="absolute inset-x-0 bottom-0 h-8 bg-navy-950/70" />
 
-          {/*
-            Strecke. Sie beginnt und endet eine halbe Wagenlänge vom Rand
-            entfernt: so steht das Ende des Fortschritts immer genau in der
-            Mitte des Wagens, und der Wagen ragt an keinem Ende aus dem Bild.
-          */}
+          {/* Strecke über die volle Breite */}
           <div
             className="absolute bottom-5 h-1.5 rounded-full bg-white/15"
             style={{ left: BAHN_RAND, right: BAHN_RAND }}
@@ -189,7 +184,7 @@ export function AnfahrtLive({
             className="absolute bottom-[1.4rem] transition-[left] duration-1000 ease-linear"
             style={{
               width: WAGEN_BREITE,
-              left: `calc(${RAND} + ${WEG} * ${fortschritt})`,
+              left: `calc(${BAHN_RAND} + ${WEG} * ${fortschritt} - ${HALBER_WAGEN})`,
             }}
           >
             <CuramusWagen className="w-full" raederDrehen={!angekommen} />
