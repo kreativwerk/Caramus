@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { MIcon, type MIconName } from "@/components/m-icon";
+import { GeburtsdatumFeld } from "@/components/geburtsdatum-feld";
 import { onboardingSpeichern } from "@/app/app/actions";
 
 type Werte = {
@@ -344,13 +345,10 @@ export function WillkommenForm({ vorschlagName }: { vorschlagName: string }) {
                     <label htmlFor="birth_date" className="label-base">
                       Geburtsdatum <span className="font-normal text-navy-600/60">(optional)</span>
                     </label>
-                    <input
-                      id="birth_date"
-                      type="date"
-                      autoComplete="bday"
-                      value={werte.birth_date}
-                      onChange={(e) => setze("birth_date", e.target.value)}
-                      className="input-base"
+                    <GeburtsdatumFeld
+                      kennung="birth_date"
+                      wert={werte.birth_date}
+                      setWert={(v) => setze("birth_date", v)}
                     />
                   </div>
                 </div>
