@@ -192,10 +192,7 @@ export function AnfahrtLive({
               left: `calc(${RAND} + ${WEG} * ${fortschritt})`,
             }}
           >
-            <CuramusWagen
-              className={`w-full ${angekommen ? "" : "animate-fahrt-bob"}`}
-              raederDrehen={!angekommen}
-            />
+            <CuramusWagen className="w-full" raederDrehen={!angekommen} />
           </div>
         </div>
         <div className="mt-1 flex justify-between text-xs text-white/60">

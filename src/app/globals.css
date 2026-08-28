@@ -114,18 +114,6 @@ body {
   animation: rad-dreh 0.75s linear infinite;
 }
 
-/* Leichtes Wippen des Wagens. Bewusst sehr klein und langsam: seit der Wagen
-   ein Foto ist, sitzt er formatfüllend im Rahmen – zwei Pixel waren dort fast
-   ein Zehntel seiner Höhe und sahen aus wie ein Hüpfen. */
-@keyframes fahrt-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-0.8px); }
-}
-
-.animate-fahrt-bob {
-  animation: fahrt-bob 1.8s ease-in-out infinite;
-}
-
 
 /* Willkommen: Schritt gleitet leicht von unten herein, damit der Wechsel
    nachvollziehbar bleibt und nicht springt */
@@ -161,7 +149,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fahrt-bob,
   .animate-rad,
   .animate-baeume-nah,
   .animate-baeume-fern,
