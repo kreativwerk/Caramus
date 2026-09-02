@@ -115,12 +115,40 @@ async function supabaseBridge(ctx) {
 
   // Der Platz darf danach nicht mehr angeboten werden
   try {
-    await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
+    await patient.goto(BASE + "/app/termine", { waitUntil: "domcontentloaded" });
     await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
     const text = await patient.locator("section.card").filter({ hasText: "Wann passt es Ihnen" }).innerText();
     if (!/freie Zeit/.test(text)) throw new Error("Keine Zeiten mehr angeboten");
     ok("Nach der Buchung stehen weiterhin andere Zeiten zur Auswahl");
   } catch (e) { fail("Auswahl nach Buchung", e); }
+
+  // Absagen: der gebuchte Termin liegt mehr als 24 Stunden voraus, also erlaubt.
+  // Danach muss der Platz wieder frei sein.
+  try {
+    // Genau den eben gebuchten Termin absagen – nicht irgendeinen aus einem
+    // frueheren Lauf. Erkennbar an der gewaehlten Uhrzeit.
+    const karte = patient.locator("div.card").filter({ hasText: "Bestätigt" }).filter({ hasText: `${gewaehlt} Uhr` }).first();
+    await karte.waitFor({ timeout: 15000 });
+    const wann = (await karte.locator("p.text-lg").first().innerText()).trim();
+    await karte.getByRole("button", { name: "Termin absagen" }).click();
+    await karte.getByText("wirklich absagen").waitFor({ timeout: 5000 });
+    await karte.getByRole("button", { name: "Ja, absagen" }).click();
+    await patient.waitForFunction(
+      (w) => ![...document.querySelectorAll("div.card")].some((c) => c.textContent.includes(w) && c.textContent.includes("Bestätigt")),
+      wann,
+      { timeout: 20000 }
+    );
+    ok(`Patient sagt den Termin (${wann}) in der App ab`);
+  } catch (e) { fail("Termin absagen", e); }
+
+  try {
+    await patient.goto(BASE + "/app/termine", { waitUntil: "domcontentloaded" });
+    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
+    await patient.locator("button", { hasText: /freie Zeit/ }).first().click();
+    const zeiten = await patient.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).allInnerTexts();
+    if (!zeiten.includes(gewaehlt)) throw new Error(`Abgesagter Platz ${gewaehlt} wird nicht wieder angeboten: ${zeiten.join(", ")}`);
+    ok(`Abgesagter Platz ${gewaehlt} Uhr ist sofort wieder buchbar`);
+  } catch (e) { fail("Platz nach Absage wieder frei", e); }
 
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
@@ -169,6 +197,11 @@ async function supabaseBridge(ctx) {
     await praxis.waitForSelector("text=Beispielstraße 12", { timeout: 5000 });
     ok("Termin in Praxis-Terminliste mit Adresse");
   } catch (e) { fail("Praxis-Terminliste", e); }
+
+  try {
+    await praxis.waitForSelector("text=Von Patienten abgesagt", { timeout: 10000 });
+    ok("Praxis sieht die Absage des Patienten in der Terminliste");
+  } catch (e) { fail("Absage bei der Praxis sichtbar", e); }
 
   if (global.terminHeute) {
     try {

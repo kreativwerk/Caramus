@@ -5,6 +5,8 @@ import type { Appointment, PatientDocument } from "@/lib/types";
 import { formatDateTime, tagesSchluessel } from "@/lib/types";
 import { AnfrageForm } from "./anfrage-form";
 import { TerminBuchen } from "./termin-buchen";
+import { TerminAbsagen } from "./termin-absagen";
+import { stornoFrist } from "@/lib/types";
 import type { PraxisEinstellungen } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
 import { aktuellerNutzer } from "@/lib/sitzung";
@@ -79,6 +81,9 @@ export default async function TerminePage() {
   }
   const startTage = [...nachTag.entries()].map(([datum, zeiten]) => ({ datum, zeiten }));
 
+  // null = Absagen in der App ist von der Praxis abgeschaltet
+  const stornoStunden = einstellungen?.storno_stunden ?? null;
+
   const anfahrt = ((kommende ?? []) as Appointment[]).find((t) => t.status === "geplant");
   const { data: therapeutName } = anfahrt ? await supabase.rpc("therapeut_name") : { data: null };
 
@@ -96,6 +101,7 @@ export default async function TerminePage() {
       <TerminBuchen
         slotMinuten={einstellungen?.slot_minuten ?? 60}
         autoBestaetigen={einstellungen?.auto_bestaetigen ?? true}
+        stornoStunden={stornoStunden}
         startTage={startTage}
       />
 
@@ -126,9 +132,18 @@ export default async function TerminePage() {
                   </p>
                   {t.notes && <p className="mt-1 text-sm text-navy-600/80">Hinweis: {t.notes}</p>}
                 </div>
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
-                  Bestätigt
-                </span>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
+                    Bestätigt
+                  </span>
+                  {t.status === "geplant" && (
+                    <TerminAbsagen
+                      terminId={t.id}
+                      startsAt={t.starts_at}
+                      stornoStunden={stornoStunden}
+                    />
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -136,9 +151,9 @@ export default async function TerminePage() {
           <p className="card text-navy-600/80">Aktuell sind keine Termine geplant.</p>
         )}
         <p className="mt-3 text-xs text-navy-600/70">
-          Bitte beachten Sie: Termine können bis spätestens 24 Stunden vorher kostenfrei abgesagt
-          oder verschoben werden – telefonisch oder per E-Mail. Bei späterer Absage kann ein
-          Ausfallhonorar anfallen (siehe AGB).
+          {stornoStunden !== null
+            ? `Termine können Sie bis ${stornoFrist(stornoStunden)} vorher hier in der App kostenfrei absagen. Bei späterer Absage kann ein Ausfallhonorar anfallen (siehe AGB).`
+            : "Absagen bitte telefonisch oder über die Nachrichten – bis spätestens 24 Stunden vorher, sonst kann ein Ausfallhonorar anfallen (siehe AGB)."}
         </p>
       </section>
 

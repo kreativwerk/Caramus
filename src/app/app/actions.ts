@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { stornoFrist } from "@/lib/types";
 import { createClient } from "@/lib/supabase/server";
 import { MELDUNG, nichtGeklappt } from "@/lib/meldungen";
 import { pushAnPraxis } from "@/lib/push";
@@ -212,5 +213,51 @@ export async function onboardingSpeichern(formData: FormData) {
 
   revalidatePath("/app");
   revalidatePath("/app/profil");
+  return { ok: true };
+}
+
+/**
+ * Termin absagen. Die Frist prüft die Datenbank, nicht die Oberfläche – wer
+ * den Knopf zu spät drückt, bekommt eine verständliche Antwort statt eines
+ * stillschweigend abgesagten Termins.
+ */
+export async function terminAbsagen(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { fehler: MELDUNG.abgemeldet };
+
+  const { error } = await supabase.rpc("termin_absagen", {
+    p_termin: String(formData.get("termin_id")),
+  });
+
+  if (error) {
+    const grund = String(error.message);
+    if (grund.includes("zu_kurzfristig")) {
+      const { data: e } = await supabase
+        .from("praxis_einstellungen")
+        .select("storno_stunden")
+        .maybeSingle();
+      const frist = e?.storno_stunden != null ? stornoFrist(e.storno_stunden) : "24 Stunden";
+      return {
+        fehler: `Dafür ist es leider zu spät – absagen geht bis ${frist} vorher. Bitte rufen Sie die Praxis kurz an.`,
+      };
+    }
+    if (grund.includes("absage_gesperrt")) {
+      return {
+        fehler: "Termine lassen sich hier nicht absagen. Bitte melden Sie sich telefonisch oder über die Nachrichten.",
+      };
+    }
+    if (grund.includes("nicht_geplant")) {
+      return { fehler: "Dieser Termin ist bereits abgesagt oder schon vorbei." };
+    }
+    return { fehler: nichtGeklappt("Das Absagen") };
+  }
+
+  revalidatePath("/app/termine");
+  revalidatePath("/app");
+  revalidatePath("/praxis/termine");
+  revalidatePath("/praxis");
   return { ok: true };
 }

@@ -31,6 +31,7 @@ export function Steuerung({
 }) {
   const [meldung, setMeldung] = useState<{ typ: "ok" | "fehler"; text: string } | null>(null);
   const [ganztags, setGanztags] = useState(true);
+  const [stornoErlaubt, setStornoErlaubt] = useState(einstellungen.storno_stunden !== null);
   const [laeuft, startTransition] = useTransition();
   const router = useRouter();
 
@@ -168,6 +169,51 @@ export function Steuerung({
             </span>
           </span>
         </label>
+
+        {/* Absagen durch Patienten: an/aus und die Frist */}
+        <div className="rounded-xl bg-mist-100 p-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              name="storno_erlaubt"
+              checked={stornoErlaubt}
+              onChange={(e) => setStornoErlaubt(e.target.checked)}
+              className="mt-1 h-5 w-5 shrink-0 accent-teal-500"
+            />
+            <span>
+              <span className="block font-semibold text-navy-800">
+                Patienten dürfen Termine selbst absagen
+              </span>
+              <span className="block text-sm text-navy-600/80">
+                Ohne Haken geht Absagen nur telefonisch oder über die Nachrichten.
+              </span>
+            </span>
+          </label>
+
+          {stornoErlaubt && (
+            <div className="mt-4 border-t border-mist-200 pt-4">
+              <label htmlFor="storno_stunden" className="label-base">
+                Bis wann vorher
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="storno_stunden"
+                  name="storno_stunden"
+                  type="number"
+                  min={0}
+                  max={336}
+                  defaultValue={einstellungen.storno_stunden ?? 24}
+                  className="input-base w-32"
+                />
+                <span className="shrink-0 text-navy-600/80">Stunden vor dem Termin</span>
+              </div>
+              <p className="mt-1 text-xs text-navy-600/70">
+                Danach ist der Knopf in der App weg, und Patienten werden gebeten anzurufen. Der
+                frei gewordene Platz ist sofort wieder buchbar.
+              </p>
+            </div>
+          )}
+        </div>
 
         <button type="submit" disabled={laeuft} className="btn-primary disabled:opacity-60">
           {laeuft ? "Einen Moment …" : "Einstellungen speichern"}

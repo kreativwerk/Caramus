@@ -149,9 +149,14 @@ export async function terminStatusSetzen(formData: FormData) {
   const { supabase, fehler } = await therapeutClient();
   if (!supabase) return { fehler };
 
+  const status = String(formData.get("status"));
   const { error } = await supabase
     .from("appointments")
-    .update({ status: String(formData.get("status")) })
+    .update(
+      status === "abgesagt"
+        ? { status, abgesagt_am: new Date().toISOString(), abgesagt_von: "praxis" }
+        : { status }
+    )
     .eq("id", String(formData.get("termin_id")));
   if (error) return { fehler: nichtGeklappt("Das Ändern des Status") };
   revalidatePath("/praxis/termine");
@@ -675,6 +680,9 @@ export async function einstellungenSpeichern(formData: FormData) {
       vorlauf_stunden: zahl("vorlauf_stunden", 0, 336, 24),
       horizont_tage: zahl("horizont_tage", 1, 180, 28),
       auto_bestaetigen: formData.get("auto_bestaetigen") === "on",
+      // Haken weg = Absagen in der App aus
+      storno_stunden:
+        formData.get("storno_erlaubt") === "on" ? zahl("storno_stunden", 0, 336, 24) : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", true);

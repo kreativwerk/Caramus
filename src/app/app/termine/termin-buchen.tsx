@@ -7,7 +7,7 @@ import { DateiFeld } from "@/components/datei-feld";
 import { MIcon } from "@/components/m-icon";
 import { DOCS_BUCKET } from "@/lib/media";
 import { dokumentSpeichern } from "../actions";
-import { formatTime, tagesSchluessel, ZEITZONE } from "@/lib/types";
+import { formatTime, stornoFrist, tagesSchluessel, ZEITZONE } from "@/lib/types";
 
 const MAX_DATEIEN = 3;
 /** Schritt der Bestätigung; danach folgt nur noch die Erfolgsmeldung. */
@@ -68,10 +68,13 @@ const uhrzeit = formatTime;
 export function TerminBuchen({
   slotMinuten,
   autoBestaetigen,
+  stornoStunden,
   startTage,
 }: {
   slotMinuten: number;
   autoBestaetigen: boolean;
+  /** Bis wann Patienten selbst absagen dürfen; null = nur telefonisch */
+  stornoStunden: number | null;
   /** Vom Server vorberechnet, damit die Liste sofort dasteht */
   startTage: Tag[];
 }) {
@@ -445,8 +448,18 @@ export function TerminBuchen({
             </div>
             <p className="mt-4 text-sm text-navy-600/80">
               {autoBestaetigen
-                ? "Mit dem Tippen auf „Termin buchen“ steht der Termin fest. Sie können ihn jederzeit über den Chat wieder absagen."
+                ? "Mit dem Tippen auf „Termin buchen“ steht der Termin fest."
                 : "Ihre Praxis schaut sich den Wunsch an und bestätigt ihn – Sie bekommen Bescheid."}
+            </p>
+            {/* Freundlicher Hinweis zur Absage – damit niemand aus Sorge, sich
+                festzulegen, gar nicht erst bucht. */}
+            <p className="mt-3 flex items-start gap-2 rounded-lg bg-teal-50 px-4 py-3 text-sm text-navy-800">
+              <MIcon name="tipp" className="mt-0.5 shrink-0 text-teal-600" />
+              <span>
+                {stornoStunden !== null
+                  ? `Kommt etwas dazwischen? Bis ${stornoFrist(stornoStunden)} vorher können Sie den Termin hier in der App kostenfrei absagen – ohne Anruf.`
+                  : "Kommt etwas dazwischen? Sagen Sie einfach telefonisch oder über die Nachrichten ab – bitte bis spätestens 24 Stunden vorher."}
+              </span>
             </p>
           </>
         )}

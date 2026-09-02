@@ -51,6 +51,9 @@ export type Appointment = {
   delay_note: string | null;
   /** Woher die Fahrzeit stammt: manuell gewählt oder mit Verkehr berechnet */
   eta_quelle: "manuell" | "verkehr";
+  /** Wann und von wem der Termin abgesagt wurde */
+  abgesagt_am?: string | null;
+  abgesagt_von?: "patient" | "praxis" | null;
   profiles?: Profile;
 };
 
@@ -241,8 +244,16 @@ export type PraxisEinstellungen = {
   vorlauf_stunden: number;
   horizont_tage: number;
   auto_bestaetigen: boolean;
+  /** Bis wie viele Stunden vorher Patienten selbst absagen dürfen; null = aus */
+  storno_stunden: number | null;
   updated_at: string;
 };
+
+/** „24 Stunden“, „2 Tage“ – so, wie man es sagen würde. */
+export function stornoFrist(stunden: number) {
+  if (stunden >= 48 && stunden % 24 === 0) return `${stunden / 24} Tage`;
+  return `${stunden} Stunden`;
+}
 
 export type Verfuegbarkeit = {
   id: string;

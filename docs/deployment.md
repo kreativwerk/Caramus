@@ -144,6 +144,14 @@ können. Gebucht wird über `termin_buchen`, das den Platz im selben Aufruf noch
 einmal prüft; zwei Personen können denselben Platz also nicht gleichzeitig
 nehmen.
 
+**Absagen durch Patienten.** Unter *Verfügbarkeit* legt Charles fest, ob
+Patientinnen und Patienten Termine selbst absagen dürfen und bis wie viele
+Stunden vorher (`storno_stunden`, `null` = aus; Standard 24). Innerhalb der
+Frist steht am Termin ein Knopf, danach nur der Hinweis, kurz anzurufen. Die
+Frist prüft die Datenbank (`termin_absagen`), nicht die Oberfläche. Der Platz
+ist nach der Absage sofort wieder buchbar; die Praxis sieht Absagen der
+letzten zwei Wochen oben in ihrer Terminliste.
+
 Alle Zeiten laufen in `Europe/Berlin`, unabhängig davon, wie das Gerät der
 Patientin oder des Patienten eingestellt ist.
 

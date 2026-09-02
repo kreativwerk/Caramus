@@ -65,6 +65,17 @@ async function login(page, email) {
     ok("Vor dem Start: keine Live-Karte beim Patienten");
   } catch (e) { fail("Ausgangszustand", e); }
 
+  // Der Testtermin liegt nur eine halbe Stunde voraus: Absagen muss gesperrt sein,
+  // und die Erklaerung dazu in ganzen Saetzen dastehen.
+  try {
+    await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
+    await patient.waitForSelector("text=Kommende Termine", { timeout: 20000 });
+    const knoepfe = await patient.getByRole("button", { name: "Termin absagen" }).count();
+    if (knoepfe !== 0) throw new Error("Absage-Knopf trotz Frist von 24 Stunden sichtbar");
+    await patient.waitForSelector("text=Absagen war bis 24 Stunden vorher möglich", { timeout: 5000 });
+    ok("Kurzfristiger Termin: kein Absage-Knopf, stattdessen der Hinweis auf die Frist");
+  } catch (e) { fail("Absage-Frist", e); }
+
   // Therapeut startet die Fahrt
   try {
     await praxis.goto(BASE + "/praxis", { waitUntil: "networkidle" });
