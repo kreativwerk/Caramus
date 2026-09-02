@@ -109,7 +109,7 @@ function Formular({ variante }: { variante: Variante }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-base"
-                  placeholder="ihre.name@beispiel.de"
+                  placeholder="maria.mustermann@beispiel.de"
                 />
               </div>
               {modus === "passwort" && (

@@ -84,7 +84,7 @@ export default function PasswortVergessenPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ihre.name@beispiel.de"
+                    placeholder="maria.mustermann@beispiel.de"
                     className="input-base"
                   />
                 </div>

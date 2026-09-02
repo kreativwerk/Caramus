@@ -104,7 +104,7 @@ export default function RegistrierenPage() {
               </div>
               <div>
                 <label htmlFor="email" className="label-base">E-Mail-Adresse</label>
-                <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-base" placeholder="ihre.name@beispiel.de" />
+                <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-base" placeholder="maria.mustermann@beispiel.de" />
               </div>
               <div>
                 <label htmlFor="passwort" className="label-base">Passwort wählen</label>
