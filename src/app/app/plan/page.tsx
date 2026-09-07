@@ -46,8 +46,12 @@ export default async function PlanPage() {
       <div>
         <span className="badge-pill">Ihr Training</span>
         <h1 className="mt-3 text-3xl font-bold text-navy-800">
-          {plan ? plan.title : "Ihr Trainingsplan"}
+          Ihr <span className="text-teal-500">Trainingsplan</span>.
         </h1>
+        {/* Der Name, den die Praxis dem Plan gegeben hat – nur wenn er mehr sagt als „Trainingsplan" */}
+        {plan?.title && !/^(mein |ihr )?trainingsplan$/i.test(plan.title.trim()) && (
+          <p className="mt-1 text-lg font-semibold text-navy-700">{plan.title}</p>
+        )}
         {plan?.notes && <p className="mt-1 text-navy-600/80">{plan.notes}</p>}
       </div>
 

@@ -426,10 +426,15 @@ export async function planItemHinzufuegen(formData: FormData): Promise<ActionRes
   const ergebnis = await planSicherstellen(patientId);
   if (!ergebnis.planId) return ergebnis;
 
-  const { count } = await supabase
+  // Dieselbe Übung zweimal im Plan verwirrt nur – der Plan wurde im Test so
+  // 34 Bildschirme lang. Wer die Angaben ändern will, entfernt und legt neu an.
+  const { data: vorhandene, count } = await supabase
     .from("plan_items")
-    .select("id", { count: "exact", head: true })
+    .select("exercise_id", { count: "exact" })
     .eq("plan_id", ergebnis.planId!);
+  if ((vorhandene ?? []).some((v) => v.exercise_id === exerciseId)) {
+    return { fehler: "Diese Übung steht schon im Plan. Entfernen Sie sie zuerst, wenn Sie die Angaben ändern möchten." };
+  }
 
   const { error } = await supabase.from("plan_items").insert({
     plan_id: ergebnis.planId,

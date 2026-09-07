@@ -230,8 +230,10 @@ Deno.serve(async (req) => {
     }
 
     return new Response("ignored", { status: 200 });
-  } catch {
-    // Eine nicht zugestellte Hinweis-Mail darf den Chat niemals blockieren.
+  } catch (e) {
+    // Eine nicht zugestellte Hinweis-Mail darf den Chat niemals blockieren –
+    // der Grund landet aber im Funktions-Log (Dashboard → Edge Functions → Logs).
+    console.error("notify-message:", e instanceof Error ? e.message : String(e));
     return new Response("error", { status: 200 });
   }
 });

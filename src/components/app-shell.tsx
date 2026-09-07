@@ -9,7 +9,14 @@ import type { Benachrichtigung } from "@/lib/benachrichtigungen";
 import type { Baustein } from "@/lib/types";
 
 export type IconName = keyof typeof Icons;
-export type NavItem = { href: string; label: string; icon: IconName; gruppe?: string };
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: IconName;
+  gruppe?: string;
+  /** false = auf dem Handy nur hinter „Mehr", nicht in der Leiste */
+  mobil?: boolean;
+};
 
 /** Erste Buchstaben von Vor- und Nachname, wie im Kopfbereich. */
 function initialen(name: string) {
@@ -69,11 +76,12 @@ export function AppShell({
     };
   }, []);
 
-  // Auf dem Handy passen höchstens fünf Ziele nebeneinander, ohne dass die
-  // Fläche zum Tippen zu klein wird. Der Rest steht hinter „Mehr".
-  const MOBIL_MAX = 5;
-  const mobilItems = items.slice(0, MOBIL_MAX);
-  const weitereItems = items.slice(MOBIL_MAX);
+  // Auf dem Handy passen höchstens fünf Knöpfe nebeneinander, ohne dass die
+  // Fläche zum Tippen zu klein wird – „Mehr" zählt mit. Der Rest steht dahinter.
+  const kandidaten = items.filter((i) => i.mobil !== false);
+  const MOBIL_MAX = kandidaten.length === items.length && items.length <= 5 ? 5 : 4;
+  const mobilItems = kandidaten.slice(0, MOBIL_MAX);
+  const weitereItems = items.filter((i) => !mobilItems.includes(i));
 
   return (
     <div className="min-h-dvh lg:flex">
