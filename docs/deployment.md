@@ -74,7 +74,7 @@ Dashboard Projekt `jiixpoyxctohzagldcel`:
 - [ ] Upgrade auf Supabase Pro (~25 $/Monat: tägliche Backups, kein Auto-Pausieren)
       und Vercel Pro (~20 $/Monat, kommerzielle Nutzung)
 - [ ] Benachrichtigungs-Funktion aktivieren: `supabase/functions/notify-message/` deployen,
-      SMTP-Secrets setzen, Database-Webhook auf `messages` INSERT anlegen (siehe „E-Mail-Versand")
+      SMTP-Secrets setzen (siehe „E-Mail-Versand"; die Trigger sind schon da)
 
 ## E-Mail-Versand über das eigene Postfach
 
@@ -111,17 +111,33 @@ SMTP liegt die Voreinstellung bei 30 neuen Nutzern pro Stunde.
 **3. Vorlagen hinterlegen** – die deutschen Texte stehen in `docs/email-vorlagen.md`
 (Authentication → Emails → Templates).
 
-**4. Chat-Benachrichtigung** – `supabase/functions/notify-message/` ist
-deployt (Stand 27.08.2026) und versendet per SMTP (denomailer). Es fehlen noch:
+**4. Hinweis-Mails an die Praxis** – `supabase/functions/notify-message/` ist
+deployt (Stand 05.09.2026) und versendet per SMTP (denomailer). Ausgelöst wird
+sie von Datenbank-Triggern (Migration 0016, pg_net) – ein Webhook im Dashboard
+ist nicht mehr nötig. Drei Anlässe:
 
-- 👤 Secrets unter Edge Functions → Secrets: `SMTP_HOST` = `w021b7b7.kasserver.com`,
-  `SMTP_PORT` = `465`, `SMTP_USER` und `NOTIFY_FROM` = `kontakt@curamus-medical.de`,
+| Anlass | Empfänger | Inhalt |
+| --- | --- | --- |
+| Neue Chat-Nachricht | der jeweils andere (Praxis oder Patient) | nur Hinweis + Link, kein Nachrichtentext |
+| Patient bucht selbst einen Termin | alle Therapeuten-Konten | Name, Datum, Uhrzeit, Adresse |
+| Patient sagt einen Termin ab | alle Therapeuten-Konten | Name, Datum, Uhrzeit |
+
+Der Trigger schickt nur die Datensatz-Kennung; die Funktion liest den Rest
+selbst aus der Datenbank. Dieselben Ereignisse erscheinen auch in der Glocke
+im Praxisbereich (letzte 7 Tage).
+
+Damit tatsächlich Mails rausgehen, fehlt noch:
+
+- 👤 Secrets unter Edge Functions → Secrets
+  (https://supabase.com/dashboard/project/jiixpoyxctohzagldcel/functions/secrets):
+  `SMTP_HOST` = `w021b7b7.kasserver.com`, `SMTP_PORT` = `465`,
+  `SMTP_USER` und `NOTIFY_FROM` = `kontakt@curamus-medical.de`,
   `SMTP_PASS` = Postfach-Passwort, `APP_URL` = `https://app.curamus-medical.de`
-- 👤 Database → Webhooks: Tabelle `public.messages`, Ereignis INSERT,
-  Ziel = die Funktion `notify-message`
 
-Schlägt der Versand fehl, bleibt die Nachricht selbst davon unberührt – sie
-steht ohnehin sofort in der App.
+Solange die Secrets fehlen, läuft die Funktion ins Leere (Antwort „error",
+Status 200) – Chat, Buchung und Absage funktionieren davon unabhängig.
+Prüfen, ob die Trigger feuern: `select status_code, content from net._http_response
+order by id desc limit 5;`
 
 **5. Probelauf** – Registrierung mit einer echten Adresse, Anmelde-Link,
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die

@@ -54,6 +54,8 @@ export type Appointment = {
   /** Wann und von wem der Termin abgesagt wurde */
   abgesagt_am?: string | null;
   abgesagt_von?: "patient" | "praxis" | null;
+  /** Selbst gebucht oder von der Praxis eingetragen */
+  gebucht_von?: "patient" | "praxis";
   profiles?: Profile;
 };
 

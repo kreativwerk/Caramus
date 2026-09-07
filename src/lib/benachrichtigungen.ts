@@ -99,7 +99,10 @@ export async function patientenBenachrichtigungen(
 export async function praxisBenachrichtigungen(
   supabase: SupabaseClient
 ): Promise<Benachrichtigung[]> {
-  const [{ data: anfragen }, { data: dokumente }, { data: nachrichten }] = await Promise.all([
+  // Selbst gebuchte und abgesagte Termine der letzten Woche
+  const seit = new Date(Date.now() - 7 * 24 * 3600_000).toISOString();
+  const [{ data: anfragen }, { data: dokumente }, { data: nachrichten }, { data: gebucht }, { data: abgesagt }] =
+    await Promise.all([
     supabase
       .from("appointment_requests")
       .select("id, preferred_times, created_at, profiles!appointment_requests_patient_id_fkey(full_name)")
@@ -118,9 +121,46 @@ export async function praxisBenachrichtigungen(
       .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(10),
+    supabase
+      .from("appointments")
+      .select("id, starts_at, created_at, profiles!appointments_patient_id_fkey(full_name)")
+      .eq("gebucht_von", "patient")
+      .eq("status", "geplant")
+      .gte("created_at", seit)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("appointments")
+      .select("id, starts_at, abgesagt_am, profiles!appointments_patient_id_fkey(full_name)")
+      .eq("abgesagt_von", "patient")
+      .gte("abgesagt_am", seit)
+      .order("abgesagt_am", { ascending: false })
+      .limit(5),
   ]);
 
   const liste: Benachrichtigung[] = [];
+
+  for (const t of gebucht ?? []) {
+    const name = (t.profiles as { full_name?: string } | null)?.full_name ?? "Patient";
+    liste.push({
+      id: `buch-${t.id}`,
+      href: "/praxis/termine",
+      titel: "Neuer Termin gebucht",
+      text: `${name}: ${formatDateTime(t.starts_at)}`,
+      zeit: formatDateTime(t.created_at),
+    });
+  }
+
+  for (const t of abgesagt ?? []) {
+    const name = (t.profiles as { full_name?: string } | null)?.full_name ?? "Patient";
+    liste.push({
+      id: `abs-${t.id}`,
+      href: "/praxis/termine",
+      titel: "Termin abgesagt",
+      text: `${name}: ${formatDateTime(t.starts_at)}`,
+      zeit: formatDateTime(t.abgesagt_am as string),
+    });
+  }
 
   for (const a of anfragen ?? []) {
     const name = (a.profiles as { full_name?: string } | null)?.full_name ?? "Patient";
