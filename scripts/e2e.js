@@ -90,7 +90,7 @@ async function supabaseBridge(ctx) {
   let gewaehlt = "";
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "networkidle" });
-    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
+    await patient.waitForSelector("text=/Wann passt es Ihnen|Noch einen Termin buchen/", { timeout: 25000 });
     await patient.locator("button", { hasText: /freie Zeit/ }).first().click();
     const zeitKnopf = patient.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).first();
     gewaehlt = await zeitKnopf.innerText();
@@ -116,8 +116,8 @@ async function supabaseBridge(ctx) {
   // Der Platz darf danach nicht mehr angeboten werden
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "domcontentloaded" });
-    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
-    const text = await patient.locator("section.card").filter({ hasText: "Wann passt es Ihnen" }).innerText();
+    await patient.waitForSelector("text=/Wann passt es Ihnen|Noch einen Termin buchen/", { timeout: 25000 });
+    const text = await patient.locator("section.card").filter({ hasText: /Wann passt es Ihnen|Noch einen Termin buchen/ }).innerText();
     if (!/freie Zeit/.test(text)) throw new Error("Keine Zeiten mehr angeboten");
     ok("Nach der Buchung stehen weiterhin andere Zeiten zur Auswahl");
   } catch (e) { fail("Auswahl nach Buchung", e); }
@@ -143,7 +143,7 @@ async function supabaseBridge(ctx) {
 
   try {
     await patient.goto(BASE + "/app/termine", { waitUntil: "domcontentloaded" });
-    await patient.waitForSelector("text=Wann passt es Ihnen", { timeout: 25000 });
+    await patient.waitForSelector("text=/Wann passt es Ihnen|Noch einen Termin buchen/", { timeout: 25000 });
     await patient.locator("button", { hasText: /freie Zeit/ }).first().click();
     const zeiten = await patient.locator("button").filter({ hasText: /^\d{2}:\d{2}$/ }).allInnerTexts();
     if (!zeiten.includes(gewaehlt)) throw new Error(`Abgesagter Platz ${gewaehlt} wird nicht wieder angeboten: ${zeiten.join(", ")}`);

@@ -139,6 +139,14 @@ Status 200) – Chat, Buchung und Absage funktionieren davon unabhängig.
 Prüfen, ob die Trigger feuern: `select status_code, content from net._http_response
 order by id desc limit 5;`
 
+**Hinweis zu Dateien aus den automatischen Tests:** Die Playwright-Läufe
+tunneln Supabase-Aufrufe durch Node (TLS-Proxy); dabei geht der Inhalt von
+Datei-Uploads verloren, im Speicher landen 0-Byte-Dateien. Die Upload-Logik
+selbst ist davon nicht betroffen (Übungsbilder aus einem echten Browser sind
+vollständig), aber: **Rezept-Upload und Feedback-Bilder vor dem Start einmal am
+echten Handy prüfen** und die Testdateien in den Buckets `patient-docs` und
+`feedback-media` löschen (Dashboard → Storage).
+
 **5. Probelauf** – Registrierung mit einer echten Adresse, Anmelde-Link,
 Passwort zurücksetzen, Chat-Benachrichtigung. Danach im Postfach prüfen, ob die
 Mails im Posteingang und nicht im Spam landen.
