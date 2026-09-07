@@ -63,7 +63,7 @@ export function Chat({
   const [text, setText] = useState("");
   const [sendet, setSendet] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
-  const endeRef = useRef<HTMLDivElement>(null);
+  const verlaufRef = useRef<HTMLDivElement>(null);
   const feldRef = useRef<HTMLTextAreaElement>(null);
   const supabaseRef = useRef(createClient());
 
@@ -104,8 +104,19 @@ export function Chat({
     };
   }, [patientId]);
 
+  /**
+   * Nur der Verlauf scrollt – nie die ganze Seite. `scrollIntoView` würde auch
+   * das Fenster mitziehen; auf dem Handy sprang dann bei jedem Buchstaben die
+   * Seite samt Menüleiste.
+   */
+  function nachUnten(sanft = false) {
+    const verlauf = verlaufRef.current;
+    if (!verlauf) return;
+    verlauf.scrollTo({ top: verlauf.scrollHeight, behavior: sanft ? "smooth" : "auto" });
+  }
+
   useEffect(() => {
-    endeRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    nachUnten(true);
   }, [nachrichten.length]);
 
   useEffect(() => {
@@ -126,7 +137,7 @@ export function Chat({
     feld.style.height = "auto";
     feld.style.height = `${Math.min(feld.scrollHeight, MAX_HOEHE)}px`;
     // Der Verlauf wird dabei kürzer – die letzte Nachricht soll sichtbar bleiben
-    endeRef.current?.scrollIntoView({ block: "end" });
+    nachUnten();
   }
 
   async function senden(e: React.FormEvent) {
@@ -163,7 +174,7 @@ export function Chat({
         </p>
       </div>
 
-      <div className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+      <div ref={verlaufRef} className="flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-4">
         {nachrichten.length === 0 && (
           <p className="pt-8 text-center text-navy-600/60">
             Noch keine Nachrichten. Schreiben Sie die erste!
@@ -211,7 +222,6 @@ export function Chat({
             </div>
           );
         })}
-        <div ref={endeRef} />
       </div>
 
       {fehler && (

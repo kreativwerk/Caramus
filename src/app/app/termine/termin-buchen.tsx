@@ -70,6 +70,7 @@ export function TerminBuchen({
   autoBestaetigen,
   stornoStunden,
   startTage,
+  weitererTermin = false,
 }: {
   slotMinuten: number;
   autoBestaetigen: boolean;
@@ -77,6 +78,8 @@ export function TerminBuchen({
   stornoStunden: number | null;
   /** Vom Server vorberechnet, damit die Liste sofort dasteht */
   startTage: Tag[];
+  /** Es gibt schon Termine – die Buchung ist dann ein zusätzlicher */
+  weitererTermin?: boolean;
 }) {
   const [schritt, setSchritt] = useState(0);
   const [tage, setTage] = useState<Tag[]>(startTage);
@@ -242,7 +245,9 @@ export function TerminBuchen({
       <div key={schritt} className="animate-schritt">
         {schritt === 0 && (
           <>
-            <h2 className="text-xl font-bold text-navy-800">Wann passt es Ihnen?</h2>
+            <h2 className="text-xl font-bold text-navy-800">
+              {weitererTermin ? "Noch einen Termin buchen?" : "Wann passt es Ihnen?"}
+            </h2>
             <p className="mt-1 text-navy-600/80">
               Wählen Sie einen Tag. Angezeigt werden nur Zeiten, die wirklich frei sind.
             </p>

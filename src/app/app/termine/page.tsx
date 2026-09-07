@@ -87,6 +87,48 @@ export default async function TerminePage() {
   const anfahrt = ((kommende ?? []) as Appointment[]).find((t) => t.status === "geplant");
   const { data: therapeutName } = anfahrt ? await supabase.rpc("therapeut_name") : { data: null };
 
+  // Wer schon Termine hat, sieht die zuerst – die Buchung kommt danach.
+  const hatTermine = (kommende?.length ?? 0) > 0;
+  const termineAbschnitt = (
+    <section>
+      <h2 className="mb-3 text-lg font-bold text-navy-800">Kommende Termine</h2>
+      {kommende?.length ? (
+        <div className="space-y-3">
+          {kommende.map((t) => (
+            <div key={t.id} className="card flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-lg font-bold text-navy-800">{formatDateTime(t.starts_at)}</p>
+                <p className="text-sm text-navy-600/80">
+                  Bei Ihnen zu Hause{t.address ? ` – ${t.address}` : ""} · ca. {t.duration_min} Minuten
+                </p>
+                {t.notes && <p className="mt-1 text-sm text-navy-600/80">Hinweis: {t.notes}</p>}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
+                  Bestätigt
+                </span>
+                {t.status === "geplant" && (
+                  <TerminAbsagen
+                    terminId={t.id}
+                    startsAt={t.starts_at}
+                    stornoStunden={stornoStunden}
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="card text-navy-600/80">Aktuell sind keine Termine geplant.</p>
+      )}
+      <p className="mt-3 text-xs text-navy-600/70">
+        {stornoStunden !== null
+          ? `Termine können Sie bis ${stornoFrist(stornoStunden)} vorher hier in der App kostenfrei absagen. Bei späterer Absage kann ein Ausfallhonorar anfallen (siehe AGB).`
+          : "Absagen bitte telefonisch oder über die Nachrichten – bis spätestens 24 Stunden vorher, sonst kann ein Ausfallhonorar anfallen (siehe AGB)."}
+      </p>
+    </section>
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -98,11 +140,14 @@ export default async function TerminePage() {
 
       {anfahrt && <AnfahrtLive termin={anfahrt} therapeutName={therapeutName ?? "Ihr Therapeut"} />}
 
+      {hatTermine && termineAbschnitt}
+
       <TerminBuchen
         slotMinuten={einstellungen?.slot_minuten ?? 60}
         autoBestaetigen={einstellungen?.auto_bestaetigen ?? true}
         stornoStunden={stornoStunden}
         startTage={startTage}
+        weitererTermin={hatTermine}
       />
 
       {/* Rückfalllösung: Wenn nichts Passendes dabei ist, bleibt der Weg über
@@ -119,43 +164,7 @@ export default async function TerminePage() {
         </div>
       </details>
 
-      <section>
-        <h2 className="mb-3 text-lg font-bold text-navy-800">Kommende Termine</h2>
-        {kommende?.length ? (
-          <div className="space-y-3">
-            {kommende.map((t) => (
-              <div key={t.id} className="card flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-lg font-bold text-navy-800">{formatDateTime(t.starts_at)}</p>
-                  <p className="text-sm text-navy-600/80">
-                    Bei Ihnen zu Hause{t.address ? ` – ${t.address}` : ""} · ca. {t.duration_min} Minuten
-                  </p>
-                  {t.notes && <p className="mt-1 text-sm text-navy-600/80">Hinweis: {t.notes}</p>}
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
-                    Bestätigt
-                  </span>
-                  {t.status === "geplant" && (
-                    <TerminAbsagen
-                      terminId={t.id}
-                      startsAt={t.starts_at}
-                      stornoStunden={stornoStunden}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="card text-navy-600/80">Aktuell sind keine Termine geplant.</p>
-        )}
-        <p className="mt-3 text-xs text-navy-600/70">
-          {stornoStunden !== null
-            ? `Termine können Sie bis ${stornoFrist(stornoStunden)} vorher hier in der App kostenfrei absagen. Bei späterer Absage kann ein Ausfallhonorar anfallen (siehe AGB).`
-            : "Absagen bitte telefonisch oder über die Nachrichten – bis spätestens 24 Stunden vorher, sonst kann ein Ausfallhonorar anfallen (siehe AGB)."}
-        </p>
-      </section>
+      {!hatTermine && termineAbschnitt}
 
       {anfragen?.length ? (
         <section>

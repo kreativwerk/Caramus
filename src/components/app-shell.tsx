@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { HeaderActions } from "@/components/header-actions";
 import { Logo } from "@/components/logo";
@@ -46,6 +46,28 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [mehrOffen, setMehrOffen] = useState(false);
+  const [tippt, setTippt] = useState(false);
+
+  // Während in ein Textfeld getippt wird, verschwindet die Menüleiste: Auf dem
+  // Handy schwebt sie sonst über der Tastatur mitten im Bild.
+  useEffect(() => {
+    function istTextfeld(ziel: EventTarget | null) {
+      if (!(ziel instanceof HTMLElement)) return false;
+      if (ziel instanceof HTMLTextAreaElement) return true;
+      if (ziel instanceof HTMLInputElement) {
+        return ["text", "email", "tel", "search", "url", "password", "number"].includes(ziel.type);
+      }
+      return false;
+    }
+    const rein = (e: FocusEvent) => istTextfeld(e.target) && setTippt(true);
+    const raus = (e: FocusEvent) => istTextfeld(e.target) && setTippt(false);
+    document.addEventListener("focusin", rein);
+    document.addEventListener("focusout", raus);
+    return () => {
+      document.removeEventListener("focusin", rein);
+      document.removeEventListener("focusout", raus);
+    };
+  }, []);
 
   // Auf dem Handy passen höchstens fünf Ziele nebeneinander, ohne dass die
   // Fläche zum Tippen zu klein wird. Der Rest steht hinter „Mehr".
@@ -121,7 +143,7 @@ export function AppShell({
           />
         </header>
 
-        <main className="mx-auto w-full max-w-5xl px-4 pb-40 pt-6 sm:px-6 lg:pb-12 lg:pt-8">
+        <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12 lg:pt-8">
           {children}
           <footer className="mt-12 border-t border-mist-100 pt-4 text-center text-xs text-navy-600/60">
             <Link href="/impressum" className="hover:text-teal-600">Impressum</Link>
@@ -137,10 +159,13 @@ export function AppShell({
 
       {/* Schwebende Mobile-Navigation im Liquid-Glass-Stil */}
       <nav
-        className="fixed inset-x-0 z-20 flex justify-center px-4 lg:hidden"
+        className={`fixed inset-x-0 z-20 flex justify-center px-4 transition-transform duration-200 lg:hidden ${
+          tippt ? "translate-y-[150%]" : ""
+        }`}
         style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+        aria-hidden={tippt || undefined}
       >
-        <div className="glass-bar flex items-center gap-1 rounded-full px-2.5 py-2 sm:gap-2 sm:px-3">
+        <div className="glass-bar flex items-center gap-1 rounded-full px-2.5 py-1 sm:gap-2 sm:px-3">
           {mobilItems.map((item) => {
             const aktiv = istAktiv(pathname, item.href, basis);
             return (
@@ -148,14 +173,14 @@ export function AppShell({
                 key={item.href}
                 href={item.href}
                 aria-current={aktiv ? "page" : undefined}
-                className={`flex min-w-[3.1rem] flex-col items-center gap-1 whitespace-nowrap rounded-2xl px-2 py-2 text-[0.65rem] font-semibold transition-all ${
+                className={`flex min-w-[3.1rem] flex-col items-center gap-0.5 whitespace-nowrap rounded-2xl px-2 py-1 text-[0.65rem] font-semibold transition-all ${
                   aktiv ? "text-teal-600" : "text-navy-700/75 active:scale-95"
                 }`}
               >
-                <span className="[&>svg]:h-[1.7rem] [&>svg]:w-[1.7rem]">{Icons[item.icon]}</span>
+                <span className="[&>svg]:h-[1.45rem] [&>svg]:w-[1.45rem]">{Icons[item.icon]}</span>
                 {item.label}
                 <span
-                  className={`h-1 w-7 rounded-full transition-all ${
+                  className={`h-0.5 w-6 rounded-full transition-all ${
                     aktiv ? "bg-teal-600" : "bg-transparent"
                   }`}
                   aria-hidden
@@ -168,20 +193,20 @@ export function AppShell({
             <button
               onClick={() => setMehrOffen(true)}
               aria-label="Weitere Bereiche"
-              className={`flex min-w-[3.1rem] flex-col items-center gap-1 whitespace-nowrap rounded-2xl px-2 py-2 text-[0.65rem] font-semibold transition-all ${
+              className={`flex min-w-[3.1rem] flex-col items-center gap-0.5 whitespace-nowrap rounded-2xl px-2 py-1 text-[0.65rem] font-semibold transition-all ${
                 weitereItems.some((i) => istAktiv(pathname, i.href, basis))
                   ? "text-teal-600"
                   : "text-navy-700/75 active:scale-95"
               }`}
             >
-              <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <circle cx="5" cy="12" r="1.9" />
                 <circle cx="12" cy="12" r="1.9" />
                 <circle cx="19" cy="12" r="1.9" />
               </svg>
               Mehr
               <span
-                className={`h-1 w-7 rounded-full transition-all ${
+                className={`h-0.5 w-6 rounded-full transition-all ${
                   weitereItems.some((i) => istAktiv(pathname, i.href, basis))
                     ? "bg-teal-600"
                     : "bg-transparent"
@@ -203,7 +228,7 @@ export function AppShell({
           />
           <div
             className="animate-schritt absolute inset-x-3 rounded-3xl bg-white p-3 shadow-2xl"
-            style={{ bottom: "calc(6.5rem + env(safe-area-inset-bottom))" }}
+            style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
           >
             <p className="px-3 pb-2 pt-1 text-sm font-bold text-navy-800">Weitere Bereiche</p>
             <ul>
