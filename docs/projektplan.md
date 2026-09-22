@@ -17,7 +17,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] PWA: App-Icons + Manifest – „Zum Startbildschirm hinzufügen" auf dem Handy
 - [x] Poppins-Schrift wird lokal eingebettet (kein Google-Fonts-Aufruf zur Laufzeit, DSGVO)
 - [x] Deutsche E-Mail-Vorlagen (`docs/email-vorlagen.md`) und Deployment-Checkliste (`docs/deployment.md`)
-- [x] Edge-Function-Gerüst für E-Mail-Benachrichtigung bei neuen Nachrichten (`supabase/functions/notify-message/`)
+- [x] E-Mail-Hinweise für Praxis und Patienten (`supabase/functions/notify-message/`, Trigger in Migration 0016/0018): Chat-Nachrichten, Buchung, Bestätigung (auch mit neuer Uhrzeit), von der Praxis eingetragene Termine, Absagen in beide Richtungen, Wunschzeiten-Anfragen und Antworten darauf
 - [x] Rückmeldungs-Bereich für die Praxis: Tickets mit Screenshots, Stand und Antwort (`/praxis/feedback`) samt Abhol-Skript `scripts/tickets.js`
 - [x] Benachrichtigungen aufs Handy (Web Push) mit Schalter im Profil, Probeversand und iPhone-Anleitung; ohne Schlüssel im Server läuft die App unverändert weiter
 - [x] Passwort vergessen, neues Passwort per E-Mail-Link setzen und Passwort im Profil ändern (`/passwort-vergessen`, `/passwort-neu`)

@@ -111,20 +111,35 @@ SMTP liegt die Voreinstellung bei 30 neuen Nutzern pro Stunde.
 **3. Vorlagen hinterlegen** – die deutschen Texte stehen in `docs/email-vorlagen.md`
 (Authentication → Emails → Templates).
 
-**4. Hinweis-Mails an die Praxis** – `supabase/functions/notify-message/` ist
-deployt (Stand 05.09.2026) und versendet per SMTP (denomailer). Ausgelöst wird
-sie von Datenbank-Triggern (Migration 0016, pg_net) – ein Webhook im Dashboard
-ist nicht mehr nötig. Drei Anlässe:
+**4. Hinweis-Mails an Praxis und Patienten** – `supabase/functions/notify-message/`
+ist deployt (Stand 22.09.2026, Version 4) und versendet per SMTP (denomailer).
+Ausgelöst wird sie von Datenbank-Triggern (Migrationen 0016 und 0018, pg_net) –
+ein Webhook im Dashboard ist nicht nötig. Anlässe:
 
 | Anlass | Empfänger | Inhalt |
 | --- | --- | --- |
 | Neue Chat-Nachricht | der jeweils andere (Praxis oder Patient) | nur Hinweis + Link, kein Nachrichtentext |
-| Patient bucht selbst einen Termin | alle Therapeuten-Konten | Name, Datum, Uhrzeit, Adresse |
-| Patient sagt einen Termin ab | alle Therapeuten-Konten | Name, Datum, Uhrzeit |
+| Patient bucht selbst einen Termin | alle Therapeuten-Konten **und** der Patient | Praxis: Name, Datum, Uhrzeit, Adresse (bei „angefragt“: bitte bestätigen). Patient: „Wunsch eingegangen“ mit Hinweis auf mögliche Verschiebung, oder „Termin steht“ |
+| Praxis bestätigt eine Buchung | der Patient | Datum, Uhrzeit – bei angepasster Uhrzeit ausdrücklich „vorher … jetzt …“ |
+| Praxis trägt einen Termin ein (auch nach Wunschzeiten-Anfrage) | der Patient | Datum, Uhrzeit, Adresse |
+| Patient sagt ab | alle Therapeuten-Konten | Name, Datum, Uhrzeit |
+| Praxis sagt ab | der Patient | Datum, Uhrzeit, Bitte um neue Zeit |
+| Patient schickt Wunschzeiten | alle Therapeuten-Konten | Wunschzeiten |
+| Praxis antwortet auf Wunschzeiten (Vorschlag / nicht möglich) | der Patient | Vorschlagstext bzw. Absage |
 
-Der Trigger schickt nur die Datensatz-Kennung; die Funktion liest den Rest
-selbst aus der Datenbank. Dieselben Ereignisse erscheinen auch in der Glocke
-im Praxisbereich (letzte 7 Tage).
+Der Trigger schickt nur die Datensatz-Kennung (bei Bestätigungen zusätzlich
+die vorherige Uhrzeit); die Funktion liest den Rest selbst aus der Datenbank.
+Dieselben Ereignisse erscheinen auch als Push aufs Handy (wenn eingeschaltet)
+und in der Glocke in der App.
+
+Ob der Versand eingerichtet ist, verrät die Funktion selbst (ohne Mail):
+
+```bash
+curl -X POST https://jiixpoyxctohzagldcel.supabase.co/functions/v1/notify-message \
+  -H "Authorization: Bearer <ANON_KEY>" -H "Content-Type: application/json" \
+  -d '{"art":"status"}'
+# → {"eingerichtet":false,"fehlt":["SMTP_HOST","SMTP_USER","SMTP_PASS"]}
+```
 
 Damit tatsächlich Mails rausgehen, fehlt noch:
 

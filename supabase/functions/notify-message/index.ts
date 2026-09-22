@@ -1,9 +1,15 @@
 // Edge Function: E-Mail-Hinweise an die Praxis und an Patienten.
 //
-// Drei Anlässe, alle ausgelöst von Datenbank-Triggern (Migration 0016):
-//   nachricht – neue Chat-Nachricht: der jeweils andere wird informiert
-//   buchung   – Patient hat selbst einen Termin gebucht: Praxis wird informiert
-//   absage    – Patient hat einen Termin abgesagt: Praxis wird informiert
+// Alle Anlässe kommen von Datenbank-Triggern (Migrationen 0016 und 0018):
+//   nachricht      – neue Chat-Nachricht: der jeweils andere wird informiert
+//   buchung        – Patient hat selbst gebucht: Praxis und Patient werden informiert
+//   bestaetigung   – Praxis hat eine Buchung bestätigt (evtl. mit neuer Uhrzeit): Patient
+//   termin         – Praxis hat einen Termin eingetragen: Patient
+//   absage         – Patient hat abgesagt: Praxis
+//   absage_praxis  – Praxis hat abgesagt: Patient
+//   anfrage_neu    – Patient hat Wunschzeiten geschickt: Praxis
+//   anfrage        – Praxis hat auf Wunschzeiten geantwortet (Vorschlag/Absage): Patient
+//   status         – Antwort, ob der Versand eingerichtet ist (keine Mail)
 //
 // Der Trigger schickt nur die Kennung des Datensatzes. Alles Weitere liest
 // diese Funktion selbst aus der Datenbank – so kann niemand mit erfundenen
@@ -27,7 +33,21 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 const APP_URL = Deno.env.get("APP_URL") ?? "https://app.curamus-medical.de";
 const ZEITZONE = "Europe/Berlin";
 
-type Anlass = "nachricht" | "buchung" | "absage";
+type Anlass =
+  | "nachricht"
+  | "buchung"
+  | "bestaetigung"
+  | "termin"
+  | "absage"
+  | "absage_praxis"
+  | "anfrage_neu"
+  | "anfrage"
+  | "status";
+
+/** Welche Zugangsdaten für den Versand fehlen – leer, wenn alles da ist. */
+function fehlendeSecrets() {
+  return ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].filter((n) => !Deno.env.get(n));
+}
 
 /** „Donnerstag, 10. September, 10:00 Uhr" */
 function terminText(iso: string) {
@@ -90,6 +110,11 @@ function mailKoerper(ueberschrift: string, absaetze: string[], knopf: { text: st
 
 async function mailSenden(an: string[], betreff: string, inhalt: { text: string; html: string }) {
   if (an.length === 0) return;
+  const fehlt = fehlendeSecrets();
+  if (fehlt.length) {
+    // Klar benennen, statt an einer fehlenden Verbindung zu scheitern
+    throw new Error(`SMTP nicht eingerichtet, es fehlen: ${fehlt.join(", ")}`);
+  }
   const port = Number(Deno.env.get("SMTP_PORT") ?? 465);
   const client = new SMTPClient({
     connection: {
@@ -145,12 +170,21 @@ Deno.serve(async (req) => {
     // Alte Webhook-Form (record mit sender_id) und neue Trigger-Form (art) verstehen
     const anlass: Anlass = payload?.art ?? (payload?.table === "messages" ? "nachricht" : "");
     const id: string | undefined = payload?.record?.id;
+
+    if (anlass === "status") {
+      const fehlt = fehlendeSecrets();
+      return Response.json({ eingerichtet: fehlt.length === 0, fehlt });
+    }
     if (!anlass || !id) return new Response("ignored", { status: 200 });
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    const praxis = () => praxisAdressen(supabase);
+    const patient = async (patientId: string) =>
+      [await nutzerAdresse(supabase, patientId)].filter((a): a is string => !!a);
 
     if (anlass === "nachricht") {
       const { data: m } = await supabase
@@ -162,9 +196,7 @@ Deno.serve(async (req) => {
 
       // Schreibt der Patient, wird die Praxis informiert – und umgekehrt.
       const patientSchreibt = m.sender_id === m.patient_id;
-      const an = patientSchreibt
-        ? await praxisAdressen(supabase)
-        : [await nutzerAdresse(supabase, m.patient_id)].filter((a): a is string => !!a);
+      const an = patientSchreibt ? await praxis() : await patient(m.patient_id);
       const ziel = patientSchreibt ? `${APP_URL}/praxis/chat/${m.patient_id}` : `${APP_URL}/app/chat`;
       const absaetze = patientSchreibt
         ? [`${await patientenName(supabase, m.patient_id)} hat Ihnen im Praxisbereich geschrieben.`]
@@ -179,7 +211,67 @@ Deno.serve(async (req) => {
       return new Response("sent", { status: 200 });
     }
 
-    // Termin gebucht oder abgesagt – geht immer an die Praxis
+    // Wunschzeiten (Anfrage ohne feste Uhrzeit)
+    if (anlass === "anfrage_neu" || anlass === "anfrage") {
+      const { data: a } = await supabase
+        .from("appointment_requests")
+        .select("patient_id, preferred_times, status, proposal")
+        .eq("id", id)
+        .maybeSingle();
+      if (!a) return new Response("not found", { status: 200 });
+      const name = await patientenName(supabase, a.patient_id);
+
+      if (anlass === "anfrage_neu") {
+        await mailSenden(
+          await praxis(),
+          `Neue Terminanfrage: ${name}`,
+          mailKoerper(
+            "Neue Terminanfrage",
+            [
+              `${name} hat über die App Wunschzeiten geschickt:`,
+              String(a.preferred_times ?? ""),
+              "Bitte bestätigen Sie einen konkreten Termin oder schlagen Sie eine andere Zeit vor.",
+            ],
+            { text: "Anfrage ansehen", ziel: `${APP_URL}/praxis/anfragen` }
+          )
+        );
+        return new Response("sent", { status: 200 });
+      }
+
+      if (a.status === "proposed") {
+        await mailSenden(
+          await patient(a.patient_id),
+          "Ein Terminvorschlag Ihrer Praxis",
+          mailKoerper(
+            "Vorschlag für Ihren Termin",
+            [
+              `Ihre Praxis schlägt Ihnen vor: ${a.proposal ?? ""}`,
+              "Bitte antworten Sie kurz über die Nachrichten in der App, ob das passt.",
+            ],
+            { text: "Zu den Terminen", ziel: `${APP_URL}/app/termine` }
+          )
+        );
+        return new Response("sent", { status: 200 });
+      }
+      if (a.status === "declined") {
+        await mailSenden(
+          await patient(a.patient_id),
+          "Ihre Terminanfrage",
+          mailKoerper(
+            "Leider nicht möglich",
+            [
+              "Ihre Terminanfrage konnte Ihre Praxis leider nicht annehmen.",
+              "Schauen Sie in der App nach freien Zeiten oder schreiben Sie kurz eine Nachricht.",
+            ],
+            { text: "Zu den Terminen", ziel: `${APP_URL}/app/termine` }
+          )
+        );
+        return new Response("sent", { status: 200 });
+      }
+      return new Response("ignored", { status: 200 });
+    }
+
+    // Alles Weitere dreht sich um einen Termin
     const { data: t } = await supabase
       .from("appointments")
       .select("patient_id, starts_at, address, status, gebucht_von, abgesagt_von")
@@ -189,22 +281,79 @@ Deno.serve(async (req) => {
 
     const name = await patientenName(supabase, t.patient_id);
     const wann = terminText(t.starts_at);
-    const an = await praxisAdressen(supabase);
-    const ziel = `${APP_URL}/praxis/termine`;
+    const praxisZiel = `${APP_URL}/praxis/termine`;
+    const patientZiel = `${APP_URL}/app/termine`;
+    const ort = t.address ? ` · ${t.address}` : "";
 
     if (anlass === "buchung") {
       if (t.gebucht_von !== "patient") return new Response("ignored", { status: 200 });
+      const nochOffen = t.status === "angefragt";
+
+      // An die Praxis
       await mailSenden(
-        an,
-        `Neuer Termin: ${name}, ${wann}`,
+        await praxis(),
+        `${nochOffen ? "Neue Buchung – bitte bestätigen" : "Neuer Termin"}: ${name}, ${wann}`,
         mailKoerper(
-          "Neuer Termin gebucht",
+          nochOffen ? "Neue Buchung – bitte bestätigen" : "Neuer Termin gebucht",
           [
             `${name} hat über die App einen Hausbesuch gebucht:`,
-            wann + (t.address ? ` · ${t.address}` : ""),
-            "Der Termin steht bereits in Ihrer Terminübersicht. Ein eventuelles Rezept finden Sie unter Unterlagen.",
+            wann + ort,
+            nochOffen
+              ? "Der Platz ist schon belegt. Bitte bestätigen Sie den Termin in der App – die Uhrzeit können Sie dabei noch anpassen."
+              : "Der Termin steht bereits in Ihrer Terminübersicht. Ein eventuelles Rezept finden Sie unter Unterlagen.",
           ],
-          { text: "Termine ansehen", ziel }
+          { text: "Termine ansehen", ziel: praxisZiel }
+        )
+      );
+
+      // An den Patienten
+      await mailSenden(
+        await patient(t.patient_id),
+        nochOffen ? `Ihr Terminwunsch ist eingegangen: ${wann}` : `Ihr Termin steht: ${wann}`,
+        mailKoerper(
+          nochOffen ? "Ihr Terminwunsch ist eingegangen" : "Ihr Termin steht",
+          nochOffen
+            ? [
+                `Sie haben einen Hausbesuch gewünscht: ${wann}.`,
+                "Fest ist der Termin erst, wenn Ihre Praxis ihn bestätigt. Die Uhrzeit kann sich dabei um ein paar Minuten verschieben – Sie bekommen dann noch einmal Bescheid.",
+              ]
+            : [`Ihr Hausbesuch ist gebucht: ${wann}.`, "Kommt etwas dazwischen, sagen Sie einfach in der App ab."],
+          { text: "Zu den Terminen", ziel: patientZiel }
+        )
+      );
+      return new Response("sent", { status: 200 });
+    }
+
+    if (anlass === "bestaetigung") {
+      if (t.status !== "geplant") return new Response("ignored", { status: 200 });
+      const vorher: string | undefined = payload?.vorher;
+      const verschoben = !!vorher && new Date(vorher).getTime() !== new Date(t.starts_at).getTime();
+      await mailSenden(
+        await patient(t.patient_id),
+        verschoben ? `Ihr Termin ist bestätigt – neue Uhrzeit: ${wann}` : `Ihr Termin ist bestätigt: ${wann}`,
+        mailKoerper(
+          verschoben ? "Ihr Termin ist bestätigt – mit neuer Uhrzeit" : "Ihr Termin ist bestätigt",
+          [
+            verschoben
+              ? `Ihre Praxis hat den Hausbesuch bestätigt und die Uhrzeit angepasst: statt ${terminText(vorher!)} jetzt ${wann}.`
+              : `Ihre Praxis hat den Hausbesuch bestätigt: ${wann}.`,
+            "Kommt etwas dazwischen, sagen Sie einfach in der App ab.",
+          ],
+          { text: "Zu den Terminen", ziel: patientZiel }
+        )
+      );
+      return new Response("sent", { status: 200 });
+    }
+
+    if (anlass === "termin") {
+      if (t.gebucht_von !== "praxis") return new Response("ignored", { status: 200 });
+      await mailSenden(
+        await patient(t.patient_id),
+        `Neuer Termin: ${wann}`,
+        mailKoerper(
+          "Ihre Praxis hat einen Termin für Sie eingetragen",
+          [`Hausbesuch: ${wann}${ort}.`, "Alle Einzelheiten sehen Sie in der App. Passt es nicht, schreiben Sie kurz eine Nachricht."],
+          { text: "Zu den Terminen", ziel: patientZiel }
         )
       );
       return new Response("sent", { status: 200 });
@@ -215,7 +364,7 @@ Deno.serve(async (req) => {
         return new Response("ignored", { status: 200 });
       }
       await mailSenden(
-        an,
+        await praxis(),
         `Termin abgesagt: ${name}, ${wann}`,
         mailKoerper(
           "Termin abgesagt",
@@ -223,7 +372,26 @@ Deno.serve(async (req) => {
             `${name} hat den Hausbesuch am ${wann} über die App abgesagt.`,
             "Die Zeit ist damit wieder frei und kann neu vergeben werden.",
           ],
-          { text: "Termine ansehen", ziel }
+          { text: "Termine ansehen", ziel: praxisZiel }
+        )
+      );
+      return new Response("sent", { status: 200 });
+    }
+
+    if (anlass === "absage_praxis") {
+      if (t.status !== "abgesagt" || t.abgesagt_von !== "praxis") {
+        return new Response("ignored", { status: 200 });
+      }
+      await mailSenden(
+        await patient(t.patient_id),
+        `Termin abgesagt: ${wann}`,
+        mailKoerper(
+          "Ihr Termin wurde abgesagt",
+          [
+            `Der Hausbesuch am ${wann} kann leider nicht stattfinden.`,
+            "Bitte wählen Sie in der App eine neue Zeit oder schreiben Sie Ihrer Praxis kurz eine Nachricht.",
+          ],
+          { text: "Neue Zeit wählen", ziel: patientZiel }
         )
       );
       return new Response("sent", { status: 200 });
