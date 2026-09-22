@@ -240,7 +240,7 @@ async function supabaseBridge(ctx) {
 
   try {
     // Unter dem Beitrag steht, von wem er kommt
-    await praxis.waitForSelector("text=Charles Mba (QA)", { timeout: 10000 });
+    await praxis.waitForSelector("text=Charles Mba", { timeout: 10000 });
     // Der Senden-Knopf traegt nur noch das Pfeilsymbol
     const knopfText = (await praxis.getByRole("button", { name: "Senden" }).innerText()).trim();
     if (knopfText !== "") throw new Error("Senden-Knopf zeigt Text statt nur des Pfeils: " + knopfText);

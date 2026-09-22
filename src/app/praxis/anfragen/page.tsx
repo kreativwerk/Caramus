@@ -34,7 +34,7 @@ export default async function AnfragenPage() {
           Offene <span className="text-teal-500">Anfragen</span>.
         </h1>
         <p className="mt-1 text-navy-600/80">
-          Bestätigen Sie Anfragen mit konkretem Termin – die Adresse des Patienten wird automatisch übernommen.
+          Bestätigen Sie Anfragen mit konkreten Terminen – die Adresse des Patienten wird automatisch übernommen.
         </p>
       </div>
 

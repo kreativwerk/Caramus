@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AnfahrtLive } from "@/components/anfahrt-live";
 import { FortschrittKarte } from "@/components/fortschritt-karte";
+import { PushHinweis } from "@/components/push-hinweis";
 import type { Appointment } from "@/lib/types";
 import { ansprache, formatTime, ZEITZONE } from "@/lib/types";
 import { MIcon } from "@/components/m-icon";
@@ -166,6 +167,8 @@ export default async function PatientStart() {
           </span>
         </Link>
       ) : null}
+
+      <PushHinweis oeffentlicherSchluessel={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
 
       {!profile?.street && (
         <div className="card border-teal-500/40 bg-teal-50">

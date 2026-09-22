@@ -249,7 +249,7 @@ export function TerminBuchen({
               {weitererTermin ? "Noch einen Termin buchen?" : "Wann passt es Ihnen?"}
             </h2>
             <p className="mt-1 text-navy-600/80">
-              Wählen Sie einen Tag. Angezeigt werden nur Zeiten, die wirklich frei sind.
+              Wählen Sie einen gewünschten Tag und die passende Uhrzeit aus.
             </p>
 
             {gesamt === 0 && (

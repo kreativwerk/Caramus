@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { SITZUNG_COOKIE, SITZUNG_NUR_BROWSER } from "@/lib/sitzungsdauer";
 import { Logo } from "@/components/logo";
 import { MIcon } from "@/components/m-icon";
 
@@ -25,6 +26,7 @@ function Formular({ variante }: { variante: Variante }) {
   const [modus, setModus] = useState<"link" | "passwort">("link");
   const [email, setEmail] = useState("");
   const [passwort, setPasswort] = useState("");
+  const [angemeldetBleiben, setAngemeldetBleiben] = useState(true);
   const [status, setStatus] = useState<"idle" | "laden" | "linkGesendet">("idle");
   const [fehler, setFehler] = useState<string | null>(null);
 
@@ -32,6 +34,12 @@ function Formular({ variante }: { variante: Variante }) {
     e.preventDefault();
     setFehler(null);
     setStatus("laden");
+    // Ohne Häkchen gilt die Anmeldung nur, bis der Browser geschlossen wird.
+    // Das Merk-Cookie muss vor der Anmeldung stehen, damit die Anmelde-Cookies
+    // gleich passend geschrieben werden (siehe lib/sitzungsdauer.ts).
+    document.cookie = angemeldetBleiben
+      ? `${SITZUNG_COOKIE}=; path=/; max-age=0; SameSite=Lax`
+      : `${SITZUNG_COOKIE}=${SITZUNG_NUR_BROWSER}; path=/; SameSite=Lax`;
     const supabase = createClient();
 
     if (modus === "passwort") {
@@ -136,6 +144,21 @@ function Formular({ variante }: { variante: Variante }) {
                   </Link>
                 </p>
               )}
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-navy-700">
+                <input
+                  type="checkbox"
+                  checked={angemeldetBleiben}
+                  onChange={(e) => setAngemeldetBleiben(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 rounded border-mist-200 accent-teal-500"
+                />
+                <span>
+                  <span className="font-semibold">Angemeldet bleiben</span>
+                  <span className="block text-navy-600/70">
+                    Sie müssen sich auf diesem Gerät nicht jedes Mal neu anmelden. Nehmen Sie das
+                    Häkchen weg, wenn andere das Gerät mitbenutzen.
+                  </span>
+                </span>
+              </label>
               {(fehler || linkFehler) && (
                 <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {fehler ?? "Dieser Anmelde-Link ist nicht mehr gültig – er gilt nur eine Stunde. Bitte fordern Sie sich einen neuen an."}
