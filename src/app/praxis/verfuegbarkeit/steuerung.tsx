@@ -165,7 +165,9 @@ export function Steuerung({
           <span>
             <span className="block font-semibold text-navy-800">Termine stehen sofort fest</span>
             <span className="block text-sm text-navy-600/80">
-              Ohne Haken landet jede Buchung erst als Wunsch bei Ihnen und Sie bestätigen von Hand.
+              Ohne Haken landet jede Buchung erst als Wunsch bei Ihnen. Der Platz ist sofort belegt,
+              Sie bestätigen von Hand und können die Uhrzeit dabei noch anpassen – der Patient sieht
+              bis dahin „Wartet auf Bestätigung“.
             </span>
           </span>
         </label>

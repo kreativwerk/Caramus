@@ -37,8 +37,11 @@ export type Appointment = {
   duration_min: number;
   address: string | null;
   travel_note: string | null;
-  status: "geplant" | "abgeschlossen" | "abgesagt";
+  /** angefragt = vom Patienten gebucht, die Praxis hat noch nicht bestätigt */
+  status: "angefragt" | "geplant" | "abgeschlossen" | "abgesagt";
   notes: string | null;
+  /** Wann die Praxis einen angefragten Termin bestätigt hat */
+  bestaetigt_am?: string | null;
   /** Zeitpunkt, an dem der Therapeut die Fahrt gestartet hat */
   enroute_at: string | null;
   /** Beim Start geschätzte Fahrzeit in Minuten */

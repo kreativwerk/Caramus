@@ -19,6 +19,7 @@ export default async function PraxisStart() {
     { count: patienten },
     { count: offeneDokumente },
     { data: ungelesene },
+    { count: neueBuchungen },
   ] = await Promise.all([
       supabase
         .from("appointment_requests")
@@ -40,6 +41,10 @@ export default async function PraxisStart() {
         .select("id", { count: "exact", head: true })
         .in("status", ["eingegangen", "in_pruefung"]),
       supabase.from("messages").select("id, patient_id, sender_id, read_at").is("read_at", null),
+      supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "angefragt"),
     ]);
 
   const ungeleseneFremde = (ungelesene ?? []).filter((m) => m.sender_id === m.patient_id).length;
@@ -52,6 +57,27 @@ export default async function PraxisStart() {
           Guten Tag. Ihre <span className="text-teal-500">Tagesübersicht</span>.
         </h1>
       </div>
+
+      {neueBuchungen ? (
+        <Link
+          href="/praxis/termine"
+          className="card flex items-center justify-between gap-3 border-teal-500/40 bg-teal-50 transition hover:border-teal-500"
+        >
+          <span>
+            <span className="block font-bold text-navy-800">
+              {neueBuchungen === 1
+                ? "1 neue Buchung wartet auf Ihre Bestätigung"
+                : `${neueBuchungen} neue Buchungen warten auf Ihre Bestätigung`}
+            </span>
+            <span className="block text-sm text-navy-600/80">
+              Uhrzeit prüfen, bei Bedarf anpassen und bestätigen – der Patient bekommt Bescheid.
+            </span>
+          </span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-500 font-bold text-white">
+            {neueBuchungen}
+          </span>
+        </Link>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/praxis/anfragen" className="card transition hover:border-teal-500">

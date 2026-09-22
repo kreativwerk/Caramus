@@ -454,7 +454,7 @@ export function TerminBuchen({
             <p className="mt-4 text-sm text-navy-600/80">
               {autoBestaetigen
                 ? "Mit dem Tippen auf „Termin buchen“ steht der Termin fest."
-                : "Ihre Praxis schaut sich den Wunsch an und bestätigt ihn – Sie bekommen Bescheid."}
+                : "Ihr Wunsch geht an Ihre Praxis. Fest ist der Termin erst, wenn sie ihn bestätigt – dabei kann sich die Uhrzeit noch um ein paar Minuten verschieben, zum Beispiel von 16:00 auf 16:15 Uhr. Sie bekommen Bescheid."}
             </p>
             {/* Freundlicher Hinweis zur Absage – damit niemand aus Sorge, sich
                 festzulegen, gar nicht erst bucht. */}
@@ -493,10 +493,18 @@ export function TerminBuchen({
                 className="animate-haken"
               />
             </svg>
-            <h2 className="mt-5 text-xl font-bold text-navy-800">Ihr Termin steht.</h2>
+            <h2 className="mt-5 text-xl font-bold text-navy-800">
+              {autoBestaetigen ? "Ihr Termin steht." : "Ihr Wunsch ist angekommen."}
+            </h2>
             <p className="mt-2 text-navy-600/80">
               {tagLabel(tagesSchluessel(zeit))}, {datumLang(tagesSchluessel(zeit))} um {uhrzeit(zeit)} Uhr.
             </p>
+            {!autoBestaetigen && (
+              <p className="mx-auto mt-3 max-w-sm rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Noch nicht fest: Ihre Praxis bestätigt den Termin. Die Uhrzeit kann sich dabei um
+                ein paar Minuten verschieben – Sie bekommen Bescheid.
+              </p>
+            )}
           </div>
         )}
       </div>

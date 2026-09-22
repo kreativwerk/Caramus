@@ -27,7 +27,7 @@ export default async function PatientStart() {
         .from("appointments")
         .select("*")
         .eq("patient_id", user!.id)
-        .eq("status", "geplant")
+        .in("status", ["angefragt", "geplant"])
         // eslint-disable-next-line react-hooks/purity -- Server Component, laeuft pro Request
         .gte("starts_at", new Date(Date.now() - 4 * 3600_000).toISOString())
         .order("starts_at")
@@ -96,7 +96,7 @@ export default async function PatientStart() {
         <p className="mt-1 text-navy-600/80">Schön, dass Sie da sind.</p>
       </div>
 
-      {aktuellerTermin && (
+      {aktuellerTermin && aktuellerTermin.status === "geplant" && (
         <AnfahrtLive termin={aktuellerTermin} therapeutName={therapeutName ?? "Ihr Therapeut"} />
       )}
 
@@ -138,7 +138,13 @@ export default async function PatientStart() {
               <span className="block truncate text-navy-600/80">
                 mit {therapeutName ?? "Ihrem Therapeuten"}
               </span>
-              <span className="mt-1 block font-semibold text-teal-600">Termin anzeigen</span>
+              {aktuellerTermin.status === "angefragt" ? (
+                <span className="mt-1 block font-semibold text-amber-700">
+                  Wartet auf Bestätigung Ihrer Praxis
+                </span>
+              ) : (
+                <span className="mt-1 block font-semibold text-teal-600">Termin anzeigen</span>
+              )}
             </span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-navy-600/50" aria-hidden>
               <path d="m9 6 6 6-6 6" />

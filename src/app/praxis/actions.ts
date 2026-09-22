@@ -150,17 +150,81 @@ export async function terminStatusSetzen(formData: FormData) {
   if (!supabase) return { fehler };
 
   const status = String(formData.get("status"));
-  const { error } = await supabase
+  const terminId = String(formData.get("termin_id"));
+  const { data: termin, error } = await supabase
     .from("appointments")
     .update(
       status === "abgesagt"
         ? { status, abgesagt_am: new Date().toISOString(), abgesagt_von: "praxis" }
         : { status }
     )
-    .eq("id", String(formData.get("termin_id")));
+    .eq("id", terminId)
+    .select("patient_id, starts_at")
+    .single();
   if (error) return { fehler: nichtGeklappt("Das Ändern des Status") };
+
+  // Eine Absage durch die Praxis soll der Patient nicht erst beim nächsten Blick in die App bemerken
+  if (status === "abgesagt" && termin) {
+    await pushSenden([termin.patient_id], {
+      titel: "Termin abgesagt",
+      text: `Der Hausbesuch am ${formatDateTime(termin.starts_at)} Uhr kann leider nicht stattfinden.`,
+      ziel: "/app/termine",
+      gruppe: "termin",
+    });
+  }
+
   revalidatePath("/praxis/termine");
   revalidatePath("/praxis");
+  revalidatePath("/app/termine");
+  revalidatePath("/app");
+  return { ok: true };
+}
+
+/**
+ * Eine vom Patienten gebuchte Zeit bestätigen. Die Praxis darf die Uhrzeit
+ * dabei anpassen – der Patient erfährt in der Benachrichtigung, ob sich etwas
+ * geändert hat.
+ */
+export async function terminBestaetigen(formData: FormData) {
+  const { supabase, fehler } = await therapeutClient();
+  if (!supabase) return { fehler };
+
+  const terminId = String(formData.get("termin_id"));
+  const neuerBeginn = String(formData.get("starts_at") ?? "");
+  if (!terminId || !neuerBeginn || Number.isNaN(new Date(neuerBeginn).getTime())) {
+    return { fehler: "Bitte prüfen Sie Datum und Uhrzeit." };
+  }
+
+  const { data: termin } = await supabase
+    .from("appointments")
+    .select("patient_id, starts_at, status")
+    .eq("id", terminId)
+    .single();
+  if (!termin) return { fehler: "Diesen Termin gibt es nicht mehr. Bitte laden Sie die Seite neu." };
+  if (termin.status !== "angefragt") {
+    return { fehler: "Dieser Termin ist schon bestätigt oder abgesagt. Bitte laden Sie die Seite neu." };
+  }
+
+  const beginn = new Date(neuerBeginn).toISOString();
+  const verschoben = new Date(termin.starts_at).getTime() !== new Date(beginn).getTime();
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({ status: "geplant", starts_at: beginn, bestaetigt_am: new Date().toISOString() })
+    .eq("id", terminId);
+  if (error) return { fehler: nichtGeklappt("Das Bestätigen") };
+
+  await pushSenden([termin.patient_id], {
+    titel: verschoben ? "Ihr Termin ist bestätigt – mit neuer Uhrzeit" : "Ihr Termin ist bestätigt",
+    text: `Hausbesuch am ${formatDateTime(beginn)} Uhr.`,
+    ziel: "/app/termine",
+    gruppe: "termin",
+  });
+
+  revalidatePath("/praxis/termine");
+  revalidatePath("/praxis");
+  revalidatePath("/app/termine");
+  revalidatePath("/app");
   return { ok: true };
 }
 
