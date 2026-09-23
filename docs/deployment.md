@@ -26,6 +26,16 @@ Reihenfolge einhalten; Punkte mit 👤 brauchen Zugänge/Entscheidungen des Kund
    Ohne diese beiden Variablen läuft die App vollständig – Charles wählt die Fahrzeit dann selbst.
 6. Deploy ausführen → Vorschau-URL testen (Login-Seite muss erscheinen).
 
+## 1a. Laufender Betrieb: jede Änderung direkt live
+
+Production-Branch ist `claude/physio-app-development-cw6ant`. Ein Push dorthin
+löst den Vercel-Build aus, nach ein bis zwei Minuten ist die Fassung online.
+Migrationen und die Edge Function vorher nach Supabase bringen (siehe unten).
+Ob die neue Fassung angekommen ist, zeigt `curl -s https://app.curamus-medical.de/api/version`
+– die Kennung ist der Anfang des Commits. In der App genügt danach ein Tipp auf
+den Update-Knopf in der Kopfzeile; er meldet sich ohnehin mit einem Punkt,
+sobald der Server neuer ist als die geladene Seite.
+
 ## 2. Domain verbinden
 
 1. In Vercel: Project → Settings → Domains → `app.curamus-medical.de` hinzufügen.
