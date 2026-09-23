@@ -30,6 +30,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Förmliche Anrede: „Guten Tag, Frau Beispiel"; Anrede im Willkommen und im Profil änderbar
 - [x] „Angemeldet bleiben“ auf der Anmeldeseite (Standard an); ohne Häkchen gilt die Anmeldung nur bis zum Schließen des Browsers (`src/lib/sitzungsdauer.ts`)
 - [x] Buchungen als Wunsch: Ohne „Termine stehen sofort fest“ landet eine Buchung als „angefragt“ (Platz sofort belegt), der Patient sieht „Wartet auf Bestätigung“ samt Hinweis auf mögliche Verschiebung, die Praxis bestätigt unter Termine und kann die Uhrzeit dabei anpassen (Migration `0017_termin_angefragt.sql`)
+- [x] Update-Knopf in der Kopfzeile (immer sichtbar): leert Zwischenspeicher und lädt die Seite frisch vom Server; ein Punkt am Knopf zeigt an, wenn auf dem Server eine neuere Fassung liegt (`/api/version` gegen die im Browser geladene Kennung, geprüft beim Öffnen und beim Zurückkommen in die App)
 - [x] Hinweiskarte auf der Patienten-Startseite, solange Benachrichtigungen aufs Handy noch nicht eingeschaltet sind (`src/components/push-hinweis.tsx`)
 - [x] Alle Zeitangaben fest in deutscher Ortszeit, unabhängig von der Geräteeinstellung
 - [x] Zwischenablage für die Praxis: Bausteine mit Überschrift und Inhalt, Symbol oben rechts, Vorschau bei langem Text (`/praxis/bausteine`)

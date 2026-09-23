@@ -6,6 +6,7 @@ import type { Benachrichtigung } from "@/lib/benachrichtigungen";
 import type { Baustein } from "@/lib/types";
 import { BausteineMenue } from "@/components/bausteine-menue";
 import { MIcon } from "@/components/m-icon";
+import { UpdateKnopf } from "@/components/update-knopf";
 
 function initialen(name: string) {
   const teile = name.trim().split(/\s+/).filter(Boolean);
@@ -50,6 +51,7 @@ export function HeaderActions({
   return (
     <div className="flex items-center gap-2">
       {bausteine && <BausteineMenue bausteine={bausteine} />}
+      <UpdateKnopf />
       <div ref={bereichRef} className="relative">
         <button
           type="button"
