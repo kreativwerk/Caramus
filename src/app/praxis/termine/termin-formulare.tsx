@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { terminAnlegen, terminStatusSetzen } from "../actions";
+import { terminAnlegen, terminBestaetigen, terminStatusSetzen } from "../actions";
 import { MIcon } from "@/components/m-icon";
 
 export function NeuerTerminForm({ patienten }: { patienten: { id: string; full_name: string }[] }) {
@@ -95,6 +95,84 @@ export function TerminStatusButtons({ terminId }: { terminId: string }) {
       >
         Absagen
       </button>
+    </div>
+  );
+}
+
+/** Datum und Uhrzeit so, wie das Eingabefeld sie erwartet – in der Ortszeit des Geräts. */
+function fuerEingabefeld(iso: string) {
+  const d = new Date(iso);
+  const zwei = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${zwei(d.getMonth() + 1)}-${zwei(d.getDate())}T${zwei(d.getHours())}:${zwei(d.getMinutes())}`;
+}
+
+/**
+ * Eine vom Patienten gebuchte Zeit bestätigen. Die Uhrzeit lässt sich vorher
+ * noch anpassen (16:00 → 16:15) – der Patient erfährt davon.
+ */
+export function TerminBestaetigen({ terminId, startsAt }: { terminId: string; startsAt: string }) {
+  const [zeit, setZeit] = useState(() => fuerEingabefeld(startsAt));
+  const [fehler, setFehler] = useState<string | null>(null);
+  const [laeuft, startTransition] = useTransition();
+  const router = useRouter();
+
+  function bestaetigen() {
+    const neu = new Date(zeit);
+    if (Number.isNaN(neu.getTime())) {
+      setFehler("Bitte prüfen Sie Datum und Uhrzeit.");
+      return;
+    }
+    const fd = new FormData();
+    fd.set("termin_id", terminId);
+    // Als Zeitpunkt mit Zeitzone – das Eingabefeld kennt keine
+    fd.set("starts_at", neu.toISOString());
+    setFehler(null);
+    startTransition(async () => {
+      const ergebnis = await terminBestaetigen(fd);
+      if (ergebnis?.fehler) setFehler(ergebnis.fehler);
+      else router.refresh();
+    });
+  }
+
+  function absagen() {
+    const fd = new FormData();
+    fd.set("termin_id", terminId);
+    fd.set("status", "abgesagt");
+    setFehler(null);
+    startTransition(async () => {
+      const ergebnis = await terminStatusSetzen(fd);
+      if (ergebnis?.fehler) setFehler(ergebnis.fehler);
+      else router.refresh();
+    });
+  }
+
+  const geaendert = zeit !== fuerEingabefeld(startsAt);
+
+  return (
+    <div className="mt-3 border-t border-mist-100 pt-3">
+      <label className="label-base" htmlFor={`zeit-${terminId}`}>
+        Uhrzeit {geaendert ? "(geändert – der Patient bekommt Bescheid)" : "(bei Bedarf anpassen)"}
+      </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          id={`zeit-${terminId}`}
+          type="datetime-local"
+          value={zeit}
+          onChange={(e) => setZeit(e.target.value)}
+          className="input-base w-auto"
+        />
+        <button onClick={bestaetigen} disabled={laeuft} className="btn-primary disabled:opacity-60">
+          {laeuft ? "Einen Moment …" : geaendert ? "Mit neuer Zeit bestätigen" : "Bestätigen"}
+        </button>
+        <button
+          onClick={absagen}
+          disabled={laeuft}
+          className="rounded-lg border border-mist-200 px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:border-red-300 disabled:opacity-50"
+        >
+          Absagen
+        </button>
+      </div>
+      {fehler && <p className="mt-2 text-sm font-medium text-red-700">{fehler}</p>}
     </div>
   );
 }

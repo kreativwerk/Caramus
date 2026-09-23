@@ -102,12 +102,24 @@ export default async function TerminePage() {
                   Bei Ihnen zu Hause{t.address ? ` – ${t.address}` : ""} · ca. {t.duration_min} Minuten
                 </p>
                 {t.notes && <p className="mt-1 text-sm text-navy-600/80">Hinweis: {t.notes}</p>}
+                {t.status === "angefragt" && (
+                  <p className="mt-2 text-sm text-amber-800">
+                    Noch nicht fest: Ihre Praxis bestätigt den Termin. Die Uhrzeit kann sich dabei
+                    um ein paar Minuten verschieben – Sie bekommen Bescheid.
+                  </p>
+                )}
               </div>
               <div className="flex flex-col items-end gap-2">
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
-                  Bestätigt
-                </span>
-                {t.status === "geplant" && (
+                {t.status === "angefragt" ? (
+                  <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">
+                    Wartet auf Bestätigung
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">
+                    Bestätigt
+                  </span>
+                )}
+                {(t.status === "geplant" || t.status === "angefragt") && (
                   <TerminAbsagen
                     terminId={t.id}
                     startsAt={t.starts_at}

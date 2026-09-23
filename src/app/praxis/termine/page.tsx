@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatDate, formatDateTime, formatTime } from "@/lib/types";
-import { NeuerTerminForm, TerminStatusButtons } from "./termin-formulare";
+import { NeuerTerminForm, TerminBestaetigen, TerminStatusButtons } from "./termin-formulare";
 import { MIcon } from "@/components/m-icon";
 
 export default async function PraxisTerminePage() {
@@ -12,7 +12,7 @@ export default async function PraxisTerminePage() {
       .select("*, profiles!appointments_patient_id_fkey(full_name)")
       // eslint-disable-next-line react-hooks/purity -- Server Component, läuft pro Request
       .gte("starts_at", new Date(Date.now() - 86400000).toISOString())
-      .eq("status", "geplant")
+      .in("status", ["angefragt", "geplant"])
       .order("starts_at")
       .limit(100),
     supabase.from("profiles").select("id, full_name").eq("role", "patient").order("full_name"),
@@ -29,9 +29,13 @@ export default async function PraxisTerminePage() {
       .limit(20),
   ]);
 
+  // Von Patienten gebucht, aber noch nicht bestätigt – die kommen zuerst
+  const angefragt = (termine ?? []).filter((t) => t.status === "angefragt");
+  const fest = (termine ?? []).filter((t) => t.status === "geplant");
+
   // Nach Tag gruppieren
   const gruppen = new Map<string, NonNullable<typeof termine>>();
-  for (const t of termine ?? []) {
+  for (const t of fest) {
     const tag = formatDate(t.starts_at);
     if (!gruppen.has(tag)) gruppen.set(tag, []);
     gruppen.get(tag)!.push(t);
@@ -47,6 +51,36 @@ export default async function PraxisTerminePage() {
       </div>
 
       <NeuerTerminForm patienten={patienten ?? []} />
+
+      {angefragt.length ? (
+        <section className="rounded-2xl border border-teal-500/40 bg-teal-50 p-5">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-navy-800">
+            <MIcon name="klingel" className="text-teal-600" /> Neue Buchungen – bitte bestätigen
+          </h2>
+          <p className="mt-1 text-sm text-navy-600/80">
+            Der Platz ist schon belegt. Passt die Uhrzeit nicht ganz, ändern Sie sie vor dem
+            Bestätigen – die Patientin oder der Patient bekommt Bescheid.
+          </p>
+          <div className="mt-4 space-y-3">
+            {angefragt.map((t) => (
+              <div key={t.id} className="card">
+                <p className="text-lg font-bold text-navy-800">
+                  {formatDateTime(t.starts_at)} · {(t.profiles as { full_name?: string })?.full_name}
+                </p>
+                <p className="text-sm text-navy-600/80">
+                  <MIcon name="ort" className="mr-1 text-navy-600/70" />{t.address ?? "Adresse fehlt"} · {t.duration_min} Min.
+                </p>
+                {t.notes && (
+                  <p className="mt-1 flex items-center gap-1.5 text-sm text-navy-600/80">
+                    <MIcon name="notiz" /> {t.notes}
+                  </p>
+                )}
+                <TerminBestaetigen terminId={t.id} startsAt={t.starts_at} />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {abgesagt?.length ? (
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">

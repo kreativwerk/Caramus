@@ -108,8 +108,9 @@ async function supabaseBridge(ctx) {
     await patient.getByRole("button", { name: /^Weiter/ }).click();
     await patient.getByRole("button", { name: /^(Weiter|Überspringen)/ }).click();
     await patient.waitForSelector("text=Rezept liegt der Praxis bereits vor", { timeout: 10000 });
-    await patient.getByRole("button", { name: "Termin buchen" }).click();
-    await patient.waitForSelector("text=Ihr Termin steht", { timeout: 25000 });
+    // Je nach Praxis-Einstellung steht der Termin sofort fest oder ist erst ein Wunsch
+    await patient.getByRole("button", { name: /^(Termin buchen|Wunsch senden)$/ }).click();
+    await patient.waitForSelector("text=/Ihr Termin steht|Ihr Wunsch ist angekommen/", { timeout: 25000 });
     ok(`Termin über die freie Auswahl gebucht (${gewaehlt} Uhr)`);
   } catch (e) { fail("Termin buchen", e); }
 
@@ -127,14 +128,14 @@ async function supabaseBridge(ctx) {
   try {
     // Genau den eben gebuchten Termin absagen – nicht irgendeinen aus einem
     // frueheren Lauf. Erkennbar an der gewaehlten Uhrzeit.
-    const karte = patient.locator("div.card").filter({ hasText: "Bestätigt" }).filter({ hasText: `${gewaehlt} Uhr` }).first();
+    const karte = patient.locator("div.card").filter({ hasText: /Bestätigt|Wartet auf Bestätigung/ }).filter({ hasText: `${gewaehlt} Uhr` }).first();
     await karte.waitFor({ timeout: 15000 });
     const wann = (await karte.locator("p.text-lg").first().innerText()).trim();
     await karte.getByRole("button", { name: "Termin absagen" }).click();
     await karte.getByText("wirklich absagen").waitFor({ timeout: 5000 });
     await karte.getByRole("button", { name: "Ja, absagen" }).click();
     await patient.waitForFunction(
-      (w) => ![...document.querySelectorAll("div.card")].some((c) => c.textContent.includes(w) && c.textContent.includes("Bestätigt")),
+      (w) => ![...document.querySelectorAll("div.card")].some((c) => c.textContent.includes(w) && /Bestätigt|Wartet auf Bestätigung/.test(c.textContent)),
       wann,
       { timeout: 20000 }
     );
@@ -240,7 +241,7 @@ async function supabaseBridge(ctx) {
 
   try {
     // Unter dem Beitrag steht, von wem er kommt
-    await praxis.waitForSelector("text=Charles Mba (QA)", { timeout: 10000 });
+    await praxis.waitForSelector("text=Charles Mba", { timeout: 10000 });
     // Der Senden-Knopf traegt nur noch das Pfeilsymbol
     const knopfText = (await praxis.getByRole("button", { name: "Senden" }).innerText()).trim();
     if (knopfText !== "") throw new Error("Senden-Knopf zeigt Text statt nur des Pfeils: " + knopfText);

@@ -17,7 +17,7 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] PWA: App-Icons + Manifest – „Zum Startbildschirm hinzufügen" auf dem Handy
 - [x] Poppins-Schrift wird lokal eingebettet (kein Google-Fonts-Aufruf zur Laufzeit, DSGVO)
 - [x] Deutsche E-Mail-Vorlagen (`docs/email-vorlagen.md`) und Deployment-Checkliste (`docs/deployment.md`)
-- [x] Edge-Function-Gerüst für E-Mail-Benachrichtigung bei neuen Nachrichten (`supabase/functions/notify-message/`)
+- [x] E-Mail-Hinweise für Praxis und Patienten (`supabase/functions/notify-message/`, Trigger in Migration 0016/0018): Chat-Nachrichten, Buchung, Bestätigung (auch mit neuer Uhrzeit), von der Praxis eingetragene Termine, Absagen in beide Richtungen, Wunschzeiten-Anfragen und Antworten darauf
 - [x] Rückmeldungs-Bereich für die Praxis: Tickets mit Screenshots, Stand und Antwort (`/praxis/feedback`) samt Abhol-Skript `scripts/tickets.js`
 - [x] Benachrichtigungen aufs Handy (Web Push) mit Schalter im Profil, Probeversand und iPhone-Anleitung; ohne Schlüssel im Server läuft die App unverändert weiter
 - [x] Passwort vergessen, neues Passwort per E-Mail-Link setzen und Passwort im Profil ändern (`/passwort-vergessen`, `/passwort-neu`)
@@ -28,6 +28,10 @@ Stand: 19.08.2026 · Angebot angenommen, Umsetzung V1 begonnen.
 - [x] Terminbuchung mit echten freien Zeiten: Patient wählt Tag und Uhrzeit in vier Schritten (`/app/termine`), berechnet aus Sprechzeiten, Terminlänge, Fahrzeit-Puffer, Vorlauf und Sperrzeiten
 - [x] Praxis stellt das alles selbst ein (`/praxis/verfuegbarkeit`) – inklusive Schalter, ob Buchungen sofort gelten oder erst bestätigt werden
 - [x] Förmliche Anrede: „Guten Tag, Frau Beispiel"; Anrede im Willkommen und im Profil änderbar
+- [x] „Angemeldet bleiben“ auf der Anmeldeseite (Standard an); ohne Häkchen gilt die Anmeldung nur bis zum Schließen des Browsers (`src/lib/sitzungsdauer.ts`)
+- [x] Buchungen als Wunsch: Ohne „Termine stehen sofort fest“ landet eine Buchung als „angefragt“ (Platz sofort belegt), der Patient sieht „Wartet auf Bestätigung“ samt Hinweis auf mögliche Verschiebung, die Praxis bestätigt unter Termine und kann die Uhrzeit dabei anpassen (Migration `0017_termin_angefragt.sql`)
+- [x] Update-Knopf in der Kopfzeile (immer sichtbar): leert Zwischenspeicher und lädt die Seite frisch vom Server; ein Punkt am Knopf zeigt an, wenn auf dem Server eine neuere Fassung liegt (`/api/version` gegen die im Browser geladene Kennung, geprüft beim Öffnen und beim Zurückkommen in die App)
+- [x] Hinweiskarte auf der Patienten-Startseite, solange Benachrichtigungen aufs Handy noch nicht eingeschaltet sind (`src/components/push-hinweis.tsx`)
 - [x] Alle Zeitangaben fest in deutscher Ortszeit, unabhängig von der Geräteeinstellung
 - [x] Zwischenablage für die Praxis: Bausteine mit Überschrift und Inhalt, Symbol oben rechts, Vorschau bei langem Text (`/praxis/bausteine`)
 - [x] Praxis-Seitenleiste in Gruppen (Mein Tag, Betreuung, Inhalte); auf dem Handy fünf Ziele plus „Mehr"

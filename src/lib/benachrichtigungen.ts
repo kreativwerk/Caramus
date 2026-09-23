@@ -15,7 +15,8 @@ export async function patientenBenachrichtigungen(
   supabase: SupabaseClient,
   patientId: string
 ): Promise<Benachrichtigung[]> {
-  const [{ data: nachrichten }, { data: anfragen }, { data: dokumente }] = await Promise.all([
+  const seit = new Date(Date.now() - 7 * 24 * 3600_000).toISOString();
+  const [{ data: nachrichten }, { data: anfragen }, { data: dokumente }, { data: bestaetigt }] = await Promise.all([
     supabase
       .from("messages")
       .select("id, body, created_at")
@@ -40,9 +41,28 @@ export async function patientenBenachrichtigungen(
       .not("status_changed_at", "is", null)
       .order("status_changed_at", { ascending: false })
       .limit(5),
+    // Selbst gebuchte Termine, die die Praxis in der letzten Woche bestätigt hat
+    supabase
+      .from("appointments")
+      .select("id, starts_at, bestaetigt_am")
+      .eq("patient_id", patientId)
+      .eq("status", "geplant")
+      .gte("bestaetigt_am", seit)
+      .order("bestaetigt_am", { ascending: false })
+      .limit(3),
   ]);
 
   const liste: Benachrichtigung[] = [];
+
+  for (const t of bestaetigt ?? []) {
+    liste.push({
+      id: `best-${t.id}`,
+      href: "/app/termine",
+      titel: "Termin bestätigt",
+      text: `Ihr Hausbesuch am ${formatDateTime(t.starts_at)} Uhr steht fest.`,
+      zeit: t.bestaetigt_am ? formatDateTime(t.bestaetigt_am) : undefined,
+    });
+  }
 
   for (const m of nachrichten ?? []) {
     liste.push({
@@ -123,9 +143,9 @@ export async function praxisBenachrichtigungen(
       .limit(10),
     supabase
       .from("appointments")
-      .select("id, starts_at, created_at, profiles!appointments_patient_id_fkey(full_name)")
+      .select("id, starts_at, status, created_at, profiles!appointments_patient_id_fkey(full_name)")
       .eq("gebucht_von", "patient")
-      .eq("status", "geplant")
+      .in("status", ["angefragt", "geplant"])
       .gte("created_at", seit)
       .order("created_at", { ascending: false })
       .limit(5),
@@ -145,7 +165,7 @@ export async function praxisBenachrichtigungen(
     liste.push({
       id: `buch-${t.id}`,
       href: "/praxis/termine",
-      titel: "Neuer Termin gebucht",
+      titel: t.status === "angefragt" ? "Neue Buchung – bitte bestätigen" : "Neuer Termin gebucht",
       text: `${name}: ${formatDateTime(t.starts_at)}`,
       zeit: formatDateTime(t.created_at),
     });
